@@ -133,6 +133,20 @@ unittest
 	}
 }
 
+// temporary trait fix to allow setting/getting of @safe types from args.
+private template isSafeType(T)
+{
+    U foo(U)(U t) {
+        static if(is(typeof(t = t)))
+            t = t;
+        return t;
+    }
+
+    enum isSafeType = is(typeof(() @safe => foo(T.init)));
+}
+static assert(isSafeType!(int));
+static assert(isSafeType!(typeof(null)));
+
 /++
 Encapsulation of a prepared statement.
 
@@ -159,7 +173,7 @@ package:
 	ColumnSpecialization[] _columnSpecials;
 	ulong _lastInsertID;
 
-	ExecQueryImplInfo getExecQueryImplInfo(uint statementId)
+	ExecQueryImplInfo getExecQueryImplInfo(uint statementId) @safe
 	{
 		return ExecQueryImplInfo(true, null, statementId, _headers, _inParams, _psa);
 	}
@@ -182,7 +196,7 @@ public:
 	including parameter descriptions, and result set field descriptions,
 	followed by an EOF packet.
 	+/
-	this(const(char[]) sql, PreparedStmtHeaders headers, ushort numParams)
+	this(const(char[]) sql, PreparedStmtHeaders headers, ushort numParams) @safe
 	{
 		this._sql        = sql;
 		this._headers    = headers;
@@ -190,6 +204,19 @@ public:
 		_inParams.length = numParams;
 		_psa.length      = numParams;
 	}
+
+        private void _assignArgImpl(T)(size_t index, ref T val)
+        {
+            static if(isSafeType!T)
+            {
+                // override Variant's unsafe mechanism, we know everything is safe.
+                (() @trusted { _inParams[index] = val; })();
+            }
+            else
+            {
+                _inParams[index] = val;
+            }
+        }
 
 	/++
 	Prepared statement parameter setter.
@@ -225,7 +252,7 @@ public:
 
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
 
-		_inParams[index] = val;
+                _assignArgImpl(index, val);
 		psn.pIndex = index;
 		_psa[index] = psn;
 	}
@@ -338,6 +365,7 @@ public:
 	void setArgs(Variant[] args, ParameterSpecialization[] psnList=null)
 	{
 		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
+                // can't be @safe because of the postblit for Variant
 		_inParams[] = args[];
 		if (psnList !is null)
 		{
@@ -369,13 +397,13 @@ public:
 
 	Params: index = The zero based index
 	+/
-	void setNullArg(size_t index)
+	void setNullArg(size_t index) @safe
 	{
 		setArg(index, null);
 	}
 
 	/// Gets the SQL command for this prepared statement.
-	const(char)[] sql()
+	const(char)[] sql() pure @safe const
 	{
 		return _sql;
 	}
@@ -510,6 +538,7 @@ to factor out common functionality needed by both `Connection` and `MySQLPool`.
 package struct PreparedRegistrations(Payload)
 	if(	isPreparedRegistrationsPayload!Payload)
 {
+    @safe:
 	/++
 	Lookup payload by sql string.
 
@@ -561,8 +590,11 @@ package struct PreparedRegistrations(Payload)
 			queueForRelease(sql);
 	}
 
+        // Note: AA.clear does not invalidate any keys or values. In fact, it
+        // should really be safe/trusted, but is not. Therefore, we mark this
+        // as trusted.
 	/// Eliminate all records of both registered AND queued-for-release statements.
-	void clear()
+	void clear() @trusted
 	{
 		static if(__traits(compiles, (){ int[int] aa; aa.clear(); }))
 			directLookup.clear();
@@ -571,7 +603,7 @@ package struct PreparedRegistrations(Payload)
 	}
 
 	/// If already registered, simply returns the cached Payload.
-	Payload registerIfNeeded(const(char[]) sql, Payload delegate(const(char[])) doRegister)
+	Payload registerIfNeeded(const(char[]) sql, Payload delegate(const(char[])) @safe doRegister)
 	out(info)
 	{
 		// I'm confident this can't currently happen, but

@@ -353,6 +353,7 @@ the connection when done).
 //TODO: All low-level commms should be moved into the mysql.protocol package.
 class Connection
 {
+    @safe:
 /+
 The Connection is responsible for handshaking with the server to establish
 authentication. It then passes client preferences to the server, and
@@ -565,7 +566,6 @@ package:
 	}
 
 public:
-
 	/++
 	Construct opened connection.
 
@@ -868,7 +868,7 @@ public:
 	(TODO: The connection string needs work to allow for semicolons in its parts!)
 	+/
 	//TODO: Replace the return value with a proper struct.
-	static string[] parseConnectionString(string cs)
+	static string[] parseConnectionString(string cs) @safe
 	{
 		string[] rv;
 		rv.length = 5;

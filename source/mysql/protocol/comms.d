@@ -38,9 +38,18 @@ import mysql.protocol.packet_helpers;
 import mysql.protocol.packets;
 import mysql.protocol.sockets;
 
+
+// helper for getting around calling opEquals on two typeids
+private bool tideq(const TypeInfo ti1, const TypeInfo ti2) @trusted
+{
+    return ti1 == ti2;
+}
+@safe:
+
 /// Low-level comms code relating to prepared statements.
 package struct ProtocolPrepared
 {
+    @safe:
 	import std.conv;
 	import std.datetime;
 	import std.variant;
@@ -53,7 +62,7 @@ package struct ProtocolPrepared
 		bma.length = bml;
 		foreach (i; 0..inParams.length)
 		{
-			if(inParams[i].type != typeid(typeof(null)))
+			if(!inParams[i].type.tideq(typeid(typeof(null))))
 				continue;
 			size_t bn = i/8;
 			size_t bb = i%8;
@@ -108,7 +117,7 @@ package struct ProtocolPrepared
 			enum SIGNED    = 0;
 			if (psa[i].chunkSize)
 				longData= true;
-			if (inParams[i].type == typeid(typeof(null)))
+			if (inParams[i].type.tideq(typeid(typeof(null))))
 			{
 				types[ct++] = SQLType.NULL;
 				types[ct++] = SIGNED;

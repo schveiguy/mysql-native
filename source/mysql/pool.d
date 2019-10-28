@@ -99,7 +99,8 @@ version(IncludeMySQLPool)
 			string m_database;
 			ushort m_port;
 			SvrCapFlags m_capFlags;
-			void delegate(Connection) m_onNewConnection;
+                        alias NewConnectionDelegate = void delegate(Connection) @safe;
+			NewConnectionDelegate m_onNewConnection;
 			ConnectionPool!Connection m_pool;
 			PreparedRegistrations!PreparedInfo preparedRegistrations;
 
@@ -109,6 +110,7 @@ version(IncludeMySQLPool)
 			}
 
 		}
+                @safe:
 
 		/// Sets up a connection pool with the provided connection settings.
 		///
@@ -117,7 +119,7 @@ version(IncludeMySQLPool)
 		this(string host, string user, string password, string database,
 			ushort port = 3306, uint maxConcurrent = (uint).max,
 			SvrCapFlags capFlags = defaultClientFlags,
-			void delegate(Connection) onNewConnection = null)
+			NewConnectionDelegate onNewConnection = null)
 		{
 			m_host = host;
 			m_user = user;
@@ -131,34 +133,34 @@ version(IncludeMySQLPool)
 
 		///ditto
 		this(string host, string user, string password, string database,
-			ushort port, SvrCapFlags capFlags, void delegate(Connection) onNewConnection = null)
+			ushort port, SvrCapFlags capFlags, NewConnectionDelegate onNewConnection = null)
 		{
 			this(host, user, password, database, port, (uint).max, capFlags, onNewConnection);
 		}
 
 		///ditto
 		this(string host, string user, string password, string database,
-			ushort port, void delegate(Connection) onNewConnection)
+			ushort port, NewConnectionDelegate onNewConnection)
 		{
 			this(host, user, password, database, port, (uint).max, defaultClientFlags, onNewConnection);
 		}
 
 		///ditto
 		this(string connStr, uint maxConcurrent = (uint).max, SvrCapFlags capFlags = defaultClientFlags,
-			void delegate(Connection) onNewConnection = null)
+			NewConnectionDelegate onNewConnection = null)
 		{
 			auto parts = Connection.parseConnectionString(connStr);
 			this(parts[0], parts[1], parts[2], parts[3], to!ushort(parts[4]), capFlags, onNewConnection);
 		}
 
 		///ditto
-		this(string connStr, SvrCapFlags capFlags, void delegate(Connection) onNewConnection = null)
+		this(string connStr, SvrCapFlags capFlags, NewConnectionDelegate onNewConnection = null)
 		{
 			this(connStr, (uint).max, capFlags, onNewConnection);
 		}
 
 		///ditto
-		this(string connStr, void delegate(Connection) onNewConnection)
+		this(string connStr, NewConnectionDelegate onNewConnection)
 		{
 			this(connStr, (uint).max, defaultClientFlags, onNewConnection);
 		}
@@ -209,7 +211,7 @@ version(IncludeMySQLPool)
 			}
 		}
 
-		private Connection createConnection()
+		private Connection createConnection() @safe
 		{
 			auto conn = new Connection(m_host, m_user, m_password, m_database, m_port, m_capFlags);
 
@@ -221,13 +223,13 @@ version(IncludeMySQLPool)
 
 		/// Get/set a callback delegate to be run every time a new connection
 		/// is created.
-		@property void onNewConnection(void delegate(Connection) onNewConnection)
+		@property void onNewConnection(NewConnectionDelegate onNewConnection)
 		{
 			m_onNewConnection = onNewConnection;
 		}
 
 		///ditto
-		@property void delegate(Connection) onNewConnection()
+		@property void delegate(Connection) @safe onNewConnection()
 		{
 			return m_onNewConnection;
 		}

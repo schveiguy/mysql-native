@@ -13,6 +13,8 @@ import mysql.protocol.extra_types;
 import mysql.protocol.sockets;
 public import mysql.protocol.packet_helpers;
 
+@safe:
+
 void enforcePacketOK(string file = __FILE__, size_t line = __LINE__)(OKErrorPacket okp)
 {
 	enforce(!okp.error, new MYXReceived(okp, file, line));
