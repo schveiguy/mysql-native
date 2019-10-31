@@ -1,4 +1,4 @@
-﻿/// Internal - Helper functions for the communication protocol.
+/// Internal - Helper functions for the communication protocol.
 module mysql.protocol.packet_helpers;
 
 import std.algorithm;
@@ -998,12 +998,12 @@ body
 	return t;
 }
 
-ubyte[] packLCS(void[] a) pure nothrow
+ubyte[] packLCS(const(void)[] a) pure nothrow
 {
 	size_t offset;
 	ubyte[] t = packLength(a.length, offset);
 	if (t[0])
-		t[offset..$] = (cast(ubyte[]) a)[0..$];
+		t[offset..$] = (cast(const(ubyte)[]) a)[0..$];
 	return t;
 }
 

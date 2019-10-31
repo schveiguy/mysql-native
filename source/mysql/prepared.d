@@ -1,4 +1,4 @@
-﻿/// Use a DB via SQL prepared statements.
+/// Use a DB via SQL prepared statements.
 module mysql.prepared;
 
 import std.exception;
@@ -29,11 +29,11 @@ then the chunk will be assumed to be the last one.
 struct ParameterSpecialization
 {
 	import mysql.protocol.constants;
-	
+
 	size_t pIndex;    //parameter number 0 - number of params-1
 	SQLType type = SQLType.INFER_FROM_D_TYPE;
 	uint chunkSize; /// In bytes
-	uint delegate(ubyte[]) chunkDelegate;
+	uint delegate(ubyte[]) @safe chunkDelegate;
 }
 ///ditto
 alias PSN = ParameterSpecialization;
@@ -177,11 +177,11 @@ package:
 	{
 		return ExecQueryImplInfo(true, null, statementId, _headers, _inParams, _psa);
 	}
-	
+
 public:
 	/++
 	Constructor. You probably want `mysql.connection.prepare` instead of this.
- 	
+
 	Call `mysqln.connection.prepare` instead of this, unless you are creating
 	your own transport bypassing `mysql.connection.Connection` entirely.
 	The prepared statement must be registered on the server BEFORE this is
@@ -223,7 +223,7 @@ public:
 
 	The value may, but doesn't have to be, wrapped in a Variant. If so,
 	null is handled correctly.
-	
+
 	The value may, but doesn't have to be, a pointer to the desired value.
 
 	The value may, but doesn't have to be, wrapped in a Nullable!T. If so,
@@ -234,7 +234,7 @@ public:
 	Parameter specializations (ie, for chunked transfer) can be added if required.
 	If you wish to use chunked transfer (via `psn`), note that you must supply
 	a dummy value for `val` that's typed `ubyte[]`. For example: `cast(ubyte[])[]`.
-	
+
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params: index = The zero based index
@@ -314,10 +314,10 @@ public:
 
 	/++
 	Bind a tuple of D variables to the parameters of a prepared statement.
-	
+
 	You can use this method to bind a set of variables if you don't need any specialization,
 	that is chunked transfer is not neccessary.
-	
+
 	The tuple must match the required number of parameters, and it is the programmer's
 	responsibility to ensure that they are of appropriate types.
 
@@ -334,10 +334,10 @@ public:
 
 	/++
 	Bind a Variant[] as the parameters of a prepared statement.
-	
+
 	You can use this method to bind a set of variables in Variant form to
 	the parameters of a prepared statement.
-	
+
 	Parameter specializations (ie, for chunked transfer) can be added if required.
 	If you wish to use chunked transfer (via `psn`), note that you must supply
 	a dummy value for `val` that's typed `ubyte[]`. For example: `cast(ubyte[])[]`.
@@ -389,7 +389,7 @@ public:
 
 	/++
 	Sets a prepared statement parameter to NULL.
-	
+
 	This is here mainly for legacy reasons. You can set a field to null
 	simply by saying `prepared.setArg(index, null);`
 
@@ -491,7 +491,7 @@ public:
 			`a` INTEGER NOT NULL AUTO_INCREMENT,
 			PRIMARY KEY (a)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-		
+
 		auto stmt = cn.prepare("INSERT INTO `testPreparedLastInsertID` VALUES()");
 		cn.exec(stmt);
 		assert(stmt.lastInsertID == 1);
@@ -547,16 +547,16 @@ package struct PreparedRegistrations(Payload)
 	to factor out common functionality needed by both `Connection` and `MySQLPool`.
 	+/
 	Payload[const(char[])] directLookup;
-	
+
 	/// Returns null if not found
 	Nullable!Payload opIndex(const(char[]) sql) pure nothrow
 	{
 		Nullable!Payload result;
-		
+
 		auto pInfo = sql in directLookup;
 		if(pInfo)
 			result = *pInfo;
-		
+
 		return result;
 	}
 
@@ -582,7 +582,7 @@ package struct PreparedRegistrations(Payload)
 	{
 		setQueuedForRelease(sql, false);
 	}
-	
+
 	/// Queues all prepared statements for release.
 	void queueAllForRelease()
 	{
@@ -638,7 +638,7 @@ debug(MYSQLN_TESTS)
 	struct TestPreparedRegistrationsBad4 { bool queuedForRelease = true; }
 	struct TestPreparedRegistrationsGood1 { bool queuedForRelease = false; }
 	struct TestPreparedRegistrationsGood2 { bool queuedForRelease = false; const(char)[] id; }
-	
+
 	static assert(!isPreparedRegistrationsPayload!int);
 	static assert(!isPreparedRegistrationsPayload!bool);
 	static assert(!isPreparedRegistrationsPayload!TestPreparedRegistrationsBad1);
@@ -688,7 +688,7 @@ debug(MYSQLN_TESTS)
 		assert(pr["1"] == TestPreparedRegistrationsGood2(false, "1"));
 		assert(pr["2"] == TestPreparedRegistrationsGood2(true,  "2"));
 		assert(pr["3"] == TestPreparedRegistrationsGood2(false, "3"));
-		
+
 		pr.queueForRelease("3");
 		assert(pr.directLookup.keys.length == 3);
 		assert(pr["1"] == TestPreparedRegistrationsGood2(false, "1"));
@@ -733,7 +733,7 @@ debug(MYSQLN_TESTS)
 		resetData(false, true, false);
 		pr.clear();
 		assert(pr.directLookup.keys.length == 0);
-		
+
 		// Test registerIfNeeded
 		auto doRegister(const(char[]) sql) { return TestPreparedRegistrationsGood2(false, sql); }
 		pr.registerIfNeeded("1", &doRegister);

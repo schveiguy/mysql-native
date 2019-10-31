@@ -1,4 +1,4 @@
-﻿/// Exceptions defined by mysql-native.
+/// Exceptions defined by mysql-native.
 module mysql.exceptions;
 
 import std.algorithm;
@@ -34,7 +34,7 @@ class MYXReceived: MYX
 		this(okp.message, okp.serverStatus, okp.sqlState, file, line);
 	}
 
-	this(string msg, ushort errorCode, char[5] sqlState, string file, size_t line) 
+	this(string msg, ushort errorCode, char[5] sqlState, string file, size_t line)
 	{
 		this.errorCode = errorCode;
 		this.sqlState = sqlState;
@@ -50,7 +50,8 @@ if you receive this.)
 +/
 class MYXProtocol: MYX
 {
-	this(string msg, string file, size_t line) pure
+@safe pure:
+	this(string msg, string file, size_t line)
 	{
 		super(msg, file, line);
 	}
