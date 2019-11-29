@@ -1,4 +1,4 @@
-﻿/++
+/++
 Package mysql.test contains integration and regression tests, not unittests.
 Unittests (including regression unittests) are located together with the
 units they test.
@@ -39,17 +39,18 @@ version(DoCoreTests)
 	import std.conv;
 	import std.datetime;
 
+	@safe:
 	private @property string testConnectionStrFile()
 	{
 		import std.file, std.path;
-		
+
 		static string cached;
 		if(!cached)
 			cached = buildPath(thisExePath.dirName.dirName, "testConnectionStr.txt");
 
 		return cached;
 	}
-	
+
 	@property string testConnectionStr()
 	{
 		import std.file, std.string;
@@ -64,7 +65,7 @@ version(DoCoreTests)
 					testConnectionStrFile,
 					"host=localhost;port=3306;user=mysqln_test;pwd=pass123;db=mysqln_testdb"
 				);
-				
+
 				import std.stdio;
 				writeln(
 					"Connection string file for tests wasn't found, so a default "~
@@ -74,11 +75,11 @@ version(DoCoreTests)
 				writeln(testConnectionStrFile);
 				assert(false, "Halting so the user can check connection string settings.");
 			}
-			
-			cached = cast(string) std.file.read(testConnectionStrFile);
+
+			cached = std.file.readText(testConnectionStrFile);
 			cached = cached.strip();
 		}
-		
+
 		return cached;
 	}
 
@@ -93,7 +94,7 @@ version(DoCoreTests)
 	{
 		auto result = cn.queryValue(query);
 		assert(!result.isNull);
-		
+
 		// Timestamp is a bit special as it's converted to a DateTime when
 		// returning from MySQL to avoid having to use a mysql specific type.
 		static if(is(T == DateTime) && is(U == Timestamp))

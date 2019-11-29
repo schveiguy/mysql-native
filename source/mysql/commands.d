@@ -52,6 +52,8 @@ struct ColumnSpecialization
 ///ditto
 alias CSN = ColumnSpecialization;
 
+@safe:
+
 @("columnSpecial")
 debug(MYSQLN_TESTS)
 unittest
@@ -70,7 +72,7 @@ unittest
 	immutable totalSize = 1000; // Deliberately not a multiple of chunkSize below
 	auto alph = cast(const(ubyte)[]) "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	auto data = alph.cycle.take(totalSize).array;
-	cn.exec("INSERT INTO `columnSpecial` VALUES (\""~(cast(string)data)~"\")");
+	cn.exec("INSERT INTO `columnSpecial` VALUES (\""~(cast(const(char)[])data)~"\")");
 
 	// Common stuff
 	int chunkSize;
@@ -199,7 +201,7 @@ ulong exec(Connection conn, const(char[]) sql)
 }
 ///ditto
 ulong exec(T...)(Connection conn, const(char[]) sql, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]))
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -207,7 +209,7 @@ ulong exec(T...)(Connection conn, const(char[]) sql, T args)
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-ulong exec(Connection conn, const(char[]) sql, Variant[] args)
+ulong exec(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -231,14 +233,14 @@ ulong exec(Connection conn, ref Prepared prepared)
 }
 ///ditto
 ulong exec(T...)(Connection conn, ref Prepared prepared, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]))
 {
 	prepared.setArgs(args);
 	return exec(conn, prepared);
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-ulong exec(Connection conn, ref Prepared prepared, Variant[] args)
+ulong exec(Connection conn, ref Prepared prepared, Variant[] args) @system
 {
 	prepared.setArgs(args);
 	return exec(conn, prepared);
@@ -341,7 +343,7 @@ ResultRange query(Connection conn, const(char[]) sql, ColumnSpecialization[] csa
 }
 ///ditto
 ResultRange query(T...)(Connection conn, const(char[]) sql, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -349,7 +351,7 @@ ResultRange query(T...)(Connection conn, const(char[]) sql, T args)
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-ResultRange query(Connection conn, const(char[]) sql, Variant[] args)
+ResultRange query(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -374,14 +376,14 @@ ResultRange query(Connection conn, ref Prepared prepared)
 }
 ///ditto
 ResultRange query(T...)(Connection conn, ref Prepared prepared, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	prepared.setArgs(args);
 	return query(conn, prepared);
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-ResultRange query(Connection conn, ref Prepared prepared, Variant[] args)
+ResultRange query(Connection conn, ref Prepared prepared, Variant[] args) @system
 {
 	prepared.setArgs(args);
 	return query(conn, prepared);
@@ -414,7 +416,7 @@ package ResultRange queryImpl(ColumnSpecialization[] csa,
 		conn._rsh.addSpecializations(csa);
 
 	conn._headersPending = false;
-	return ResultRange(SafeResultRange(conn, conn._rsh, conn._rsh.fieldNames));
+	return ResultRange(conn, conn._rsh, conn._rsh.fieldNames);
 }
 
 /++
@@ -487,7 +489,7 @@ Nullable!Row queryRow(Connection conn, const(char[]) sql, ColumnSpecialization[]
 }
 ///ditto
 Nullable!Row queryRow(T...)(Connection conn, const(char[]) sql, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -502,7 +504,7 @@ Nullable!Row queryRow(Connection conn, const(char[]) sql, MySQLVal[] args)
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-Nullable!Row queryRow(Connection conn, const(char[]) sql, Variant[] args)
+Nullable!Row queryRow(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -519,14 +521,14 @@ Nullable!Row queryRow(Connection conn, ref Prepared prepared)
 }
 ///ditto
 Nullable!Row queryRow(T...)(Connection conn, ref Prepared prepared, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	prepared.setArgs(args);
 	return queryRow(conn, prepared);
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-Nullable!Row queryRow(Connection conn, ref Prepared prepared, Variant[] args)
+Nullable!Row queryRow(Connection conn, ref Prepared prepared, Variant[] args) @system
 {
 	prepared.setArgs(args);
 	return queryRow(conn, prepared);
@@ -615,15 +617,17 @@ package void queryRowTupleImpl(T...)(Connection conn, ExecQueryImplInfo info, re
 	ulong ra;
 	enforce!MYXNoResultRecieved(execQueryImpl(conn, info, ra));
 
-	Row rr = conn.getNextRow();
+	auto rr = conn.getNextRow();
 	/+if (!rr._valid)   // The result set was empty - not a crime.
 		return;+/
 	enforce!MYX(rr._values.length == args.length, "Result column count does not match the target tuple.");
 	foreach (size_t i, dummy; args)
 	{
-		enforce!MYX(typeid(args[i]).toString() == rr._values[i].type.toString(),
+		import taggedalgebraic.taggedalgebraic : get, hasType;
+		enforce!MYX(rr._values[i].hasType!(T[i]),
 			"Tuple "~to!string(i)~" type and column type are not compatible.");
-		args[i] = rr._values[i].get!(typeof(args[i]));
+		// use taggedalgebraic get to avoid extra calls.
+		args[i] = get!(T[i])(rr._values[i]);
 	}
 	// If there were more rows, flush them away
 	// Question: Should I check in purgeResult and throw if there were - it's very inefficient to
@@ -726,7 +730,7 @@ Nullable!MySQLVal queryValue(Connection conn, const(char[]) sql, ColumnSpecializ
 }
 ///ditto
 Nullable!MySQLVal queryValue(T...)(Connection conn, const(char[]) sql, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -741,7 +745,7 @@ Nullable!MySQLVal queryValue(Connection conn, const(char[]) sql, MySQLVal[] args
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-Nullable!MySQLVal queryValue(Connection conn, const(char[]) sql, Variant[] args)
+Nullable!MySQLVal queryValue(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -758,7 +762,7 @@ Nullable!MySQLVal queryValue(Connection conn, ref Prepared prepared)
 }
 ///ditto
 Nullable!MySQLVal queryValue(T...)(Connection conn, ref Prepared prepared, T args)
-	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	prepared.setArgs(args);
 	return queryValue(conn, prepared);
@@ -771,7 +775,7 @@ Nullable!MySQLVal queryValue(Connection conn, ref Prepared prepared, MySQLVal[] 
 }
 ///ditto
 deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
-Nullable!MySQLVal queryValue(Connection conn, ref Prepared prepared, Variant[] args)
+Nullable!MySQLVal queryValue(Connection conn, ref Prepared prepared, Variant[] args) @system
 {
 	prepared.setArgs(args);
 	return queryValue(conn, prepared);
@@ -795,7 +799,7 @@ package Nullable!MySQLVal queryValueImpl(ColumnSpecialization[] csa, Connection 
 		return Nullable!MySQLVal();
 	else
 	{
-		auto row = results.safe.front;
+		auto row = results.front;
 		results.close();
 
 		if(row.length == 0)
@@ -827,7 +831,7 @@ unittest
 	// exec: const(char[]) sql
 	assert(cn.exec("INSERT INTO `execOverloads` VALUES (1, \"aa\")") == 1);
 	assert(cn.exec(prepareSQL, 2, "bb") == 1);
-	assert(cn.exec(prepareSQL, [Variant(3), Variant("cc")]) == 1);
+	assert(cn.exec(prepareSQL, [MySQLVal(3), MySQLVal("cc")]) == 1);
 
 	// exec: prepared sql
 	auto prepared = cn.prepare(prepareSQL);
@@ -838,7 +842,7 @@ unittest
 	assert(prepared.getArg(0) == 5);
 	assert(prepared.getArg(1) == "ee");
 
-	assert(cn.exec(prepared, [Variant(6), Variant("ff")]) == 1);
+	assert(cn.exec(prepared, [MySQLVal(6), MySQLVal("ff")]) == 1);
 	assert(prepared.getArg(0) == 6);
 	assert(prepared.getArg(1) == "ff");
 
@@ -912,7 +916,7 @@ unittest
 		assert(rows[0][0] == 2);
 		assert(rows[0][1] == "bb");
 
-		rows = cn.query(prepareSQL, [Variant(3), Variant("cc")]).array;
+		rows = cn.query(prepareSQL, [MySQLVal(3), MySQLVal("cc")]).array;
 		assert(rows.length == 1);
 		assert(rows[0].length == 2);
 		assert(rows[0][0] == 3);
@@ -933,7 +937,7 @@ unittest
 		assert(rows[0][0] == 2);
 		assert(rows[0][1] == "bb");
 
-		rows = cn.query(prepared, [Variant(3), Variant("cc")]).array;
+		rows = cn.query(prepared, [MySQLVal(3), MySQLVal("cc")]).array;
 		assert(rows.length == 1);
 		assert(rows[0].length == 2);
 		assert(rows[0][0] == 3);
@@ -951,23 +955,25 @@ unittest
 
 	// Test queryRow
 	{
-		Nullable!Row row;
+		Nullable!Row nrow;
+		// avoid always saying nrow.get
+		Row row() { return nrow.get; }
 
 		// String sql
-		row = cn.queryRow("SELECT * FROM `queryOverloads` WHERE `i`=1 AND `s`=\"aa\"");
-		assert(!row.isNull);
+		nrow = cn.queryRow("SELECT * FROM `queryOverloads` WHERE `i`=1 AND `s`=\"aa\"");
+		assert(!nrow.isNull);
 		assert(row.length == 2);
 		assert(row[0] == 1);
 		assert(row[1] == "aa");
 
-		row = cn.queryRow(prepareSQL, 2, "bb");
-		assert(!row.isNull);
+		nrow = cn.queryRow(prepareSQL, 2, "bb");
+		assert(!nrow.isNull);
 		assert(row.length == 2);
 		assert(row[0] == 2);
 		assert(row[1] == "bb");
 
-		row = cn.queryRow(prepareSQL, [Variant(3), Variant("cc")]);
-		assert(!row.isNull);
+		nrow = cn.queryRow(prepareSQL, [MySQLVal(3), MySQLVal("cc")]);
+		assert(!nrow.isNull);
 		assert(row.length == 2);
 		assert(row[0] == 3);
 		assert(row[1] == "cc");
@@ -975,20 +981,20 @@ unittest
 		// Prepared sql
 		auto prepared = cn.prepare(prepareSQL);
 		prepared.setArgs(1, "aa");
-		row = cn.queryRow(prepared);
-		assert(!row.isNull);
+		nrow = cn.queryRow(prepared);
+		assert(!nrow.isNull);
 		assert(row.length == 2);
 		assert(row[0] == 1);
 		assert(row[1] == "aa");
 
-		row = cn.queryRow(prepared, 2, "bb");
-		assert(!row.isNull);
+		nrow = cn.queryRow(prepared, 2, "bb");
+		assert(!nrow.isNull);
 		assert(row.length == 2);
 		assert(row[0] == 2);
 		assert(row[1] == "bb");
 
-		row = cn.queryRow(prepared, [Variant(3), Variant("cc")]);
-		assert(!row.isNull);
+		nrow = cn.queryRow(prepared, [MySQLVal(3), MySQLVal("cc")]);
+		assert(!nrow.isNull);
 		assert(row.length == 2);
 		assert(row[0] == 3);
 		assert(row[1] == "cc");
@@ -996,8 +1002,8 @@ unittest
 		// BCPrepared sql
 		auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
 		bcPrepared.setArgs(1, "aa");
-		row = cn.queryRow(bcPrepared);
-		assert(!row.isNull);
+		nrow = cn.queryRow(bcPrepared);
+		assert(!nrow.isNull);
 		assert(row.length == 2);
 		assert(row[0] == 1);
 		assert(row[1] == "aa");
@@ -1030,22 +1036,22 @@ unittest
 
 	// Test queryValue
 	{
-		Nullable!Variant value;
+		Nullable!MySQLVal value;
 
 		// String sql
 		value = cn.queryValue("SELECT * FROM `queryOverloads` WHERE `i`=1 AND `s`=\"aa\"");
 		assert(!value.isNull);
-		assert(value.get.type != typeid(typeof(null)));
+		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 1);
 
 		value = cn.queryValue(prepareSQL, 2, "bb");
 		assert(!value.isNull);
-		assert(value.get.type != typeid(typeof(null)));
+		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 2);
 
-		value = cn.queryValue(prepareSQL, [Variant(3), Variant("cc")]);
+		value = cn.queryValue(prepareSQL, [MySQLVal(3), MySQLVal("cc")]);
 		assert(!value.isNull);
-		assert(value.get.type != typeid(typeof(null)));
+		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 3);
 
 		// Prepared sql
@@ -1053,17 +1059,17 @@ unittest
 		prepared.setArgs(1, "aa");
 		value = cn.queryValue(prepared);
 		assert(!value.isNull);
-		assert(value.get.type != typeid(typeof(null)));
+		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 1);
 
 		value = cn.queryValue(prepared, 2, "bb");
 		assert(!value.isNull);
-		assert(value.get.type != typeid(typeof(null)));
+		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 2);
 
-		value = cn.queryValue(prepared, [Variant(3), Variant("cc")]);
+		value = cn.queryValue(prepared, [MySQLVal(3), MySQLVal("cc")]);
 		assert(!value.isNull);
-		assert(value.get.type != typeid(typeof(null)));
+		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 3);
 
 		// BCPrepared sql
@@ -1071,7 +1077,7 @@ unittest
 		bcPrepared.setArgs(1, "aa");
 		value = cn.queryValue(bcPrepared);
 		assert(!value.isNull);
-		assert(value.get.type != typeid(typeof(null)));
+		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 1);
 	}
 }

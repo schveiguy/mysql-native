@@ -1,4 +1,4 @@
-﻿/++
+/++
 This contains regression tests for the issues at:
 https://github.com/rejectedsoftware/mysql-native/issues
 
@@ -41,7 +41,7 @@ unittest
 		`date` DATE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8"
 	);
-	
+
 	cn.exec("INSERT INTO `issue24` (`bit`, `date`) VALUES (1, '1970-01-01')");
 	cn.exec("INSERT INTO `issue24` (`bit`, `date`) VALUES (0, '1950-04-24')");
 
@@ -94,14 +94,14 @@ unittest
 		`blob` BLOB
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8"
 	);
-	
+
 	cn.exec("INSERT INTO `issue33` (`text`, `blob`) VALUES ('hello', 'world')");
 
 	auto stmt = cn.prepare("SELECT `text`, `blob` FROM `issue33`");
 	auto results = cn.query(stmt).array;
 	assert(results.length == 1);
 	auto pText = results[0][0].peek!string();
-	auto pBlob = results[0][1].peek!(ubyte[])();
+	auto pBlob = results[0][1].peek!(const(ubyte)[])();
 	assert(pText);
 	assert(pBlob);
 	assert(*pText == "hello");
@@ -164,7 +164,7 @@ unittest
 	mixin(scopedCn);
 	cn.exec("DROP TABLE IF EXISTS `issue56`");
 	cn.exec("CREATE TABLE `issue56` (a datetime DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-	
+
 	cn.exec("INSERT INTO `issue56` VALUES
 		('2015-03-28 00:00:00')
 		,('2015-03-29 00:00:00')
@@ -233,11 +233,11 @@ debug(MYSQLN_TESTS)
 unittest
 {
 	mixin(scopedCn);
-	
+
 	cn.exec("DROP TABLE IF EXISTS `issue133`");
 	cn.exec("CREATE TABLE `issue133` (a BIGINT UNSIGNED NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 	cn.exec("INSERT INTO `issue133` (a) VALUES (NULL)");
-	
+
 	auto prep = cn.prepare("SELECT a FROM `issue133`");
 	auto value = cn.queryValue(prep);
 
@@ -262,7 +262,7 @@ unittest
 
 		result.close();
 	}
-	
+
 	// Should not throw server packet out of order
 	{
 		ResultRange result;
@@ -311,7 +311,7 @@ unittest
 	assert(cn1 != cn2);
 }
 
-// 
+//
 @("timestamp")
 debug(MYSQLN_TESTS)
 unittest
@@ -321,7 +321,7 @@ unittest
 
 	cn.exec("DROP TABLE IF EXISTS `issueX`");
 	cn.exec("CREATE TABLE `issueX` (a TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-	
+
 	auto stmt = cn.prepare("INSERT INTO `issueX` (`a`) VALUES (?)");
 	stmt.setArgs(Timestamp(2011_11_11_12_20_02UL));
 	cn.exec(stmt);

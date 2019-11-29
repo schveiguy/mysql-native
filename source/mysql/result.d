@@ -12,7 +12,7 @@ import mysql.exceptions;
 import mysql.protocol.comms;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
-import mysql.types;
+public import mysql.types;
 
 /++
 A struct to represent a single row of a result set.
@@ -28,7 +28,7 @@ I have been agitating for some kind of null indicator that can be set for a
 Variant without destroying its inherent type information. If this were the
 case, then the bool array could disappear.
 +/
-struct SafeRow
+struct Row
 {
 	import mysql.connection;
 
@@ -177,13 +177,20 @@ public:
 }
 
 /// ditto
-struct Row
+deprecated("Usage of Variant is deprecated. Please switch code to use safe MySQLVal types")
+UnsafeRow unsafe(Row r)
 {
-	SafeRow safe;
+	return UnsafeRow(r);
+}
+
+/// ditto
+struct UnsafeRow
+{
+	Row safe;
 	alias safe this;
-	deprecated("Variant support is deprecated. Please use SafeRow instead of Row.")
+	deprecated("Variant support is deprecated. Please switch to using MySQLVal")
 	Variant opIndex(size_t idx) const {
-		return _toVar(safe[idx]);
+		return safe[idx].asVariant;
 	}
 }
 
@@ -217,13 +224,13 @@ ResultRange oneAtATime = myConnection.query("SELECT * from myTable");
 Row[]       allAtOnce  = myConnection.query("SELECT * from myTable").array;
 ---
 +/
-struct SafeResultRange
+struct ResultRange
 {
 private:
 @safe:
 	Connection       _con;
 	ResultSetHeaders _rsh;
-	SafeRow          _row; // current row
+	Row              _row; // current row
 	string[]         _colNames;
 	size_t[string]   _colNameIndicies;
 	ulong            _numRowsFetched;
@@ -273,7 +280,7 @@ public:
 	/++
 	Gets the current row
 	+/
-	@property inout(SafeRow) front() pure inout
+	@property inout(Row) front() pure inout
 	{
 		ensureValid();
 		enforce!MYX(!empty, "Attempted 'front' on exhausted result sequence.");
@@ -338,20 +345,28 @@ public:
 	@property ulong rowCount() const pure nothrow { return _numRowsFetched; }
 }
 
-struct ResultRange
+/// ditto
+deprecated("Usage of Variant is deprecated. Please switch code to use safe MySQLVal types")
+auto unsafe(ResultRange r)
 {
-	SafeResultRange safe;
-	alias safe this;
-	inout(Row) front() inout { return inout(Row)(safe.front); }
+	return UnsafeResultRange(r);
+}
 
-	deprecated("Usage of Variant is deprecated. Use safe member to get a SafeResultRange")
+/// ditto
+struct UnsafeResultRange
+{
+	ResultRange safe;
+	alias safe this;
+	inout(UnsafeRow) front() inout { return inout(UnsafeRow)(safe.front); }
+
+	deprecated("Variant support is deprecated. Please switch to using MySQLVal")
 	Variant[string] asAA()
 	{
 		ensureValid();
 		enforce!MYX(!safe.empty, "Attempted 'front' on exhausted result sequence.");
 		Variant[string] aa;
 		foreach (size_t i, string s; _colNames)
-			aa[s] = _toVar(_row._values[i]);
+			aa[s] = _row._values[i].asVariant;
 		return aa;
 	}
 }

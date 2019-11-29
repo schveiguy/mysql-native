@@ -149,6 +149,7 @@ INSERT/UPDATE/CREATE/etc, use `mysql.commands.exec`.
 +/
 struct Prepared
 {
+	@safe:
 private:
 	const(char)[] _sql;
 
@@ -160,7 +161,7 @@ package:
 	ColumnSpecialization[] _columnSpecials;
 	ulong _lastInsertID;
 
-	ExecQueryImplInfo getExecQueryImplInfo(uint statementId) @safe
+	ExecQueryImplInfo getExecQueryImplInfo(uint statementId)
 	{
 		return ExecQueryImplInfo(true, null, statementId, _headers, _inParams, _psa);
 	}
@@ -183,7 +184,7 @@ public:
 	including parameter descriptions, and result set field descriptions,
 	followed by an EOF packet.
 	+/
-	this(const(char[]) sql, PreparedStmtHeaders headers, ushort numParams) @safe
+	this(const(char[]) sql, PreparedStmtHeaders headers, ushort numParams)
 	{
 		this._sql        = sql;
 		this._headers    = headers;
@@ -241,7 +242,7 @@ public:
 	}
 
 	deprecated("Using Variant is deprecated, please use MySQLVal instead")
-	void setArg(T)(size_t index, T val, ParameterSpecialization psn = PSN(0, SQLType.INFER_FROM_D_TYPE, 0, null))
+	void setArg(T)(size_t index, T val, ParameterSpecialization psn = PSN(0, SQLType.INFER_FROM_D_TYPE, 0, null)) @system
 		if(is(T == Variant))
 	{
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
@@ -349,7 +350,7 @@ public:
 	args = External list of MySQLVal to be used as parameters
 	psnList = Any required specializations
 	+/
-	void setArgs(MySQLVal[] args, ParameterSpecialization[] psnList=null) @safe
+	void setArgs(MySQLVal[] args, ParameterSpecialization[] psnList=null)
 	{
 		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
 		_inParams[] = args[];
@@ -362,7 +363,7 @@ public:
 
 	/// ditto
 	deprecated("Using Variant is deprecated, please use MySQLVal instead")
-	void setArgs(Variant[] args, ParameterSpecialization[] psnList=null)
+	void setArgs(Variant[] args, ParameterSpecialization[] psnList=null) @system
 	{
 		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
 		foreach(i, ref arg; args)
@@ -381,23 +382,22 @@ public:
 
 	Params: index = The zero based index
 
-	Note: The Variant version of this function, getArg, is deprecated.
-	safeGetArg will eventually be renamed getArg when it is removed.
+	Note: The type of getArg's return is now MySQLVal. As a stop-gap measure,
+		mysql-native provides the vGetArg version. This version will be removed
+		in a future update.
 	+/
-	deprecated("Using Variant is deprecated, please use safeGetArg instead")
-	Variant getArg(size_t index)
-	{
-		enforce!MYX(index < _numParams, "Parameter index out of range.");
-
-		// convert to Variant.
-		return _toVar(_inParams[index]);
-	}
-
-	/// ditto
-	MySQLVal safeGetArg(size_t index) @safe
+	MySQLVal getArg(size_t index)
 	{
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
 		return _inParams[index];
+	}
+
+	/// ditto
+	deprecated("Using Variant is deprecated, please use getArg instead")
+	Variant vGetArg(size_t index) @system
+	{
+		// convert to Variant.
+		return getArg(index).asVariant;
 	}
 
 	/++
@@ -410,13 +410,13 @@ public:
 
 	Params: index = The zero based index
 	+/
-	void setNullArg(size_t index) @safe
+	void setNullArg(size_t index)
 	{
 		setArg(index, null);
 	}
 
 	/// Gets the SQL command for this prepared statement.
-	const(char)[] sql() pure @safe const
+	const(char)[] sql() pure const
 	{
 		return _sql;
 	}
@@ -444,14 +444,14 @@ public:
 			Nullable!int nullableInt;
 			nullableInt.nullify();
 			preparedInsert.setArg(0, nullableInt);
-			assert(preparedInsert.getArg(0).type == typeid(typeof(null)));
+			assert(preparedInsert.getArg(0).kind == MySQLVal.Kind.Null);
 			nullableInt = 7;
 			preparedInsert.setArg(0, nullableInt);
 			assert(preparedInsert.getArg(0) == 7);
 
 			nullableInt.nullify();
 			preparedInsert.setArgs(nullableInt);
-			assert(preparedInsert.getArg(0).type == typeid(typeof(null)));
+			assert(preparedInsert.getArg(0).kind == MySQLVal.Kind.Null);
 			nullableInt = 7;
 			preparedInsert.setArgs(nullableInt);
 			assert(preparedInsert.getArg(0) == 7);
@@ -469,7 +469,7 @@ public:
 		assert(rs.length == 2);
 		assert(rs[0][0] == 5);
 		assert(rs[1].isNull(0));
-		assert(rs[1][0].type == typeid(typeof(null)));
+		assert(rs[1][0].kind == MySQLVal.Kind.Null);
 
 		preparedInsert.setArg(0, MySQLVal(null));
 		cn.exec(preparedInsert);
@@ -478,8 +478,8 @@ public:
 		assert(rs[0][0] == 5);
 		assert(rs[1].isNull(0));
 		assert(rs[2].isNull(0));
-		assert(rs[1][0].type == typeid(typeof(null)));
-		assert(rs[2][0].type == typeid(typeof(null)));
+		assert(rs[1][0].kind == MySQLVal.Kind.Null);
+		assert(rs[2][0].kind == MySQLVal.Kind.Null);
 	}
 
 	/// Gets the number of arguments this prepared statement expects to be passed in.

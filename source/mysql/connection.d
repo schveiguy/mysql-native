@@ -18,6 +18,9 @@ import mysql.protocol.packets;
 import mysql.protocol.sockets;
 import mysql.result;
 import mysql.types;
+
+@safe:
+
 debug(MYSQLN_TESTS)
 {
 	import mysql.test.common;

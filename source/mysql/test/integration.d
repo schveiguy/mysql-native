@@ -1,4 +1,4 @@
-﻿module mysql.test.integration;
+module mysql.test.integration;
 
 import std.algorithm;
 import std.conv;
@@ -23,6 +23,7 @@ import mysql.protocol.packets;
 import mysql.protocol.sockets;
 import mysql.result;
 import mysql.test.common;
+@safe:
 
 alias indexOf = std.string.indexOf; // Needed on DMD 2.064.2
 
@@ -115,7 +116,7 @@ debug(MYSQLN_TESTS)
 unittest
 {
 	import mysql.prepared;
-	
+
 	struct X
 	{
 		int a, b, c;
@@ -246,7 +247,7 @@ unittest
 	assert(rs[0][18] == "11234.4325", rs[0][18].toString());
 
 	stmt = cn.prepare("insert into basetest (intcol, stringcol) values(?, ?)");
-	Variant[] va;
+	MySQLVal[] va;
 	va.length = 2;
 	va[0] = 42;
 	va[1] = "The quick brown fox x";
@@ -259,7 +260,7 @@ unittest
 	}
 
 	stmt = cn.prepare("insert into basetest (intcol, stringcol) values(?, ?)");
-	//Variant[] va;
+	//MySQLVal[] va;
 	va.length = 2;
 	va[0] = 42;
 	va[1] = "The quick brown fox x";
@@ -279,7 +280,7 @@ unittest
 	assert(a == 42 && b == "The quick brown fox");
 
 	stmt = cn.prepare("select intcol, stringcol from basetest where bytecol=? limit 1");
-	Variant[] va2;
+	MySQLVal[] va2;
 	va2.length = 1;
 	va2[0] = cast(byte) -128;
 	stmt.setArgs(va2);
@@ -457,9 +458,9 @@ unittest
 			count++;
 	}
 	assert(count == 2);
-	
+
 	initBaseTestTables(cn);
-	
+
 	string[] tList = md.tables();
 	count = 0;
 	foreach (string t; tList)
@@ -477,7 +478,7 @@ unittest
 	See "COLUMN_DEFAULT" at:
 		https://mariadb.com/kb/en/library/information-schema-columns-table/
 	+/
-	
+
 	ColumnInfo[] ca = md.columns("basetest");
 	assert( ca[0].schema == schemaName && ca[0].table == "basetest" && ca[0].name == "boolcol" && ca[0].index == 0 &&
 			ca[0].nullable && ca[0].type == "bit" && ca[0].charsMax == -1 && ca[0].octetsMax == -1 &&
@@ -638,7 +639,7 @@ unittest
 	/+
 	// Commented out because leaving args unspecified is currently unsupported,
 	// and I'm not convinced it should be allowed.
-	
+
 	// Insert null - params defaults to null
 	{
 		cn.truncate("manytypes");
@@ -853,7 +854,7 @@ unittest
 	import mysql.prepared;
 	mixin(scopedCn);
 
-	void assertBasicTests(T, U)(string sqlType, U[] values ...)
+	void assertBasicTests(T, U)(string sqlType, U[] values ...) @safe
 	{
 		import std.array;
 		immutable tablename = "`basic_"~sqlType.replace(" ", "")~"`";
@@ -877,13 +878,13 @@ unittest
 		//assert(!cn.queryScalar(selectOneSql).hasValue);
 		auto x = cn.queryValue(selectOneSql);
 		assert(!x.isNull);
-		assert(x.get.type == typeid(typeof(null)));
+		assert(x.get.kind == MySQLVal.Kind.Null);
 
 		// NULL as bound param
 		auto inscmd = cn.prepare("INSERT INTO "~tablename~" VALUES (?)");
 		cn.exec("TRUNCATE "~tablename);
 
-		inscmd.setArgs([Variant(null)]);
+		inscmd.setArgs([MySQLVal(null)]);
 		okp = cn.exec(inscmd);
 		//assert(okp.affectedRows == 1, "value not inserted");
 		assert(okp == 1, "value not inserted");
@@ -891,7 +892,7 @@ unittest
 		//assert(!cn.queryScalar(selectOneSql).hasValue);
 		x = cn.queryValue(selectOneSql);
 		assert(!x.isNull);
-		assert(x.type == typeid(typeof(null)));
+		assert(x.get.kind == MySQLVal.Kind.Null);
 
 		// Values
 		void assertBasicTestsValue(T, U)(U val)
@@ -908,8 +909,11 @@ unittest
 		{
 			assertBasicTestsValue!(T)(value);
 			assertBasicTestsValue!(T)(cast(const(U))value);
-			assertBasicTestsValue!(T)(cast(immutable(U))value);
-			assertBasicTestsValue!(T)(cast(shared(immutable(U)))value);
+			assertBasicTestsValue!(T)((() @trusted => cast(immutable(U))value)());
+			// Note, shared(immutable(U)) is equivalent to immutable(U), so we
+			// are avoiding doing that test 2x.
+			static assert(is(shared(immutable(U)) == immutable(U)));
+			//assertBasicTestsValue!(T)(cast(shared(immutable(U)))value);
 		}
 	}
 
@@ -949,8 +953,8 @@ unittest
 	assertBasicTests!(ubyte[])("BLOB", "", "aoeu");
 	assertBasicTests!(ubyte[])("LONGBLOB", "", "aoeu");
 
-	assertBasicTests!(ubyte[])("TINYBLOB", cast(byte[])"", cast(byte[])"aoeu");
-	assertBasicTests!(ubyte[])("TINYBLOB", cast(char[])"", cast(char[])"aoeu");
+	assertBasicTests!(ubyte[])("TINYBLOB", cast(ubyte[])"".dup, cast(ubyte[])"aoeu".dup);
+	assertBasicTests!(ubyte[])("TINYBLOB", "".dup, "aoeu".dup);
 
 	assertBasicTests!Date("DATE", Date(2013, 10, 03));
 	assertBasicTests!DateTime("DATETIME", DateTime(2013, 10, 03, 12, 55, 35));
@@ -998,7 +1002,7 @@ unittest
 	immutable selectNoRowsSQL    = "SELECT * FROM `coupleTypes` WHERE s='no such match'";
 	auto prepared = cn.prepare(selectSQL);
 	auto preparedSelectNoRows = cn.prepare(selectNoRowsSQL);
-	
+
 	{
 		// Test query
 		ResultRange rseq = cn.query(selectSQL);
@@ -1099,7 +1103,7 @@ unittest
 	}
 
 	{
-		Nullable!Variant result;
+		Nullable!MySQLVal result;
 
 		// Test queryValue
 		result = cn.queryValue(selectSQL);
@@ -1186,7 +1190,7 @@ unittest
 			`name` VARCHAR(50)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 	}
-	
+
 	// Setup current working directory
 	auto saveDir = getcwd();
 	scope(exit)

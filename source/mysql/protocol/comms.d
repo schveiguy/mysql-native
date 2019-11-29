@@ -324,6 +324,20 @@ package struct ProtocolPrepared
 					vals[vcl..vcl+packed.length] = packed[];
 					vcl += packed.length;
 					break;
+				case CTextRef:
+					isRef = true; goto case;
+				case CText:
+					if (ext == SQLType.INFER_FROM_D_TYPE)
+						types[ct++] = SQLType.VARCHAR;
+					else
+						types[ct++] = cast(ubyte) ext;
+					types[ct++] = SIGNED;
+					const char[] ca = isRef? *v.kget!CTextRef : v.kget!CText;
+					ubyte[] packed = packLCS(ca);
+					reAlloc(packed.length);
+					vals[vcl..vcl+packed.length] = packed[];
+					vcl += packed.length;
+					break;
 				case BlobRef:
 					isRef = true; goto case;
 				case Blob:
@@ -794,7 +808,7 @@ package(mysql) ubyte[] makeToken(string password, ubyte[] authBuf)
 }
 
 /// Get the next `mysql.result.Row` of a pending result set.
-package(mysql) SafeRow getNextRow(Connection conn)
+package(mysql) Row getNextRow(Connection conn)
 {
 	scope(failure) conn.kill();
 
@@ -804,7 +818,7 @@ package(mysql) SafeRow getNextRow(Connection conn)
 		conn._headersPending = false;
 	}
 	ubyte[] packet;
-	SafeRow rr;
+	Row rr;
 	packet = conn.getPacket();
 	if(packet.front == ResultPacketMarker.error)
 		throw new MYXReceived(OKErrorPacket(packet), __FILE__, __LINE__);
@@ -815,9 +829,9 @@ package(mysql) SafeRow getNextRow(Connection conn)
 		return rr;
 	}
 	if (conn._binaryPending)
-		rr = SafeRow(conn, packet, conn._rsh, true);
+		rr = Row(conn, packet, conn._rsh, true);
 	else
-		rr = SafeRow(conn, packet, conn._rsh, false);
+		rr = Row(conn, packet, conn._rsh, false);
 	//rr._valid = true;
 	return rr;
 }

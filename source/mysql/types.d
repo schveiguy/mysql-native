@@ -2,6 +2,7 @@
 module mysql.types;
 import taggedalgebraic.taggedalgebraic;
 import std.datetime : DateTime, TimeOfDay, Date;
+import std.typecons : Nullable;
 
 /++
 A simple struct to represent time difference.
@@ -34,12 +35,12 @@ struct Timestamp
 
 union _MYTYPE
 {
+@safeOnly:
 	// blobs are const because of the indirection. In this case, it's not
 	// important because nobody is going to use MySQLVal to maintain their
 	// ubyte array.
 	const(ubyte)[] Blob;
 
-@disableIndex: // do not want indexing on anything other than blobs.
 	typeof(null) Null;
 	bool Bit;
 	ubyte UByte;
@@ -57,7 +58,8 @@ union _MYTYPE
 	.Timestamp Timestamp;
 	.Date Date;
 
-	string Text;
+	@disableIndex string Text;
+	@disableIndex const(char)[] CText;
 
 	// pointers
 	const(bool)* BitRef;
@@ -75,6 +77,7 @@ union _MYTYPE
 	const(TimeOfDay)* TimeRef;
 	const(.Date)* DateRef;
 	const(string)* TextRef;
+	const(char[])* CTextRef;
 	const(ubyte[])* BlobRef;
 	const(.Timestamp)* TimestampRef;
 }
@@ -117,16 +120,26 @@ package MySQLVal _toVal(Variant v)
 	}
 }
 
-// convert MySQLVal to variant. Will eventually be removed when Variant support
-// is removed.
-package Variant _toVar(MySQLVal v)
+/++
+Use this as a stop-gap measure in order to keep Variant compatibility. Append this to any function which returns a MySQLVal until you can update your code.
++/
+deprecated("Variant support is deprecated. Please switch to using MySQLVal")
+Variant asVariant(MySQLVal v)
 {
 	return v.apply!((a) => Variant(a));
 }
 
+deprecated("Variant support is deprecated. Please switch to using MySQLVal")
+Nullable!Variant asVariant(Nullable!MySQLVal v)
+{
+	if(v.isNull)
+		return Nullable!Variant();
+	return Nullable!Variant(v.get.asVariant);
+}
+
 /++
-Compatibility layer for std.variant.Variant. These functions provide methods
-that TaggedAlgebraic does not provide in order to keep functionality that was
+Compatibility layer for MySQLVal. These functions provide methods that
+TaggedAlgebraic does not provide in order to keep functionality that was
 available with Variant.
 +/
 bool convertsTo(T)(ref MySQLVal val)
@@ -171,4 +184,20 @@ T coerce(T)(auto ref MySQLVal val)
 		}
 	}
 	return val.apply!convert();
+}
+
+/// ditto
+TypeInfo type(MySQLVal val) @safe pure nothrow
+{
+	return val.apply!((ref v) => typeid(v));
+}
+
+/// ditto
+T *peek(T)(MySQLVal val)
+{
+	// use exact type.
+	import taggedalgebraic.taggedalgebraic : get;
+	if(val.hasType!T)
+		return &val.get!T;
+	return null;
 }
