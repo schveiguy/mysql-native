@@ -38,10 +38,11 @@ import mysql.protocol.packet_helpers;
 import mysql.protocol.packets;
 import mysql.protocol.sockets;
 
-/** Gets the value stored in an algebraic type based on its data type.
-*/
 import taggedalgebraic.taggedalgebraic;
-auto ref get(alias K, U)(auto ref TaggedAlgebraic!U ta) if (is(typeof(K) == TaggedAlgebraic!U.Kind))
+
+// Trick tagged algebraic into getting the value based on the kind enum. Much
+// easier than dealing with types when I already have the kind.
+auto kget(alias K, U)(auto ref TaggedAlgebraic!U ta) if (is(typeof(K) == TaggedAlgebraic!U.Kind))
 {
 	import taggedalgebraic.taggedunion;
 	return (cast(TaggedUnion!U)ta).value!K;
@@ -142,7 +143,7 @@ package struct ProtocolPrepared
 						types[ct++] = cast(ubyte) ext;
 					types[ct++] = SIGNED;
 					reAlloc(2);
-					bool bv = isRef? *v.get!BitRef : v.get!Bit;
+					bool bv = isRef? *v.kget!BitRef : v.kget!Bit;
 					vals[vcl++] = 1;
 					vals[vcl++] = bv? 0x31: 0x30;
 					break;
@@ -152,7 +153,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.TINY;
 					types[ct++] = SIGNED;
 					reAlloc(1);
-					vals[vcl++] = isRef? *v.get!ByteRef : v.get!Byte;
+					vals[vcl++] = isRef? *v.kget!ByteRef : v.kget!Byte;
 					break;
 				case UByteRef:
 					isRef = true; goto case;
@@ -160,7 +161,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.TINY;
 					types[ct++] = UNSIGNED;
 					reAlloc(1);
-					vals[vcl++] = isRef? *v.get!UByteRef : v.get!UByte;
+					vals[vcl++] = isRef? *v.kget!UByteRef : v.kget!UByte;
 					break;
 				case ShortRef:
 					isRef = true; goto case;
@@ -168,7 +169,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.SHORT;
 					types[ct++] = SIGNED;
 					reAlloc(2);
-					short si = isRef? *v.get!ShortRef : v.get!Short;
+					short si = isRef? *v.kget!ShortRef : v.kget!Short;
 					vals[vcl++] = cast(ubyte) (si & 0xff);
 					vals[vcl++] = cast(ubyte) ((si >> 8) & 0xff);
 					break;
@@ -178,7 +179,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.SHORT;
 					types[ct++] = UNSIGNED;
 					reAlloc(2);
-					ushort us = isRef? *v.get!UShortRef : v.get!UShort;
+					ushort us = isRef? *v.kget!UShortRef : v.kget!UShort;
 					vals[vcl++] = cast(ubyte) (us & 0xff);
 					vals[vcl++] = cast(ubyte) ((us >> 8) & 0xff);
 					break;
@@ -188,7 +189,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.INT;
 					types[ct++] = SIGNED;
 					reAlloc(4);
-					int ii = isRef? *v.get!IntRef : v.get!Int;
+					int ii = isRef? *v.kget!IntRef : v.kget!Int;
 					vals[vcl++] = cast(ubyte) (ii & 0xff);
 					vals[vcl++] = cast(ubyte) ((ii >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((ii >> 16) & 0xff);
@@ -200,7 +201,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.INT;
 					types[ct++] = UNSIGNED;
 					reAlloc(4);
-					uint ui = isRef? *v.get!UIntRef : v.get!UInt;
+					uint ui = isRef? *v.kget!UIntRef : v.kget!UInt;
 					vals[vcl++] = cast(ubyte) (ui & 0xff);
 					vals[vcl++] = cast(ubyte) ((ui >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((ui >> 16) & 0xff);
@@ -212,7 +213,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.LONGLONG;
 					types[ct++] = SIGNED;
 					reAlloc(8);
-					long li = isRef? *v.get!LongRef : v.get!Long;
+					long li = isRef? *v.kget!LongRef : v.kget!Long;
 					vals[vcl++] = cast(ubyte) (li & 0xff);
 					vals[vcl++] = cast(ubyte) ((li >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((li >> 16) & 0xff);
@@ -228,7 +229,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.LONGLONG;
 					types[ct++] = UNSIGNED;
 					reAlloc(8);
-					ulong ul = isRef? *v.get!ULongRef : v.get!ULong;
+					ulong ul = isRef? *v.kget!ULongRef : v.kget!ULong;
 					vals[vcl++] = cast(ubyte) (ul & 0xff);
 					vals[vcl++] = cast(ubyte) ((ul >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((ul >> 16) & 0xff);
@@ -244,7 +245,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.FLOAT;
 					types[ct++] = SIGNED;
 					reAlloc(4);
-					float[1] f = [isRef? *v.get!FloatRef : v.get!Float];
+					float[1] f = [isRef? *v.kget!FloatRef : v.kget!Float];
 					ubyte[] uba = cast(ubyte[]) f[];
 					vals[vcl .. vcl + uba.length] = uba[];
 					vcl += uba.length;
@@ -255,7 +256,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.DOUBLE;
 					types[ct++] = SIGNED;
 					reAlloc(8);
-					double[1] d = [isRef? *v.get!DoubleRef : v.get!Double];
+					double[1] d = [isRef? *v.kget!DoubleRef : v.kget!Double];
 					ubyte[] uba = cast(ubyte[]) d[];
 					vals[vcl .. uba.length] = uba[];
 					vcl += uba.length;
@@ -265,7 +266,7 @@ package struct ProtocolPrepared
 				case Date:
 					types[ct++] = SQLType.DATE;
 					types[ct++] = SIGNED;
-					auto date = isRef? *v.get!DateRef : v.get!Date;
+					auto date = isRef? *v.kget!DateRef : v.kget!Date;
 					ubyte[] da = pack(date);
 					size_t l = da.length;
 					reAlloc(l);
@@ -277,7 +278,7 @@ package struct ProtocolPrepared
 				case Time:
 					types[ct++] = SQLType.TIME;
 					types[ct++] = SIGNED;
-					auto time = isRef? *v.get!TimeRef : v.get!Time;
+					auto time = isRef? *v.kget!TimeRef : v.kget!Time;
 					ubyte[] ta = pack(time);
 					size_t l = ta.length;
 					reAlloc(l);
@@ -289,7 +290,7 @@ package struct ProtocolPrepared
 				case DateTime:
 					types[ct++] = SQLType.DATETIME;
 					types[ct++] = SIGNED;
-					auto dt = isRef? *v.get!DateTimeRef : v.get!DateTime;
+					auto dt = isRef? *v.kget!DateTimeRef : v.kget!DateTime;
 					ubyte[] da = pack(dt);
 					size_t l = da.length;
 					reAlloc(l);
@@ -301,7 +302,7 @@ package struct ProtocolPrepared
 				case Timestamp:
 					types[ct++] = SQLType.TIMESTAMP;
 					types[ct++] = SIGNED;
-					auto tms = isRef? *v.get!TimestampRef : v.get!Timestamp;
+					auto tms = isRef? *v.kget!TimestampRef : v.kget!Timestamp;
 					auto dt = mysql.protocol.packet_helpers.toDateTime(tms.rep);
 					ubyte[] da = pack(dt);
 					size_t l = da.length;
@@ -317,7 +318,7 @@ package struct ProtocolPrepared
 					else
 						types[ct++] = cast(ubyte) ext;
 					types[ct++] = SIGNED;
-					const char[] ca = isRef? *v.get!TextRef : v.get!Text;
+					const char[] ca = isRef? *v.kget!TextRef : v.kget!Text;
 					ubyte[] packed = packLCS(ca);
 					reAlloc(packed.length);
 					vals[vcl..vcl+packed.length] = packed[];
@@ -331,7 +332,7 @@ package struct ProtocolPrepared
 					else
 						types[ct++] = cast(ubyte) ext;
 					types[ct++] = SIGNED;
-					const ubyte[] uba = isRef? *v.get!BlobRef : v.get!Blob;
+					const ubyte[] uba = isRef? *v.kget!BlobRef : v.kget!Blob;
 					ubyte[] packed = packLCS(uba);
 					reAlloc(packed.length);
 					vals[vcl..vcl+packed.length] = packed[];

@@ -2,7 +2,6 @@
 module mysql.types;
 import taggedalgebraic.taggedalgebraic;
 import std.datetime : DateTime, TimeOfDay, Date;
-public import taggedalgebraic.taggedalgebraic : get;
 
 /++
 A simple struct to represent time difference.
@@ -125,13 +124,34 @@ package Variant _toVar(MySQLVal v)
 	return v.apply!((a) => Variant(a));
 }
 
-// helper to fix deficiency of convertsTo in TaggedAlgebraic
-package bool convertsTo(T)(ref MySQLVal val)
+/++
+Compatibility layer for std.variant.Variant. These functions provide methods
+that TaggedAlgebraic does not provide in order to keep functionality that was
+available with Variant.
++/
+bool convertsTo(T)(ref MySQLVal val)
 {
 	return val.apply!((a) => is(typeof(a) : T));
 }
 
-package T coerce(T)(auto ref MySQLVal val)
+/// ditto
+T get(T)(auto ref MySQLVal val)
+{
+	static T convert(V)(ref V v)
+	{
+		static if(is(V : T))
+			return v;
+		else
+		{
+			import mysql.exceptions;
+			throw new MYX("Cannot get type " ~ T.stringof ~ " with MySQLVal storing type " ~ V.stringof);
+		}
+	}
+	return val.apply!convert();
+}
+
+/// ditto
+T coerce(T)(auto ref MySQLVal val)
 {
 	import std.conv : to;
 	static T convert(V)(ref V v)
