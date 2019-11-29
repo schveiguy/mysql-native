@@ -1,4 +1,4 @@
-﻿/// Connect to a MySQL/MariaDB server.
+/// Connect to a MySQL/MariaDB server.
 module mysql.connection;
 
 import std.algorithm;
@@ -208,7 +208,7 @@ package struct PreparedServerInfo
 	ushort psWarnings;
 
 	/// Number of parameters this statement takes.
-	/// 
+	///
 	/// This will be the same on all connections, but it's returned
 	/// by the server upon registration, so it's stored here.
 	ushort numParams;
@@ -218,7 +218,7 @@ package struct PreparedServerInfo
 	/// This will be the same on all connections, but it's returned
 	/// by the server upon registration, so it's stored here.
 	PreparedStmtHeaders headers;
-	
+
 	/// Not actually from the server. Connection uses this to keep track
 	/// of statements that should be treated as having been released.
 	bool queuedForRelease = false;
@@ -281,7 +281,7 @@ back to `prepare` again, and your upgrade will be complete.
 struct BackwardCompatPrepared
 {
 	import std.variant;
-	
+
 	private Connection _conn;
 	Prepared _prepared;
 
@@ -292,7 +292,7 @@ struct BackwardCompatPrepared
 
 	/++
 	This function is provided ONLY as a temporary aid in upgrading to mysql-native v2.0.0.
-	
+
 	See `BackwardCompatPrepared` for more info.
 	+/
 	deprecated("Change 'preparedStmt.exec()' to 'conn.exec(preparedStmt)'")
@@ -353,7 +353,7 @@ the connection when done).
 //TODO: All low-level commms should be moved into the mysql.protocol package.
 class Connection
 {
-    @safe:
+	@safe:
 /+
 The Connection is responsible for handshaking with the server to establish
 authentication. It then passes client preferences to the server, and
@@ -488,12 +488,12 @@ package:
 		_cCaps = setClientFlags(_sCaps, clientCapabilities);
 		this.authenticate(greeting);
 	}
-	
+
 	/++
 	Forcefully close the socket without sending the quit command.
-	
+
 	Also resets internal state regardless of whether the connection is open or not.
-	
+
 	Needed in case an error leaves communatations in an undefined or non-recoverable state.
 	+/
 	void kill()
@@ -509,7 +509,7 @@ package:
 
 		_lastCommandID++; // Invalidate result sets
 	}
-	
+
 	/// Called whenever mysql-native needs to send a command to the server
 	/// and be sure there aren't any pending results (which would prevent
 	/// a new command from being sent).
@@ -521,7 +521,7 @@ package:
 
 		if(isAutoPurging)
 			return;
-			
+
 		isAutoPurging = true;
 		scope(exit) isAutoPurging = false;
 
@@ -570,7 +570,7 @@ public:
 	Construct opened connection.
 
 	Throws `mysql.exceptions.MYX` upon failure to connect.
-	
+
 	If you are using Vibe.d, consider using `mysql.pool.MySQLPool` instead of
 	creating a new Connection directly. That will provide certain benefits,
 	such as reusing old connections and automatic cleanup (no need to close
@@ -714,7 +714,7 @@ public:
 
 	/++
 	Explicitly close the connection.
-	
+
 	Idiomatic use as follows is suggested:
 	------------------
 	{
@@ -835,7 +835,7 @@ public:
 		assert(!cn.closed);
 		assert(range.front[0] == 1);
 	}
-	
+
 	private void quit()
 	in
 	{
@@ -864,7 +864,7 @@ public:
 	$(LI [3]: db)
 	$(LI [4]: port)
 	)
-	
+
 	(TODO: The connection string needs work to allow for semicolons in its parts!)
 	+/
 	//TODO: Replace the return value with a proper struct.
@@ -906,7 +906,7 @@ public:
 
 	/++
 	Select a current database.
-	
+
 	Throws `mysql.exceptions.MYX` upon failure.
 
 	Params: dbName = Name of the requested database
@@ -920,7 +920,7 @@ public:
 
 	/++
 	Check the server status.
-	
+
 	Throws `mysql.exceptions.MYX` upon failure.
 
 	Returns: An `mysql.protocol.packets.OKErrorPacket` from which server status can be determined
@@ -933,7 +933,7 @@ public:
 
 	/++
 	Refresh some feature(s) of the server.
-	
+
 	Throws `mysql.exceptions.MYX` upon failure.
 
 	Returns: An `mysql.protocol.packets.OKErrorPacket` from which server status can be determined
@@ -946,12 +946,12 @@ public:
 
 	/++
 	Flush any outstanding result set elements.
-	
+
 	When the server responds to a command that produces a result set, it
 	queues the whole set of corresponding packets over the current connection.
 	Before that `Connection` can embark on any new command, it must receive
 	all of those packets and junk them.
-	
+
 	As of v1.1.4, this is done automatically as needed. But you can still
 	call this manually to force a purge to occur when you want.
 
@@ -964,7 +964,7 @@ public:
 
 	/++
 	Get a textual report on the server status.
-	
+
 	(COM_STATISTICS)
 	+/
 	string serverStats()
@@ -974,11 +974,11 @@ public:
 
 	/++
 	Enable multiple statement commands.
-	
+
 	This can be used later if this feature was not requested in the client capability flags.
-	
+
 	Warning: This functionality is currently untested.
-	
+
 	Params: on = Boolean value to turn the capability on or off.
 	+/
 	//TODO: Need to test this
@@ -1028,9 +1028,9 @@ public:
 
 	/++
 	Manually register a prepared statement on this connection.
-	
+
 	Does nothing if statement is already registered on this connection.
-	
+
 	Calling this is not strictly necessary, as the prepared statement will
 	automatically be registered upon its first use on any `Connection`.
 	This is provided for those who prefer eager registration over lazy
@@ -1049,10 +1049,10 @@ public:
 
 	/++
 	Manually release a prepared statement on this connection.
-	
+
 	This method tells the server that it can dispose of the information it
 	holds about the current prepared statement.
-	
+
 	Calling this is not strictly necessary. The server considers prepared
 	statements to be per-connection, so they'll go away when the connection
 	closes anyway. This is provided in case direct control is actually needed.
@@ -1066,12 +1066,12 @@ public:
 	their release at all, as it's not usually necessary. Or to periodically
 	release all prepared statements, and simply allow mysql-native to
 	automatically re-register them upon their next use.
-	
+
 	Notes:
-	
+
 	In actuality, the server might not immediately be told to release the
 	statement (although `isRegistered` will still report `false`).
-	
+
 	This is because there could be a `mysql.result.ResultRange` with results
 	still pending for retrieval, and the protocol doesn't allow sending commands
 	(such as "release a prepared statement") to the server while data is pending.
@@ -1080,7 +1080,7 @@ public:
 	the next time a command (such as `mysql.commands.query` or
 	`mysql.commands.exec`) is performed (because such commands automatically
 	purge any pending results).
-	
+
 	This function does NOT auto-purge because, if this is ever called from
 	automatic resource management cleanup (refcounting, RAII, etc), that
 	would create ugly situations where hidden, implicit behavior triggers
@@ -1090,7 +1090,7 @@ public:
 	{
 		release(prepared.sql);
 	}
-	
+
 	///ditto
 	void release(const(char[]) sql)
 	{
@@ -1098,10 +1098,10 @@ public:
 		//      But need to be certain both situations are unittested.
 		preparedRegistrations.queueForRelease(sql);
 	}
-	
+
 	/++
 	Manually release all prepared statements on this connection.
-	
+
 	While minimal, every prepared statement registered on a connection does
 	use up a small amount of resources in both mysql-native and on the server.
 	Additionally, servers can be configured
@@ -1111,22 +1111,22 @@ public:
 	is quite high). Note also, that certain overloads of `mysql.commands.exec`,
 	`mysql.commands.query`, etc. register prepared statements behind-the-scenes
 	which are cached for quick re-use later.
-	
+
 	Therefore, it may occasionally be useful to clear out all prepared
 	statements on a connection, together with all resources used by them (or
 	at least leave the resources ready for garbage-collection). This function
 	does just that.
-	
+
 	Note that this is ALWAYS COMPLETELY SAFE to call, even if you still have
 	live prepared statements you intend to use again. This is safe because
 	mysql-native will automatically register or re-register prepared statements
 	as-needed.
 
 	Notes:
-	
+
 	In actuality, the prepared statements might not be immediately released
 	(although `isRegistered` will still report `false` for them).
-	
+
 	This is because there could be a `mysql.result.ResultRange` with results
 	still pending for retrieval, and the protocol doesn't allow sending commands
 	(such as "release a prepared statement") to the server while data is pending.
@@ -1135,7 +1135,7 @@ public:
 	the next time a command (such as `mysql.commands.query` or
 	`mysql.commands.exec`) is performed (because such commands automatically
 	purge any pending results).
-	
+
 	This function does NOT auto-purge because, if this is ever called from
 	automatic resource management cleanup (refcounting, RAII, etc), that
 	would create ugly situations where hidden, implicit behavior triggers
@@ -1151,7 +1151,7 @@ public:
 	unittest
 	{
 		mixin(scopedCn);
-		
+
 		cn.exec("DROP TABLE IF EXISTS `releaseAll`");
 		cn.exec("CREATE TABLE `releaseAll` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
@@ -1200,16 +1200,16 @@ unittest
 {
 	import mysql.connection;
 	import mysql.test.common;
-	
+
 	Prepared preparedInsert;
 	Prepared preparedSelect;
 	immutable insertSQL = "INSERT INTO `autoRegistration` VALUES (1), (2)";
 	immutable selectSQL = "SELECT `val` FROM `autoRegistration`";
 	int queryTupleResult;
-	
+
 	{
 		mixin(scopedCn);
-		
+
 		// Setup
 		cn.exec("DROP TABLE IF EXISTS `autoRegistration`");
 		cn.exec("CREATE TABLE `autoRegistration` (
@@ -1219,7 +1219,7 @@ unittest
 		// Initial register
 		preparedInsert = cn.prepare(insertSQL);
 		preparedSelect = cn.prepare(selectSQL);
-		
+
 		// Test basic register, release, isRegistered
 		assert(cn.isRegistered(preparedInsert));
 		assert(cn.isRegistered(preparedSelect));
@@ -1227,13 +1227,13 @@ unittest
 		cn.release(preparedSelect);
 		assert(!cn.isRegistered(preparedInsert));
 		assert(!cn.isRegistered(preparedSelect));
-		
+
 		// Test manual re-register
 		cn.register(preparedInsert);
 		cn.register(preparedSelect);
 		assert(cn.isRegistered(preparedInsert));
 		assert(cn.isRegistered(preparedSelect));
-		
+
 		// Test double register
 		cn.register(preparedInsert);
 		cn.register(preparedSelect);
@@ -1254,47 +1254,47 @@ unittest
 	// Note that at this point, both prepared statements still exist,
 	// but are no longer registered on any connection. In fact, there
 	// are no open connections anymore.
-	
+
 	// Test auto-register: exec
 	{
 		mixin(scopedCn);
-	
+
 		assert(!cn.isRegistered(preparedInsert));
 		cn.exec(preparedInsert);
 		assert(cn.isRegistered(preparedInsert));
 	}
-	
+
 	// Test auto-register: query
 	{
 		mixin(scopedCn);
-	
+
 		assert(!cn.isRegistered(preparedSelect));
 		cn.query(preparedSelect).each();
 		assert(cn.isRegistered(preparedSelect));
 	}
-	
+
 	// Test auto-register: queryRow
 	{
 		mixin(scopedCn);
-	
+
 		assert(!cn.isRegistered(preparedSelect));
 		cn.queryRow(preparedSelect);
 		assert(cn.isRegistered(preparedSelect));
 	}
-	
+
 	// Test auto-register: queryRowTuple
 	{
 		mixin(scopedCn);
-	
+
 		assert(!cn.isRegistered(preparedSelect));
 		cn.queryRowTuple(preparedSelect, queryTupleResult);
 		assert(cn.isRegistered(preparedSelect));
 	}
-	
+
 	// Test auto-register: queryValue
 	{
 		mixin(scopedCn);
-	
+
 		assert(!cn.isRegistered(preparedSelect));
 		cn.queryValue(preparedSelect);
 		assert(cn.isRegistered(preparedSelect));
@@ -1309,14 +1309,14 @@ unittest
 {
 	import mysql.escape;
 	mixin(scopedCn);
-	
+
 	cn.exec("DROP TABLE IF EXISTS `issue81`");
 	cn.exec("CREATE TABLE `issue81` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 	cn.exec("INSERT INTO `issue81` (a) VALUES (1)");
 
 	auto cn2 = new Connection(text("host=", cn._host, ";port=", cn._port, ";user=", cn._user, ";pwd=", cn._pwd));
 	scope(exit) cn2.close();
-	
+
 	cn2.query("SELECT * FROM `"~mysqlEscape(cn._db).text~"`.`issue81`");
 }
 
@@ -1396,7 +1396,7 @@ debug(MYSQLN_TESTS)
 	{
 		import core.memory;
 		mixin(scopedCn);
-		
+
 		cn.exec("DROP TABLE IF EXISTS `rcPrepared`");
 		cn.exec("CREATE TABLE `rcPrepared` (
 			`val` INTEGER

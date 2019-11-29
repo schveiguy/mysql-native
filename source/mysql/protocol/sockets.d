@@ -1,4 +1,4 @@
-﻿/// Internal - Phobos and vibe.d sockets.
+/// Internal - Phobos and vibe.d sockets.
 module mysql.protocol.sockets;
 
 import std.exception;
@@ -108,7 +108,7 @@ version(Have_vibe_core) {
 	/// Wraps a Vibe.d socket with the common interface
 	class MySQLSocketVibeD : MySQLSocket
 	{
-            @safe:
+		@safe:
 		private PlainVibeDSocket socket;
 
 		/// The socket should already be open

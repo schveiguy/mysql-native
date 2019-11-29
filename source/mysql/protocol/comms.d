@@ -43,8 +43,8 @@ import mysql.protocol.sockets;
 import taggedalgebraic.taggedalgebraic;
 auto ref get(alias K, U)(auto ref TaggedAlgebraic!U ta) if (is(typeof(K) == TaggedAlgebraic!U.Kind))
 {
-    import taggedalgebraic.taggedunion;
-    return (cast(TaggedUnion!U)ta).value!K;
+	import taggedalgebraic.taggedunion;
+	return (cast(TaggedUnion!U)ta).value!K;
 }
 
 @safe:
@@ -52,7 +52,7 @@ auto ref get(alias K, U)(auto ref TaggedAlgebraic!U ta) if (is(typeof(K) == Tagg
 /// Low-level comms code relating to prepared statements.
 package struct ProtocolPrepared
 {
-    @safe:
+	@safe:
 	import std.conv;
 	import std.datetime;
 	import mysql.types;
@@ -134,7 +134,7 @@ package struct ProtocolPrepared
 			with(MySQLVal.Kind) final switch (ts)
 			{
 				case BitRef:
-				   	isRef = true; goto case;
+					isRef = true; goto case;
 				case Bit:
 					if (ext == SQLType.INFER_FROM_D_TYPE)
 						types[ct++] = SQLType.BIT;

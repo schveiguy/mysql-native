@@ -99,7 +99,7 @@ version(IncludeMySQLPool)
 			string m_database;
 			ushort m_port;
 			SvrCapFlags m_capFlags;
-                        alias NewConnectionDelegate = void delegate(Connection) @safe;
+			alias NewConnectionDelegate = void delegate(Connection) @safe;
 			NewConnectionDelegate m_onNewConnection;
 			ConnectionPool!Connection m_pool;
 			PreparedRegistrations!PreparedInfo preparedRegistrations;
@@ -110,7 +110,7 @@ version(IncludeMySQLPool)
 			}
 
 		}
-                @safe:
+		@safe:
 
 		/// Sets up a connection pool with the provided connection settings.
 		///
@@ -238,7 +238,7 @@ version(IncludeMySQLPool)
 		debug(MYSQLN_TESTS)
 		unittest
 		{
- 			auto count = 0;
+			auto count = 0;
 			void callback(Connection conn)
 			{
 				count++;

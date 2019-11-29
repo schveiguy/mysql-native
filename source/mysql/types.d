@@ -1,4 +1,4 @@
-﻿/// Structures for MySQL types not built-in to D/Phobos.
+/// Structures for MySQL types not built-in to D/Phobos.
 module mysql.types;
 import taggedalgebraic.taggedalgebraic;
 import std.datetime : DateTime, TimeOfDay, Date;
@@ -34,49 +34,49 @@ struct Timestamp
 
 union _MYTYPE
 {
-    // blobs are const because of the indirection. In this case, it's not
-    // important because nobody is going to use MySQLVal to maintain their
-    // ubyte array.
-    const(ubyte)[] Blob;
+	// blobs are const because of the indirection. In this case, it's not
+	// important because nobody is going to use MySQLVal to maintain their
+	// ubyte array.
+	const(ubyte)[] Blob;
 
 @disableIndex: // do not want indexing on anything other than blobs.
-    typeof(null) Null;
-    bool Bit;
-    ubyte UByte;
-    byte Byte;
-    ushort UShort;
-    short Short;
-    uint UInt;
-    int Int;
-    ulong ULong;
-    long Long;
-    float Float;
-    double Double;
-    .DateTime DateTime;
-    TimeOfDay Time;
-    .Timestamp Timestamp;
-    .Date Date;
+	typeof(null) Null;
+	bool Bit;
+	ubyte UByte;
+	byte Byte;
+	ushort UShort;
+	short Short;
+	uint UInt;
+	int Int;
+	ulong ULong;
+	long Long;
+	float Float;
+	double Double;
+	.DateTime DateTime;
+	TimeOfDay Time;
+	.Timestamp Timestamp;
+	.Date Date;
 
-    string Text;
+	string Text;
 
-    // pointers
-    const(bool)* BitRef;
-    const(ubyte)* UByteRef;
-    const(byte)* ByteRef;
-    const(ushort)* UShortRef;
-    const(short)* ShortRef;
-    const(uint)* UIntRef;
-    const(int)* IntRef;
-    const(ulong)* ULongRef;
-    const(long)* LongRef;
-    const(float)* FloatRef;
-    const(double)* DoubleRef;
-    const(.DateTime)* DateTimeRef;
-    const(TimeOfDay)* TimeRef;
-    const(.Date)* DateRef;
-    const(string)* TextRef;
-    const(ubyte[])* BlobRef;
-    const(.Timestamp)* TimestampRef;
+	// pointers
+	const(bool)* BitRef;
+	const(ubyte)* UByteRef;
+	const(byte)* ByteRef;
+	const(ushort)* UShortRef;
+	const(short)* ShortRef;
+	const(uint)* UIntRef;
+	const(int)* IntRef;
+	const(ulong)* ULongRef;
+	const(long)* LongRef;
+	const(float)* FloatRef;
+	const(double)* DoubleRef;
+	const(.DateTime)* DateTimeRef;
+	const(TimeOfDay)* TimeRef;
+	const(.Date)* DateRef;
+	const(string)* TextRef;
+	const(ubyte[])* BlobRef;
+	const(.Timestamp)* TimestampRef;
 }
 
 alias MySQLVal = TaggedAlgebraic!_MYTYPE;
@@ -85,46 +85,47 @@ alias MySQLVal = TaggedAlgebraic!_MYTYPE;
 import std.variant : Variant;
 package MySQLVal _toVal(Variant v)
 {
-    // unfortunately, we need to use a giant switch. But hopefully people will stop using Variant, and this will go away.
-    string ts = v.type.toString();
-    bool isRef;
-    if (ts[$-1] == '*')
-    {
-        ts.length = ts.length-1;
-        isRef= true;
-    }
+	int x;
+	// unfortunately, we need to use a giant switch. But hopefully people will stop using Variant, and this will go away.
+	string ts = v.type.toString();
+	bool isRef;
+	if (ts[$-1] == '*')
+	{
+		ts.length = ts.length-1;
+		isRef= true;
+	}
 
-    import std.meta;
-    import std.traits;
-    import mysql.exceptions;
-    alias AllTypes = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, DateTime, TimeOfDay, Date, string, ubyte[], Timestamp);
-    switch (ts)
-    {
-        static foreach(Type; AllTypes)
-        {
-        case fullyQualifiedName!Type:
-        case "const(" ~ fullyQualifiedName!Type ~ ")":
-        case "immutable(" ~ fullyQualifiedName!Type ~ ")":
-        case "shared(immutable(" ~ fullyQualifiedName!Type ~ "))":
-            if(isRef)
-                return MySQLVal(v.get!(const(Type*)));
-            else
-                return MySQLVal(v.get!(const(Type)));
-        }
-    default:
-        throw new MYX("Unsupported Database Variant Type: " ~ ts);
-    }
+	import std.meta;
+	import std.traits;
+	import mysql.exceptions;
+	alias AllTypes = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, DateTime, TimeOfDay, Date, string, ubyte[], Timestamp);
+	switch (ts)
+	{
+		static foreach(Type; AllTypes)
+		{
+		case fullyQualifiedName!Type:
+		case "const(" ~ fullyQualifiedName!Type ~ ")":
+		case "immutable(" ~ fullyQualifiedName!Type ~ ")":
+		case "shared(immutable(" ~ fullyQualifiedName!Type ~ "))":
+			if(isRef)
+				return MySQLVal(v.get!(const(Type*)));
+			else
+				return MySQLVal(v.get!(const(Type)));
+		}
+	default:
+		throw new MYX("Unsupported Database Variant Type: " ~ ts);
+	}
 }
 
 // convert MySQLVal to variant. Will eventually be removed when Variant support
 // is removed.
 package Variant _toVar(MySQLVal v)
 {
-    return v.apply!((a) => Variant(a));
+	return v.apply!((a) => Variant(a));
 }
 
 // helper to fix deficiency of convertsTo in TaggedAlgebraic
 package bool convertsTo(T)(ref MySQLVal val)
 {
-    return v.apply!((a) => is(typeof(a) : T));
+	return v.apply!((a) => is(typeof(a) : T));
 }

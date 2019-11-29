@@ -358,7 +358,7 @@ in
 }
 body
 {
-    auto result = packet.consume(N);
+	auto result = packet.consume(N);
 	return (() @trusted => cast(string)result)();
 }
 
@@ -553,14 +553,14 @@ in
 }
 body
 {
-    union R {
-        T val = 0;
-        ubyte[T.sizeof] bytes;
-    }
+	union R {
+		T val = 0;
+		ubyte[T.sizeof] bytes;
+	}
 
-    R item;
+	R item;
 	item.bytes[] = packet[0..T.sizeof];
-        return item.val;
+	return item.val;
 }
 
 T consume(T, ubyte N=T.sizeof)(ref ubyte[] packet) pure nothrow
@@ -635,7 +635,7 @@ SQLValue consumeNonBinaryValueIfComplete(T)(ref ubyte[] packet, bool unsigned)
 			}
 			else
 			{
-                            result.value = value.myto!T;
+				result.value = value.myto!T;
 			}
 		}
 	}

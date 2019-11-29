@@ -192,11 +192,6 @@ public:
 		_psa.length      = numParams;
 	}
 
-        private void _assignArgImpl(T)(size_t index, auto ref T val)
-        {
-            _inParams[index] = val;
-        }
-
 	/++
 	Prepared statement parameter setter.
 
@@ -231,7 +226,7 @@ public:
 
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
 
-                _assignArgImpl(index, val);
+		_inParams[index] = val;
 		psn.pIndex = index;
 		_psa[index] = psn;
 	}
@@ -245,13 +240,13 @@ public:
 			setArg(index, val.get(), psn);
 	}
 
-        deprecated("Using Variant is deprecated, please use MySQLVal instead")
+	deprecated("Using Variant is deprecated, please use MySQLVal instead")
 	void setArg(T)(size_t index, T val, ParameterSpecialization psn = PSN(0, SQLType.INFER_FROM_D_TYPE, 0, null))
 		if(is(T == Variant))
 	{
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
 
-                _assignArgImpl(index, _toVal(val));
+		_inParams[index] = _toVal(val);
 		psn.pIndex = index;
 		_psa[index] = psn;
 	}
@@ -295,8 +290,8 @@ public:
 		// Note: Variant doesn't seem to support
 		// `shared(T)` or `shared(const(T)`. Only `shared(immutable(T))`.
 
-                // Further note, shared immutable(int) is really
-                // immutable(int). This test is a duplicate, so removed.
+		// Further note, shared immutable(int) is really
+		// immutable(int). This test is a duplicate, so removed.
 		// Test shared immutable(int)
 		/*{
 			shared immutable(int) i = 113;
@@ -365,19 +360,19 @@ public:
 		}
 	}
 
-        /// ditto
-        deprecated("Using Variant is deprecated, please use MySQLVal instead")
+	/// ditto
+	deprecated("Using Variant is deprecated, please use MySQLVal instead")
 	void setArgs(Variant[] args, ParameterSpecialization[] psnList=null)
-        {
-            enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
-            foreach(i, ref arg; args)
-                setArg(i, arg);
-            if (psnList !is null)
-            {
-                foreach (PSN psn; psnList)
-                    _psa[psn.pIndex] = psn;
-            }
-        }
+	{
+		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
+		foreach(i, ref arg; args)
+			setArg(i, arg);
+		if (psnList !is null)
+		{
+			foreach (PSN psn; psnList)
+				_psa[psn.pIndex] = psn;
+		}
+	}
 
 	/++
 	Prepared statement parameter getter.
@@ -386,19 +381,19 @@ public:
 
 	Params: index = The zero based index
 
-        Note: The Variant version of this function, getArg, is deprecated.
-        safeGetArg will eventually be renamed getArg when it is removed.
+	Note: The Variant version of this function, getArg, is deprecated.
+	safeGetArg will eventually be renamed getArg when it is removed.
 	+/
-        deprecated("Using Variant is deprecated, please use safeGetArg instead")
+	deprecated("Using Variant is deprecated, please use safeGetArg instead")
 	Variant getArg(size_t index)
 	{
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
 
-                // convert to Variant.
-                return _toVar(_inParams[index]);
+		// convert to Variant.
+		return _toVar(_inParams[index]);
 	}
 
-        /// ditto
+	/// ditto
 	MySQLVal safeGetArg(size_t index) @safe
 	{
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
@@ -556,7 +551,7 @@ to factor out common functionality needed by both `Connection` and `MySQLPool`.
 package struct PreparedRegistrations(Payload)
 	if(	isPreparedRegistrationsPayload!Payload)
 {
-    @safe:
+	@safe:
 	/++
 	Lookup payload by sql string.
 
@@ -608,9 +603,9 @@ package struct PreparedRegistrations(Payload)
 			queueForRelease(sql);
 	}
 
-        // Note: AA.clear does not invalidate any keys or values. In fact, it
-        // should really be safe/trusted, but is not. Therefore, we mark this
-        // as trusted.
+	// Note: AA.clear does not invalidate any keys or values. In fact, it
+	// should really be safe/trusted, but is not. Therefore, we mark this
+	// as trusted.
 	/// Eliminate all records of both registered AND queued-for-release statements.
 	void clear() @trusted
 	{

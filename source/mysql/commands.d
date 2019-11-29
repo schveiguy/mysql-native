@@ -1,4 +1,4 @@
-﻿/++
+/++
 Use a DB via plain SQL statements.
 
 Commands that are expected to return a result set - queries - have distinctive
@@ -100,7 +100,7 @@ unittest
 		chunkSize = 100;
 		assert(cast(int)(totalSize / chunkSize) * chunkSize == totalSize);
 		auto columnSpecial = ColumnSpecialization(0, 0xfc, chunkSize, &receiver);
-		
+
 		received = null;
 		lastValueOfFinished = false;
 		value = cn.queryValue(selectSQL, [columnSpecial]);
@@ -110,7 +110,7 @@ unittest
 		//assert(lastValueOfFinished == true);
 		//assert(received == data);
 	}
-	
+
 	// Use ColumnSpecialization with sql string,
 	// and totalSize as a non-multiple of chunkSize
 	{
@@ -734,7 +734,7 @@ package Nullable!Variant queryValueImpl(ColumnSpecialization[] csa, Connection c
 	{
 		auto row = results.front;
 		results.close();
-		
+
 		if(row.length == 0)
 			return Nullable!Variant();
 		else
@@ -750,17 +750,17 @@ unittest
 	import mysql.connection;
 	import mysql.test.common;
 	mixin(scopedCn);
-	
+
 	cn.exec("DROP TABLE IF EXISTS `execOverloads`");
 	cn.exec("CREATE TABLE `execOverloads` (
 		`i` INTEGER,
 		`s` VARCHAR(50)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-	
+
 	immutable prepareSQL = "INSERT INTO `execOverloads` VALUES (?, ?)";
-	
+
 	// Do the inserts, using exec
-	
+
 	// exec: const(char[]) sql
 	assert(cn.exec("INSERT INTO `execOverloads` VALUES (1, \"aa\")") == 1);
 	assert(cn.exec(prepareSQL, 2, "bb") == 1);
@@ -774,18 +774,18 @@ unittest
 	assert(cn.exec(prepared, 5, "ee") == 1);
 	assert(prepared.getArg(0) == 5);
 	assert(prepared.getArg(1) == "ee");
-	
+
 	assert(cn.exec(prepared, [Variant(6), Variant("ff")]) == 1);
 	assert(prepared.getArg(0) == 6);
 	assert(prepared.getArg(1) == "ff");
-	
+
 	// exec: bcPrepared sql
 	auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
 	bcPrepared.setArgs(7, "gg");
 	assert(cn.exec(bcPrepared) == 1);
 	assert(bcPrepared.getArg(0) == 7);
 	assert(bcPrepared.getArg(1) == "gg");
-	
+
 	// Check results
 	auto rows = cn.query("SELECT * FROM `execOverloads`").array();
 	assert(rows.length == 7);
@@ -822,7 +822,7 @@ unittest
 	import mysql.connection;
 	import mysql.test.common;
 	mixin(scopedCn);
-	
+
 	cn.exec("DROP TABLE IF EXISTS `queryOverloads`");
 	cn.exec("CREATE TABLE `queryOverloads` (
 		`i` INTEGER,
@@ -831,7 +831,7 @@ unittest
 	cn.exec("INSERT INTO `queryOverloads` VALUES (1, \"aa\"), (2, \"bb\"), (3, \"cc\")");
 
 	immutable prepareSQL = "SELECT * FROM `queryOverloads` WHERE `i`=? AND `s`=?";
-	
+
 	// Test query
 	{
 		Row[] rows;

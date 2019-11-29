@@ -1,4 +1,4 @@
-﻿/// Internal - Protocol-related data types.
+/// Internal - Protocol-related data types.
 module mysql.protocol.extra_types;
 
 import std.exception;
@@ -16,7 +16,7 @@ struct SQLValue
 	bool isIncomplete;
 	MySQLVal _value;
 
-        @safe: 
+	@safe:
 	// empty template as a template and non-template won't be added to the same overload set
 	@property inout(MySQLVal) value()() inout
 	{
@@ -43,7 +43,7 @@ struct SQLValue
 /// Length Coded Binary Value
 struct LCB
 {
-        @safe:
+	@safe:
 	/// True if the `LCB` contains a null value
 	bool isNull;
 

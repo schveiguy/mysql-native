@@ -1,4 +1,4 @@
-﻿/// Structures for data received: rows and result sets (ie, a range of rows).
+/// Structures for data received: rows and result sets (ie, a range of rows).
 module mysql.result;
 
 import std.conv;
@@ -39,17 +39,17 @@ private:
 	string[]    _names;
 
 public:
-        @safe:
+	@safe:
 
 	/++
 	A constructor to extract the column data from a row data packet.
-	
+
 	If the data for the row exceeds the server's maximum packet size, then several packets will be
 	sent for the row that taken together constitute a logical row data packet. The logic of the data
 	recovery for a Row attempts to minimize the quantity of data that is bufferred. Users can assist
 	in this by specifying chunked data transfer in cases where results sets can include long
 	column values.
-	
+
 	Type_Mappings: $(TYPE_MAPPINGS)
 	+/
 	this(Connection con, ref ubyte[] packet, ResultSetHeaders rh, bool binary)
@@ -59,7 +59,7 @@ public:
 
 	/++
 	Simplify retrieval of a column value by index.
-	
+
 	To check for null, use Variant's `type` property:
 	`row[index].type == typeid(typeof(null))`
 
@@ -110,7 +110,7 @@ public:
 
 	/++
 	Check if a column in the result row was NULL
-	
+
 	Params: i = The zero based column index.
 	+/
 	bool isNull(size_t i) const pure nothrow { return _nulls[i]; }
@@ -125,13 +125,13 @@ public:
 
 	/++
 	Move the content of the row into a compatible struct
-	
+
 	This method takes no account of NULL column values. If a column was NULL,
 	the corresponding Variant value would be unchanged in those cases.
-	
+
 	The method will throw if the type of the Variant is not implicitly
 	convertible to the corresponding struct member.
-	
+
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params:
@@ -172,19 +172,19 @@ public:
 	{
 		import std.stdio;
 
-                writefln("%(%s, %)", _values);
+		writefln("%(%s, %)", _values);
 	}
 }
 
 /// ditto
 struct Row
 {
-    SafeRow safe;
-    alias safe this;
-    deprecated("Variant support is deprecated. Please use SafeRow instead of Row.")
-    Variant opIndex(size_t idx) const {
-        return _toVar(safe[idx]);
-    }
+	SafeRow safe;
+	alias safe this;
+	deprecated("Variant support is deprecated. Please use SafeRow instead of Row.")
+	Variant opIndex(size_t idx) const {
+		return _toVar(safe[idx]);
+	}
 }
 
 /++
@@ -332,7 +332,7 @@ public:
 
 	/++
 	Get the number of rows retrieved so far.
-	
+
 	Note that this is not neccessarlly the same as the length of the range.
 	+/
 	@property ulong rowCount() const pure nothrow { return _numRowsFetched; }
@@ -340,19 +340,19 @@ public:
 
 struct ResultRange
 {
-    SafeResultRange safe;
-    alias safe this;
-    deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
-    inout(Row) front() inout { return inout(Row)(safe.front); }
+	SafeResultRange safe;
+	alias safe this;
+	deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
+		inout(Row) front() inout { return inout(Row)(safe.front); }
 
-    deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
-    Variant[string] asAA()
-    {
-        ensureValid();
-        enforce!MYX(!safe.empty, "Attempted 'front' on exhausted result sequence.");
-        Variant[string] aa;
-        foreach (size_t i, string s; _colNames)
-            aa[s] = _toVar(_row._values[i]);
-        return aa;
-    }
+	deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
+	Variant[string] asAA()
+	{
+		ensureValid();
+		enforce!MYX(!safe.empty, "Attempted 'front' on exhausted result sequence.");
+		Variant[string] aa;
+		foreach (size_t i, string s; _colNames)
+			aa[s] = _toVar(_row._values[i]);
+		return aa;
+	}
 }
