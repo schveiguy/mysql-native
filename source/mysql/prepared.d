@@ -13,6 +13,7 @@ import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.packets;
 import mysql.result;
+import mysql.types;
 debug(MYSQLN_TESTS)
 	import mysql.test.common;
 
@@ -133,20 +134,6 @@ unittest
 	}
 }
 
-// temporary trait fix to allow setting/getting of @safe types from args.
-private template isSafeType(T)
-{
-    U foo(U)(U t) {
-        static if(is(typeof(t = t)))
-            t = t;
-        return t;
-    }
-
-    enum isSafeType = is(typeof(() @safe => foo(T.init)));
-}
-static assert(isSafeType!(int));
-static assert(isSafeType!(typeof(null)));
-
 /++
 Encapsulation of a prepared statement.
 
@@ -168,7 +155,7 @@ private:
 package:
 	ushort _numParams; /// Number of parameters this prepared statement takes
 	PreparedStmtHeaders _headers;
-	Variant[] _inParams;
+	MySQLVal[] _inParams;
 	ParameterSpecialization[] _psa;
 	ColumnSpecialization[] _columnSpecials;
 	ulong _lastInsertID;
@@ -205,23 +192,15 @@ public:
 		_psa.length      = numParams;
 	}
 
-        private void _assignArgImpl(T)(size_t index, ref T val)
+        private void _assignArgImpl(T)(size_t index, auto ref T val)
         {
-            static if(isSafeType!T)
-            {
-                // override Variant's unsafe mechanism, we know everything is safe.
-                (() @trusted { _inParams[index] = val; })();
-            }
-            else
-            {
-                _inParams[index] = val;
-            }
+            _inParams[index] = val;
         }
 
 	/++
 	Prepared statement parameter setter.
 
-	The value may, but doesn't have to be, wrapped in a Variant. If so,
+	The value may, but doesn't have to be, wrapped in a MySQLVal. If so,
 	null is handled correctly.
 
 	The value may, but doesn't have to be, a pointer to the desired value.
@@ -240,7 +219,7 @@ public:
 	Params: index = The zero based index
 	+/
 	void setArg(T)(size_t index, T val, ParameterSpecialization psn = PSN(0, SQLType.INFER_FROM_D_TYPE, 0, null))
-		if(!isInstanceOf!(Nullable, T))
+		if(!isInstanceOf!(Nullable, T) && !is(T == Variant))
 	{
 		// Now in theory we should be able to check the parameter type here, since the
 		// protocol is supposed to send us type information for the parameters, but this
@@ -264,6 +243,17 @@ public:
 			setArg(index, null, psn);
 		else
 			setArg(index, val.get(), psn);
+	}
+
+        deprecated("Using Variant is deprecated, please use MySQLVal instead")
+	void setArg(T)(size_t index, T val, ParameterSpecialization psn = PSN(0, SQLType.INFER_FROM_D_TYPE, 0, null))
+		if(is(T == Variant))
+	{
+		enforce!MYX(index < _numParams, "Parameter index out of range.");
+
+                _assignArgImpl(index, _toVal(val));
+		psn.pIndex = index;
+		_psa[index] = psn;
 	}
 
 	@("setArg-typeMods")
@@ -305,11 +295,13 @@ public:
 		// Note: Variant doesn't seem to support
 		// `shared(T)` or `shared(const(T)`. Only `shared(immutable(T))`.
 
+                // Further note, shared immutable(int) is really
+                // immutable(int). This test is a duplicate, so removed.
 		// Test shared immutable(int)
-		{
+		/*{
 			shared immutable(int) i = 113;
 			assert(cn.exec(insertSQL, i) == 1);
-		}
+		}*/
 	}
 
 	/++
@@ -324,7 +316,7 @@ public:
 	Type_Mappings: $(TYPE_MAPPINGS)
 	+/
 	void setArgs(T...)(T args)
-		if(T.length == 0 || !is(T[0] == Variant[]))
+		if(T.length == 0 || (!is(T[0] == Variant[]) && !is(T[0] == MySQLVal[])))
 	{
 		enforce!MYX(args.length == _numParams, "Argument list supplied does not match the number of parameters.");
 
@@ -333,9 +325,9 @@ public:
 	}
 
 	/++
-	Bind a Variant[] as the parameters of a prepared statement.
+	Bind a MySQLVal[] as the parameters of a prepared statement.
 
-	You can use this method to bind a set of variables in Variant form to
+	You can use this method to bind a set of variables in MySQLVal form to
 	the parameters of a prepared statement.
 
 	Parameter specializations (ie, for chunked transfer) can be added if required.
@@ -359,13 +351,12 @@ public:
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params:
-	args = External list of Variants to be used as parameters
+	args = External list of MySQLVal to be used as parameters
 	psnList = Any required specializations
 	+/
-	void setArgs(Variant[] args, ParameterSpecialization[] psnList=null)
+	void setArgs(MySQLVal[] args, ParameterSpecialization[] psnList=null) @safe
 	{
 		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
-                // can't be @safe because of the postblit for Variant
 		_inParams[] = args[];
 		if (psnList !is null)
 		{
@@ -374,14 +365,41 @@ public:
 		}
 	}
 
+        /// ditto
+        deprecated("Using Variant is deprecated, please use MySQLVal instead")
+	void setArgs(Variant[] args, ParameterSpecialization[] psnList=null)
+        {
+            enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
+            foreach(i, ref arg; args)
+                setArg(i, arg);
+            if (psnList !is null)
+            {
+                foreach (PSN psn; psnList)
+                    _psa[psn.pIndex] = psn;
+            }
+        }
+
 	/++
 	Prepared statement parameter getter.
 
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params: index = The zero based index
+
+        Note: The Variant version of this function, getArg, is deprecated.
+        safeGetArg will eventually be renamed getArg when it is removed.
 	+/
+        deprecated("Using Variant is deprecated, please use safeGetArg instead")
 	Variant getArg(size_t index)
+	{
+		enforce!MYX(index < _numParams, "Parameter index out of range.");
+
+                // convert to Variant.
+                return _toVar(_inParams[index]);
+	}
+
+        /// ditto
+	MySQLVal safeGetArg(size_t index) @safe
 	{
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
 		return _inParams[index];
@@ -458,7 +476,7 @@ public:
 		assert(rs[1].isNull(0));
 		assert(rs[1][0].type == typeid(typeof(null)));
 
-		preparedInsert.setArg(0, Variant(null));
+		preparedInsert.setArg(0, MySQLVal(null));
 		cn.exec(preparedInsert);
 		rs = cn.query(selectSQL).array;
 		assert(rs.length == 3);

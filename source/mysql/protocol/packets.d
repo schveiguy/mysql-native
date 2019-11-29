@@ -29,6 +29,7 @@ See_Also: $(LINK http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protoc
 +/
 struct OKErrorPacket
 {
+    @safe:
 	bool     error;
 	ulong    affected;
 	ulong    insertID;
@@ -95,6 +96,7 @@ See_Also: $(LINK http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protoc
 +/
 struct FieldDescription
 {
+    @safe:
 private:
 	string   _db;
 	string   _table;
@@ -219,6 +221,7 @@ packets is sent, but they contain no useful information and are all the same.
 +/
 struct ParamDescription
 {
+    @safe:
 private:
 	ushort _type;
 	FieldFlags _flags;
@@ -266,6 +269,7 @@ See_Also: $(LINK http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protoc
 +/
 struct EOFPacket
 {
+    @safe:
 private:
 	ushort _warnings;
 	ushort _serverStatus;
@@ -312,6 +316,7 @@ before the row data packets can be read.
 +/
 struct ResultSetHeaders
 {
+    @safe:
 	import mysql.connection;
 
 private:
@@ -401,6 +406,7 @@ As noted in `ParamDescription` description, parameter descriptions are not fully
 +/
 struct PreparedStmtHeaders
 {
+    @safe:
 	import mysql.connection;
 	
 package:

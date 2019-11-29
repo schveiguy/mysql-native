@@ -8,8 +8,8 @@
 		"memutils": "0.4.13",
 		"openssl": "1.1.4+1.0.1g",
 		"stdx-allocator": "2.77.5",
-		"taggedalgebraic": "0.11.6",
-		"unit-threaded": "0.7.45",
+		"taggedalgebraic": "0.11.7",
+		"unit-threaded": "0.7.55",
 		"vibe-core": "1.7.0"
 	}
 }

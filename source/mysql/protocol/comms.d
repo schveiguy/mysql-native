@@ -38,6 +38,14 @@ import mysql.protocol.packet_helpers;
 import mysql.protocol.packets;
 import mysql.protocol.sockets;
 
+/** Gets the value stored in an algebraic type based on its data type.
+*/
+import taggedalgebraic.taggedalgebraic;
+auto ref get(alias K, U)(auto ref TaggedAlgebraic!U ta) if (is(typeof(K) == TaggedAlgebraic!U.Kind))
+{
+    import taggedalgebraic.taggedunion;
+    return (cast(TaggedUnion!U)ta).value!K;
+}
 
 @safe:
 
@@ -134,7 +142,7 @@ package struct ProtocolPrepared
 						types[ct++] = cast(ubyte) ext;
 					types[ct++] = SIGNED;
 					reAlloc(2);
-					bool bv = isRef? *v.value!BitRef : v.value!Bit;
+					bool bv = isRef? *v.get!BitRef : v.get!Bit;
 					vals[vcl++] = 1;
 					vals[vcl++] = bv? 0x31: 0x30;
 					break;
@@ -144,7 +152,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.TINY;
 					types[ct++] = SIGNED;
 					reAlloc(1);
-					vals[vcl++] = isRef? *v.value!ByteRef : v.value!Byte;
+					vals[vcl++] = isRef? *v.get!ByteRef : v.get!Byte;
 					break;
 				case UByteRef:
 					isRef = true; goto case;
@@ -152,7 +160,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.TINY;
 					types[ct++] = UNSIGNED;
 					reAlloc(1);
-					vals[vcl++] = isRef? *v.value!UByteRef : v.value!UByte;
+					vals[vcl++] = isRef? *v.get!UByteRef : v.get!UByte;
 					break;
 				case ShortRef:
 					isRef = true; goto case;
@@ -160,7 +168,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.SHORT;
 					types[ct++] = SIGNED;
 					reAlloc(2);
-					short si = isRef? *v.value!ShortRef : v.value!Short;
+					short si = isRef? *v.get!ShortRef : v.get!Short;
 					vals[vcl++] = cast(ubyte) (si & 0xff);
 					vals[vcl++] = cast(ubyte) ((si >> 8) & 0xff);
 					break;
@@ -170,7 +178,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.SHORT;
 					types[ct++] = UNSIGNED;
 					reAlloc(2);
-					ushort us = isRef? *v.value!UShortRef : v.value!UShort;
+					ushort us = isRef? *v.get!UShortRef : v.get!UShort;
 					vals[vcl++] = cast(ubyte) (us & 0xff);
 					vals[vcl++] = cast(ubyte) ((us >> 8) & 0xff);
 					break;
@@ -180,7 +188,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.INT;
 					types[ct++] = SIGNED;
 					reAlloc(4);
-					int ii = isRef? *v.value!IntRef : v.value!Int;
+					int ii = isRef? *v.get!IntRef : v.get!Int;
 					vals[vcl++] = cast(ubyte) (ii & 0xff);
 					vals[vcl++] = cast(ubyte) ((ii >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((ii >> 16) & 0xff);
@@ -192,7 +200,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.INT;
 					types[ct++] = UNSIGNED;
 					reAlloc(4);
-					uint ui = isRef? *v.value!UIntRef : v.value!UInt;
+					uint ui = isRef? *v.get!UIntRef : v.get!UInt;
 					vals[vcl++] = cast(ubyte) (ui & 0xff);
 					vals[vcl++] = cast(ubyte) ((ui >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((ui >> 16) & 0xff);
@@ -204,7 +212,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.LONGLONG;
 					types[ct++] = SIGNED;
 					reAlloc(8);
-					long li = isRef? *v.value!LongRef : v.value!Long;
+					long li = isRef? *v.get!LongRef : v.get!Long;
 					vals[vcl++] = cast(ubyte) (li & 0xff);
 					vals[vcl++] = cast(ubyte) ((li >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((li >> 16) & 0xff);
@@ -220,7 +228,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.LONGLONG;
 					types[ct++] = UNSIGNED;
 					reAlloc(8);
-					ulong ul = isRef? *v.value!ULongRef : v.value!ULong;
+					ulong ul = isRef? *v.get!ULongRef : v.get!ULong;
 					vals[vcl++] = cast(ubyte) (ul & 0xff);
 					vals[vcl++] = cast(ubyte) ((ul >> 8) & 0xff);
 					vals[vcl++] = cast(ubyte) ((ul >> 16) & 0xff);
@@ -236,7 +244,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.FLOAT;
 					types[ct++] = SIGNED;
 					reAlloc(4);
-					float[1] f = [isRef? *v.value!FloatRef : v.value!Float];
+					float[1] f = [isRef? *v.get!FloatRef : v.get!Float];
 					ubyte[] uba = cast(ubyte[]) f[];
 					vals[vcl .. vcl + uba.length] = uba[];
 					vcl += uba.length;
@@ -247,7 +255,7 @@ package struct ProtocolPrepared
 					types[ct++] = SQLType.DOUBLE;
 					types[ct++] = SIGNED;
 					reAlloc(8);
-					double[1] d = [isRef? *v.value!DoubleRef : v.value!Double];
+					double[1] d = [isRef? *v.get!DoubleRef : v.get!Double];
 					ubyte[] uba = cast(ubyte[]) d[];
 					vals[vcl .. uba.length] = uba[];
 					vcl += uba.length;
@@ -257,7 +265,7 @@ package struct ProtocolPrepared
 				case Date:
 					types[ct++] = SQLType.DATE;
 					types[ct++] = SIGNED;
-					auto date = isRef? *v.value!DateRef : v.value!Date;
+					auto date = isRef? *v.get!DateRef : v.get!Date;
 					ubyte[] da = pack(date);
 					size_t l = da.length;
 					reAlloc(l);
@@ -269,7 +277,7 @@ package struct ProtocolPrepared
 				case Time:
 					types[ct++] = SQLType.TIME;
 					types[ct++] = SIGNED;
-					auto time = isRef? *v.value!TimeRef : v.value!Time;
+					auto time = isRef? *v.get!TimeRef : v.get!Time;
 					ubyte[] ta = pack(time);
 					size_t l = ta.length;
 					reAlloc(l);
@@ -281,7 +289,7 @@ package struct ProtocolPrepared
 				case DateTime:
 					types[ct++] = SQLType.DATETIME;
 					types[ct++] = SIGNED;
-					auto dt = isRef? *v.value!DateTimeRef : v.value!DateTime;
+					auto dt = isRef? *v.get!DateTimeRef : v.get!DateTime;
 					ubyte[] da = pack(dt);
 					size_t l = da.length;
 					reAlloc(l);
@@ -293,7 +301,7 @@ package struct ProtocolPrepared
 				case Timestamp:
 					types[ct++] = SQLType.TIMESTAMP;
 					types[ct++] = SIGNED;
-					auto tms = isRef? *v.value!TimestampRef : v.value!Timestamp;
+					auto tms = isRef? *v.get!TimestampRef : v.get!Timestamp;
 					auto dt = mysql.protocol.packet_helpers.toDateTime(tms.rep);
 					ubyte[] da = pack(dt);
 					size_t l = da.length;
@@ -309,7 +317,7 @@ package struct ProtocolPrepared
 					else
 						types[ct++] = cast(ubyte) ext;
 					types[ct++] = SIGNED;
-					const char[] ca = isRef? *v.value!TextRef : v.value!Text;
+					const char[] ca = isRef? *v.get!TextRef : v.get!Text;
 					ubyte[] packed = packLCS(ca);
 					reAlloc(packed.length);
 					vals[vcl..vcl+packed.length] = packed[];
@@ -323,7 +331,7 @@ package struct ProtocolPrepared
 					else
 						types[ct++] = cast(ubyte) ext;
 					types[ct++] = SIGNED;
-					const ubyte[] uba = isRef? *v.value!BlobRef : v.value!Blob;
+					const ubyte[] uba = isRef? *v.get!BlobRef : v.get!Blob;
 					ubyte[] packed = packLCS(uba);
 					reAlloc(packed.length);
 					vals[vcl..vcl+packed.length] = packed[];
@@ -785,7 +793,7 @@ package(mysql) ubyte[] makeToken(string password, ubyte[] authBuf)
 }
 
 /// Get the next `mysql.result.Row` of a pending result set.
-package(mysql) Row getNextRow(Connection conn)
+package(mysql) SafeRow getNextRow(Connection conn)
 {
 	scope(failure) conn.kill();
 
@@ -795,7 +803,7 @@ package(mysql) Row getNextRow(Connection conn)
 		conn._headersPending = false;
 	}
 	ubyte[] packet;
-	Row rr;
+	SafeRow rr;
 	packet = conn.getPacket();
 	if(packet.front == ResultPacketMarker.error)
 		throw new MYXReceived(OKErrorPacket(packet), __FILE__, __LINE__);
@@ -806,9 +814,9 @@ package(mysql) Row getNextRow(Connection conn)
 		return rr;
 	}
 	if (conn._binaryPending)
-		rr = Row(conn, packet, conn._rsh, true);
+		rr = SafeRow(conn, packet, conn._rsh, true);
 	else
-		rr = Row(conn, packet, conn._rsh, false);
+		rr = SafeRow(conn, packet, conn._rsh, false);
 	//rr._valid = true;
 	return rr;
 }
@@ -1007,7 +1015,7 @@ Get a textual report on the server status.
 
 (COM_STATISTICS)
 +/
-package(mysql) string serverStats(Connection conn)
+package(mysql) string serverStats(Connection conn) @trusted
 {
 	conn.sendCmd(CommandType.STATISTICS, []);
 	return cast(string) conn.getPacket();

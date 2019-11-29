@@ -8,15 +8,17 @@ import mysql.commands;
 import mysql.exceptions;
 import mysql.protocol.sockets;
 import mysql.result;
+import mysql.types;
 
 struct SQLValue
 {
 	bool isNull;
 	bool isIncomplete;
-	Variant _value;
+	MySQLVal _value;
 
+        @safe: 
 	// empty template as a template and non-template won't be added to the same overload set
-	@property inout(Variant) value()() inout
+	@property inout(MySQLVal) value()() inout
 	{
 		enforce!MYX(!isNull, "SQL value is null");
 		enforce!MYX(!isIncomplete, "SQL value not complete");
@@ -41,6 +43,7 @@ struct SQLValue
 /// Length Coded Binary Value
 struct LCB
 {
+        @safe:
 	/// True if the `LCB` contains a null value
 	bool isNull;
 

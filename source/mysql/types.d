@@ -1,6 +1,6 @@
 ﻿/// Structures for MySQL types not built-in to D/Phobos.
 module mysql.types;
-import taggedalgebraic.taggedunion;
+import taggedalgebraic.taggedalgebraic;
 import std.datetime : DateTime, TimeOfDay, Date;
 
 /++
@@ -34,6 +34,12 @@ struct Timestamp
 
 union _MYTYPE
 {
+    // blobs are const because of the indirection. In this case, it's not
+    // important because nobody is going to use MySQLVal to maintain their
+    // ubyte array.
+    const(ubyte)[] Blob;
+
+@disableIndex: // do not want indexing on anything other than blobs.
     typeof(null) Null;
     bool Bit;
     ubyte UByte;
@@ -50,8 +56,8 @@ union _MYTYPE
     TimeOfDay Time;
     .Timestamp Timestamp;
     .Date Date;
+
     string Text;
-    ubyte[] Blob;
 
     // pointers
     const(bool)* BitRef;
@@ -73,4 +79,52 @@ union _MYTYPE
     const(.Timestamp)* TimestampRef;
 }
 
-alias MySQLVal = TaggedUnion!_MYTYPE;
+alias MySQLVal = TaggedAlgebraic!_MYTYPE;
+
+// helper to convert variants to MySQLVal. Used wherever variant is still used.
+import std.variant : Variant;
+package MySQLVal _toVal(Variant v)
+{
+    // unfortunately, we need to use a giant switch. But hopefully people will stop using Variant, and this will go away.
+    string ts = v.type.toString();
+    bool isRef;
+    if (ts[$-1] == '*')
+    {
+        ts.length = ts.length-1;
+        isRef= true;
+    }
+
+    import std.meta;
+    import std.traits;
+    import mysql.exceptions;
+    alias AllTypes = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, DateTime, TimeOfDay, Date, string, ubyte[], Timestamp);
+    switch (ts)
+    {
+        static foreach(Type; AllTypes)
+        {
+        case fullyQualifiedName!Type:
+        case "const(" ~ fullyQualifiedName!Type ~ ")":
+        case "immutable(" ~ fullyQualifiedName!Type ~ ")":
+        case "shared(immutable(" ~ fullyQualifiedName!Type ~ "))":
+            if(isRef)
+                return MySQLVal(v.get!(const(Type*)));
+            else
+                return MySQLVal(v.get!(const(Type)));
+        }
+    default:
+        throw new MYX("Unsupported Database Variant Type: " ~ ts);
+    }
+}
+
+// convert MySQLVal to variant. Will eventually be removed when Variant support
+// is removed.
+package Variant _toVar(MySQLVal v)
+{
+    return v.apply!((a) => Variant(a));
+}
+
+// helper to fix deficiency of convertsTo in TaggedAlgebraic
+package bool convertsTo(T)(ref MySQLVal val)
+{
+    return v.apply!((a) => is(typeof(a) : T));
+}

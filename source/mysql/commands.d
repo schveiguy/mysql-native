@@ -46,7 +46,7 @@ struct ColumnSpecialization
 	size_t  cIndex;    // parameter number 0 - number of params-1
 	ushort  type;
 	uint    chunkSize; /// In bytes
-	void delegate(const(ubyte)[] chunk, bool finished) chunkDelegate;
+	void delegate(const(ubyte)[] chunk, bool finished) @safe chunkDelegate;
 }
 ///ditto
 alias CSN = ColumnSpecialization;
@@ -76,7 +76,7 @@ unittest
 	immutable selectSQL = "SELECT `data` FROM `columnSpecial`";
 	ubyte[] received;
 	bool lastValueOfFinished;
-	void receiver(const(ubyte)[] chunk, bool finished)
+	void receiver(const(ubyte)[] chunk, bool finished) @safe
 	{
 		assert(lastValueOfFinished == false);
 
@@ -381,7 +381,7 @@ package ResultRange queryImpl(ColumnSpecialization[] csa,
 		conn._rsh.addSpecializations(csa);
 
 	conn._headersPending = false;
-	return ResultRange(conn, conn._rsh, conn._rsh.fieldNames);
+	return ResultRange(SafeResultRange(conn, conn._rsh, conn._rsh.fieldNames));
 }
 
 /++

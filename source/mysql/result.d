@@ -12,6 +12,7 @@ import mysql.exceptions;
 import mysql.protocol.comms;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
+import mysql.types;
 
 /++
 A struct to represent a single row of a result set.
@@ -27,17 +28,18 @@ I have been agitating for some kind of null indicator that can be set for a
 Variant without destroying its inherent type information. If this were the
 case, then the bool array could disappear.
 +/
-struct Row
+struct SafeRow
 {
 	import mysql.connection;
 
 package:
-	Variant[]   _values; // Temporarily "package" instead of "private"
+	MySQLVal[]   _values; // Temporarily "package" instead of "private"
 private:
 	bool[]      _nulls;
 	string[]    _names;
 
 public:
+        @safe:
 
 	/++
 	A constructor to extract the column data from a row data packet.
@@ -66,7 +68,7 @@ public:
 	Params: i = the zero based index of the column whose value is required.
 	Returns: A Variant holding the column value.
 	+/
-	inout(Variant) opIndex(size_t i) inout
+	inout(MySQLVal) opIndex(size_t i) inout
 	{
 		enforce!MYX(_nulls.length > 0, format("Cannot get column index %d. There are no columns", i));
 		enforce!MYX(i < _nulls.length, format("Cannot get column index %d. The last available index is %d", i, _nulls.length-1));
@@ -170,10 +172,19 @@ public:
 	{
 		import std.stdio;
 
-		foreach(Variant v; _values)
-			writef("%s, ", v.toString());
-		writeln("");
+                writefln("%(%s, %)", _values);
 	}
+}
+
+/// ditto
+struct Row
+{
+    SafeRow safe;
+    alias safe this;
+    deprecated("Variant support is deprecated. Please use SafeRow instead of Row.")
+    Variant opIndex(size_t idx) const {
+        return _toVar(safe[idx]);
+    }
 }
 
 /++
@@ -206,12 +217,13 @@ ResultRange oneAtATime = myConnection.query("SELECT * from myTable");
 Row[]       allAtOnce  = myConnection.query("SELECT * from myTable").array;
 ---
 +/
-struct ResultRange
+struct SafeResultRange
 {
 private:
+@safe:
 	Connection       _con;
 	ResultSetHeaders _rsh;
-	Row              _row; // current row
+	SafeRow          _row; // current row
 	string[]         _colNames;
 	size_t[string]   _colNameIndicies;
 	ulong            _numRowsFetched;
@@ -261,7 +273,7 @@ public:
 	/++
 	Gets the current row
 	+/
-	@property inout(Row) front() pure inout
+	@property inout(SafeRow) front() pure inout
 	{
 		ensureValid();
 		enforce!MYX(!empty, "Attempted 'front' on exhausted result sequence.");
@@ -284,11 +296,11 @@ public:
 
 	Type_Mappings: $(TYPE_MAPPINGS)
 	+/
-	Variant[string] asAA()
+	MySQLVal[string] asAA()
 	{
 		ensureValid();
 		enforce!MYX(!empty, "Attempted 'front' on exhausted result sequence.");
-		Variant[string] aa;
+		MySQLVal[string] aa;
 		foreach (size_t i, string s; _colNames)
 			aa[s] = _row._values[i];
 		return aa;
@@ -324,4 +336,23 @@ public:
 	Note that this is not neccessarlly the same as the length of the range.
 	+/
 	@property ulong rowCount() const pure nothrow { return _numRowsFetched; }
+}
+
+struct ResultRange
+{
+    SafeResultRange safe;
+    alias safe this;
+    deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
+    inout(Row) front() inout { return inout(Row)(safe.front); }
+
+    deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
+    Variant[string] asAA()
+    {
+        ensureValid();
+        enforce!MYX(!safe.empty, "Attempted 'front' on exhausted result sequence.");
+        Variant[string] aa;
+        foreach (size_t i, string s; _colNames)
+            aa[s] = _toVar(_row._values[i]);
+        return aa;
+    }
 }
