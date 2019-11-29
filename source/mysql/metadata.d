@@ -1,4 +1,4 @@
-﻿/// Retrieve metadata from a DB.
+/// Retrieve metadata from a DB.
 module mysql.metadata;
 
 import std.array;
@@ -10,6 +10,7 @@ import mysql.commands;
 import mysql.exceptions;
 import mysql.protocol.sockets;
 import mysql.result;
+import mysql.types;
 
 /// A struct to hold column metadata
 struct ColumnInfo
@@ -24,16 +25,16 @@ struct ColumnInfo
 	size_t index;
 	/++
 	Is the COLUMN_DEFAULT column (in the information schema's COLUMNS table) NULL?
-	
+
 	What this means:
-	
+
 	On MariaDB 10.2.7 and up:
 	- Does the column have a default value?
-	
+
 	On MySQL and MariaDB 10.2.6 and below:
 	- This can be true if the column doesn't have a default value OR
 	if NULL is the column's default value.
-	
+
 	See_also:
 	See COLUMN_DEFAULT description at
 	$(LINK https://mariadb.com/kb/en/library/information-schema-columns-table/)
@@ -41,7 +42,7 @@ struct ColumnInfo
 	bool defaultNull;
 	/++
 	The default value as a string if not NULL.
-	
+
 	Depending on the database (see comments for `defaultNull` and the
 	related "see also" link there), this may be either `null` or `"NULL"`
 	if the column's default value is NULL.
@@ -100,7 +101,7 @@ information that is available to the connected user. This may well be quite limi
 struct MetaData
 {
 	import mysql.connection;
-	
+
 private:
 	Connection _con;
 
@@ -110,13 +111,13 @@ private:
 		string query = procs ? "SHOW PROCEDURE STATUS WHERE db='": "SHOW FUNCTION STATUS WHERE db='";
 		query ~= _con.currentDB ~ "'";
 
-		auto rs = _con.query(query).array;
+		auto rs = _con.query(query).safe.array;
 		MySQLProcedure[] pa;
 		pa.length = rs.length;
 		foreach (size_t i; 0..rs.length)
 		{
 			MySQLProcedure foo;
-			Row r = rs[i];
+			auto r = rs[i];
 			foreach (int j; 0..11)
 			{
 				if (r.isNull(j))
@@ -174,16 +175,16 @@ public:
 
 	/++
 	List the available databases
-	
+
 	Note that if you have connected using the credentials of a user with
 	limited permissions you may not get many results.
-	
+
 	Returns:
 		An array of strings
 	+/
 	string[] databases()
 	{
-		auto rs = _con.query("SHOW DATABASES").array;
+		auto rs = _con.query("SHOW DATABASES").safe.array;
 		string[] dbNames;
 		dbNames.length = rs.length;
 		foreach (size_t i; 0..rs.length)
@@ -193,13 +194,13 @@ public:
 
 	/++
 	List the tables in the current database
-	
+
 	Returns:
 		An array of strings
 	+/
 	string[] tables()
 	{
-		auto rs = _con.query("SHOW TABLES").array;
+		auto rs = _con.query("SHOW TABLES").safe.array;
 		string[] tblNames;
 		tblNames.length = rs.length;
 		foreach (size_t i; 0..rs.length)
@@ -209,7 +210,7 @@ public:
 
 	/++
 	Get column metadata for a table in the current database
-	
+
 	Params:
 		table = The table name
 	Returns:
@@ -229,13 +230,13 @@ public:
 			" COLUMN_KEY, EXTRA, PRIVILEGES, COLUMN_COMMENT" ~
 			" FROM information_schema.COLUMNS WHERE" ~
 			" table_schema='" ~ _con.currentDB ~ "' AND table_name='" ~ table ~ "'";
-		auto rs = _con.query(query).array;
+		auto rs = _con.query(query).safe.array;
 		ColumnInfo[] ca;
 		ca.length = rs.length;
 		foreach (size_t i; 0..rs.length)
 		{
 			ColumnInfo col;
-			Row r = rs[i];
+			auto r = rs[i];
 			for (int j = 1; j < 19; j++)
 			{
 				string t;

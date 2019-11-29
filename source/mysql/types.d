@@ -2,6 +2,7 @@
 module mysql.types;
 import taggedalgebraic.taggedalgebraic;
 import std.datetime : DateTime, TimeOfDay, Date;
+public import taggedalgebraic.taggedalgebraic : get;
 
 /++
 A simple struct to represent time difference.
@@ -127,5 +128,27 @@ package Variant _toVar(MySQLVal v)
 // helper to fix deficiency of convertsTo in TaggedAlgebraic
 package bool convertsTo(T)(ref MySQLVal val)
 {
-	return v.apply!((a) => is(typeof(a) : T));
+	return val.apply!((a) => is(typeof(a) : T));
+}
+
+package T coerce(T)(auto ref MySQLVal val)
+{
+	import std.conv : to;
+	static T convert(V)(ref V v)
+	{
+		static if(is(V : T))
+		{
+			return v;
+		}
+		else static if(is(typeof(v.to!T())))
+		{
+			return v.to!T;
+		}
+		else
+		{
+			import mysql.exceptions;
+			throw new MYX("Cannot coerce type " ~ V.stringof ~ " into type " ~ T.stringof);
+		}
+	}
+	return val.apply!convert();
 }

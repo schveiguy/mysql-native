@@ -342,10 +342,9 @@ struct ResultRange
 {
 	SafeResultRange safe;
 	alias safe this;
-	deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
-		inout(Row) front() inout { return inout(Row)(safe.front); }
+	inout(Row) front() inout { return inout(Row)(safe.front); }
 
-	deprecated("Usage of Variant is deprecated. Use SafeResultRange instead of ResultRange")
+	deprecated("Usage of Variant is deprecated. Use safe member to get a SafeResultRange")
 	Variant[string] asAA()
 	{
 		ensureValid();

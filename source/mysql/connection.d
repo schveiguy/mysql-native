@@ -17,6 +17,7 @@ import mysql.protocol.constants;
 import mysql.protocol.packets;
 import mysql.protocol.sockets;
 import mysql.result;
+import mysql.types;
 debug(MYSQLN_TESTS)
 {
 	import mysql.test.common;
@@ -324,7 +325,7 @@ struct BackwardCompatPrepared
 
 	///ditto
 	deprecated("Change 'preparedStmt.queryValue()' to 'conn.queryValue(preparedStmt)'")
-	Nullable!Variant queryValue()
+	Nullable!MySQLVal queryValue()
 	{
 		return .queryValue(_conn, _prepared);
 	}

@@ -24,6 +24,7 @@ import mysql.protocol.constants;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
 import mysql.result;
+import mysql.types;
 
 /// This feature is not yet implemented. It currently has no effect.
 /+
@@ -205,7 +206,15 @@ ulong exec(T...)(Connection conn, const(char[]) sql, T args)
 	return exec(conn, prepared);
 }
 ///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
 ulong exec(Connection conn, const(char[]) sql, Variant[] args)
+{
+	auto prepared = conn.prepare(sql);
+	prepared.setArgs(args);
+	return exec(conn, prepared);
+}
+///ditto
+ulong exec(Connection conn, const(char[]) sql, MySQLVal[] args)
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -228,7 +237,15 @@ ulong exec(T...)(Connection conn, ref Prepared prepared, T args)
 	return exec(conn, prepared);
 }
 ///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
 ulong exec(Connection conn, ref Prepared prepared, Variant[] args)
+{
+	prepared.setArgs(args);
+	return exec(conn, prepared);
+}
+
+///ditto
+ulong exec(Connection conn, ref Prepared prepared, MySQLVal[] args)
 {
 	prepared.setArgs(args);
 	return exec(conn, prepared);
@@ -331,7 +348,16 @@ ResultRange query(T...)(Connection conn, const(char[]) sql, T args)
 	return query(conn, prepared);
 }
 ///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
 ResultRange query(Connection conn, const(char[]) sql, Variant[] args)
+{
+	auto prepared = conn.prepare(sql);
+	prepared.setArgs(args);
+	return query(conn, prepared);
+}
+
+///ditto
+ResultRange query(Connection conn, const(char[]) sql, MySQLVal[] args)
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -354,7 +380,14 @@ ResultRange query(T...)(Connection conn, ref Prepared prepared, T args)
 	return query(conn, prepared);
 }
 ///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
 ResultRange query(Connection conn, ref Prepared prepared, Variant[] args)
+{
+	prepared.setArgs(args);
+	return query(conn, prepared);
+}
+///ditto
+ResultRange query(Connection conn, ref Prepared prepared, MySQLVal[] args)
 {
 	prepared.setArgs(args);
 	return query(conn, prepared);
@@ -461,6 +494,14 @@ Nullable!Row queryRow(T...)(Connection conn, const(char[]) sql, T args)
 	return queryRow(conn, prepared);
 }
 ///ditto
+Nullable!Row queryRow(Connection conn, const(char[]) sql, MySQLVal[] args)
+{
+	auto prepared = conn.prepare(sql);
+	prepared.setArgs(args);
+	return queryRow(conn, prepared);
+}
+///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
 Nullable!Row queryRow(Connection conn, const(char[]) sql, Variant[] args)
 {
 	auto prepared = conn.prepare(sql);
@@ -484,7 +525,14 @@ Nullable!Row queryRow(T...)(Connection conn, ref Prepared prepared, T args)
 	return queryRow(conn, prepared);
 }
 ///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
 Nullable!Row queryRow(Connection conn, ref Prepared prepared, Variant[] args)
+{
+	prepared.setArgs(args);
+	return queryRow(conn, prepared);
+}
+///ditto
+Nullable!Row queryRow(Connection conn, ref Prepared prepared, MySQLVal[] args)
 {
 	prepared.setArgs(args);
 	return queryRow(conn, prepared);
@@ -672,12 +720,12 @@ delegate.
 csa = An optional array of `ColumnSpecialization` structs. If you need to
 use this with a prepared statement, please use `mysql.prepared.Prepared.columnSpecials`.
 +/
-Nullable!Variant queryValue(Connection conn, const(char[]) sql, ColumnSpecialization[] csa = null)
+Nullable!MySQLVal queryValue(Connection conn, const(char[]) sql, ColumnSpecialization[] csa = null)
 {
 	return queryValueImpl(csa, conn, ExecQueryImplInfo(false, sql));
 }
 ///ditto
-Nullable!Variant queryValue(T...)(Connection conn, const(char[]) sql, T args)
+Nullable!MySQLVal queryValue(T...)(Connection conn, const(char[]) sql, T args)
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	auto prepared = conn.prepare(sql);
@@ -685,7 +733,15 @@ Nullable!Variant queryValue(T...)(Connection conn, const(char[]) sql, T args)
 	return queryValue(conn, prepared);
 }
 ///ditto
-Nullable!Variant queryValue(Connection conn, const(char[]) sql, Variant[] args)
+Nullable!MySQLVal queryValue(Connection conn, const(char[]) sql, MySQLVal[] args)
+{
+	auto prepared = conn.prepare(sql);
+	prepared.setArgs(args);
+	return queryValue(conn, prepared);
+}
+///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
+Nullable!MySQLVal queryValue(Connection conn, const(char[]) sql, Variant[] args)
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -693,7 +749,7 @@ Nullable!Variant queryValue(Connection conn, const(char[]) sql, Variant[] args)
 }
 
 ///ditto
-Nullable!Variant queryValue(Connection conn, ref Prepared prepared)
+Nullable!MySQLVal queryValue(Connection conn, ref Prepared prepared)
 {
 	auto preparedInfo = conn.registerIfNeeded(prepared.sql);
 	auto result = queryValueImpl(prepared.columnSpecials, conn, prepared.getExecQueryImplInfo(preparedInfo.statementId));
@@ -701,21 +757,28 @@ Nullable!Variant queryValue(Connection conn, ref Prepared prepared)
 	return result;
 }
 ///ditto
-Nullable!Variant queryValue(T...)(Connection conn, ref Prepared prepared, T args)
+Nullable!MySQLVal queryValue(T...)(Connection conn, ref Prepared prepared, T args)
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	prepared.setArgs(args);
 	return queryValue(conn, prepared);
 }
 ///ditto
-Nullable!Variant queryValue(Connection conn, ref Prepared prepared, Variant[] args)
+Nullable!MySQLVal queryValue(Connection conn, ref Prepared prepared, MySQLVal[] args)
+{
+	prepared.setArgs(args);
+	return queryValue(conn, prepared);
+}
+///ditto
+deprecated("Variant support is deprecated. Use MySQLVal[] instead of Variant[]")
+Nullable!MySQLVal queryValue(Connection conn, ref Prepared prepared, Variant[] args)
 {
 	prepared.setArgs(args);
 	return queryValue(conn, prepared);
 }
 
 ///ditto
-Nullable!Variant queryValue(Connection conn, ref BackwardCompatPrepared prepared)
+Nullable!MySQLVal queryValue(Connection conn, ref BackwardCompatPrepared prepared)
 {
 	auto p = prepared.prepared;
 	auto result = queryValue(conn, p);
@@ -724,21 +787,21 @@ Nullable!Variant queryValue(Connection conn, ref BackwardCompatPrepared prepared
 }
 
 /// Common implementation for `queryValue` overloads.
-package Nullable!Variant queryValueImpl(ColumnSpecialization[] csa, Connection conn,
+package Nullable!MySQLVal queryValueImpl(ColumnSpecialization[] csa, Connection conn,
 	ExecQueryImplInfo info)
 {
 	auto results = queryImpl(csa, conn, info);
 	if(results.empty)
-		return Nullable!Variant();
+		return Nullable!MySQLVal();
 	else
 	{
-		auto row = results.front;
+		auto row = results.safe.front;
 		results.close();
 
 		if(row.length == 0)
-			return Nullable!Variant();
+			return Nullable!MySQLVal();
 		else
-			return Nullable!Variant(row[0]);
+			return Nullable!MySQLVal(row[0]);
 	}
 }
 
