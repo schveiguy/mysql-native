@@ -341,12 +341,13 @@ package struct ProtocolPrepared
 				case BlobRef:
 					isRef = true; goto case;
 				case Blob:
+				case CBlob:
 					if (ext == SQLType.INFER_FROM_D_TYPE)
 						types[ct++] = SQLType.TINYBLOB;
 					else
 						types[ct++] = cast(ubyte) ext;
 					types[ct++] = SIGNED;
-					const ubyte[] uba = isRef? *v.kget!BlobRef : v.kget!Blob;
+					const ubyte[] uba = isRef? *v.kget!BlobRef : (ts == Blob ? v.kget!Blob : v.kget!CBlob);
 					ubyte[] packed = packLCS(uba);
 					reAlloc(packed.length);
 					vals[vcl..vcl+packed.length] = packed[];

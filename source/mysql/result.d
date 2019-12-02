@@ -68,7 +68,7 @@ public:
 	Params: i = the zero based index of the column whose value is required.
 	Returns: A Variant holding the column value.
 	+/
-	inout(MySQLVal) opIndex(size_t i) inout
+	ref inout(MySQLVal) opIndex(size_t i) inout
 	{
 		enforce!MYX(_nulls.length > 0, format("Cannot get column index %d. There are no columns", i));
 		enforce!MYX(i < _nulls.length, format("Cannot get column index %d. The last available index is %d", i, _nulls.length-1));
@@ -189,7 +189,7 @@ struct UnsafeRow
 	Row safe;
 	alias safe this;
 	deprecated("Variant support is deprecated. Please switch to using MySQLVal")
-	Variant opIndex(size_t idx) const {
+	Variant opIndex(size_t idx) {
 		return safe[idx].asVariant;
 	}
 }

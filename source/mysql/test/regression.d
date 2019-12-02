@@ -101,7 +101,7 @@ unittest
 	auto results = cn.query(stmt).array;
 	assert(results.length == 1);
 	auto pText = results[0][0].peek!string();
-	auto pBlob = results[0][1].peek!(const(ubyte)[])();
+	auto pBlob = results[0][1].peek!(ubyte[])();
 	assert(pText);
 	assert(pBlob);
 	assert(*pText == "hello");

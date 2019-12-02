@@ -18,8 +18,8 @@ void main(string[] args)
 	// Query
 	ResultRange range = conn.query("SELECT * FROM `tablename`");
 	Row row = range.front;
-	Variant id = row[0];
-	Variant name = row[1];
+	auto id = row[0];
+	auto name = row[1];
 	assert(id == 1);
 	assert(name == "Ann");
 
@@ -32,7 +32,7 @@ void main(string[] args)
 		"SELECT * FROM `tablename` WHERE `name`=? OR `name`=?",
 		"Bob", "Bobby");
 	bobs.close(); // Skip them
-	
+
 	Row[] rs = conn.query( // Same SQL as above, but only prepared once and is reused!
 		"SELECT * FROM `tablename` WHERE `name`=? OR `name`=?",
 		"Bob", "Ann").array; // Get ALL the rows at once

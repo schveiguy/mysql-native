@@ -39,7 +39,8 @@ union _MYTYPE
 	// blobs are const because of the indirection. In this case, it's not
 	// important because nobody is going to use MySQLVal to maintain their
 	// ubyte array.
-	const(ubyte)[] Blob;
+	ubyte[] Blob;
+	const(ubyte)[] CBlob;
 
 	typeof(null) Null;
 	bool Bit;
@@ -193,7 +194,7 @@ TypeInfo type(MySQLVal val) @safe pure nothrow
 }
 
 /// ditto
-T *peek(T)(MySQLVal val)
+T *peek(T)(ref MySQLVal val)
 {
 	// use exact type.
 	import taggedalgebraic.taggedalgebraic : get;
