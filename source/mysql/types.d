@@ -102,10 +102,11 @@ package MySQLVal _toVal(Variant v)
 	import std.meta;
 	import std.traits;
 	import mysql.exceptions;
-	alias AllTypes = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, DateTime, TimeOfDay, Date, string, ubyte[], Timestamp);
+	alias BasicTypes = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, DateTime, TimeOfDay, Date, Timestamp);
+	alias ArrayTypes = AliasSeq!(char, ubyte);
 	switch (ts)
 	{
-		static foreach(Type; AllTypes)
+		static foreach(Type; BasicTypes)
 		{
 		case fullyQualifiedName!Type:
 		case "const(" ~ fullyQualifiedName!Type ~ ")":
@@ -116,6 +117,17 @@ package MySQLVal _toVal(Variant v)
 			else
 				return MySQLVal(v.get!(const(Type)));
 		}
+		static foreach(Type; ArrayTypes)
+		{
+		case fullyQualifiedName!Type ~ "[]":
+		case "const(" ~ fullyQualifiedName!Type ~ ")[]":
+		case "immutable(" ~ fullyQualifiedName!Type ~ ")[]":
+		case "shared(immutable(" ~ fullyQualifiedName!Type ~ "))[]":
+			if(isRef)
+				return MySQLVal(v.get!(const(Type[]*)));
+			else
+				return MySQLVal(v.get!(const(Type[])));
+		}
 	default:
 		throw new MYX("Unsupported Database Variant Type: " ~ ts);
 	}
@@ -124,13 +136,11 @@ package MySQLVal _toVal(Variant v)
 /++
 Use this as a stop-gap measure in order to keep Variant compatibility. Append this to any function which returns a MySQLVal until you can update your code.
 +/
-deprecated("Variant support is deprecated. Please switch to using MySQLVal")
 Variant asVariant(MySQLVal v)
 {
 	return v.apply!((a) => Variant(a));
 }
 
-deprecated("Variant support is deprecated. Please switch to using MySQLVal")
 Nullable!Variant asVariant(Nullable!MySQLVal v)
 {
 	if(v.isNull)

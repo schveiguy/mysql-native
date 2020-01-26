@@ -809,7 +809,7 @@ package(mysql) ubyte[] makeToken(string password, ubyte[] authBuf)
 }
 
 /// Get the next `mysql.result.Row` of a pending result set.
-package(mysql) Row getNextRow(Connection conn)
+package(mysql) SafeRow getNextRow(Connection conn)
 {
 	scope(failure) conn.kill();
 
@@ -819,7 +819,7 @@ package(mysql) Row getNextRow(Connection conn)
 		conn._headersPending = false;
 	}
 	ubyte[] packet;
-	Row rr;
+	SafeRow rr;
 	packet = conn.getPacket();
 	if(packet.front == ResultPacketMarker.error)
 		throw new MYXReceived(OKErrorPacket(packet), __FILE__, __LINE__);
@@ -830,9 +830,9 @@ package(mysql) Row getNextRow(Connection conn)
 		return rr;
 	}
 	if (conn._binaryPending)
-		rr = Row(conn, packet, conn._rsh, true);
+		rr = SafeRow(conn, packet, conn._rsh, true);
 	else
-		rr = Row(conn, packet, conn._rsh, false);
+		rr = SafeRow(conn, packet, conn._rsh, false);
 	//rr._valid = true;
 	return rr;
 }

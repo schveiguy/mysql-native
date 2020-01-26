@@ -9,7 +9,7 @@ import std.socket;
 import std.string;
 import std.typecons;
 
-import mysql.commands;
+import mysql.safe.commands;
 import mysql.exceptions;
 import mysql.prepared;
 import mysql.protocol.comms;
@@ -309,14 +309,14 @@ struct BackwardCompatPrepared
 	deprecated("Change 'preparedStmt.query()' to 'conn.query(preparedStmt)'")
 	ResultRange query()
 	{
-		return .query(_conn, _prepared);
+		return .query(_conn, _prepared).unsafe;
 	}
 
 	///ditto
 	deprecated("Change 'preparedStmt.queryRow()' to 'conn.queryRow(preparedStmt)'")
 	Nullable!Row queryRow()
 	{
-		return .queryRow(_conn, _prepared);
+		return .queryRow(_conn, _prepared).unsafe;
 	}
 
 	///ditto
@@ -328,9 +328,9 @@ struct BackwardCompatPrepared
 
 	///ditto
 	deprecated("Change 'preparedStmt.queryValue()' to 'conn.queryValue(preparedStmt)'")
-	Nullable!MySQLVal queryValue()
+	Nullable!Variant queryValue() @system
 	{
-		return .queryValue(_conn, _prepared);
+		return .queryValue(_conn, _prepared).asVariant;
 	}
 }
 

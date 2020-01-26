@@ -17,7 +17,7 @@ import std.string;
 import std.traits;
 import std.variant;
 
-import mysql.commands;
+import mysql.safe.commands;
 import mysql.connection;
 import mysql.exceptions;
 import mysql.protocol.extra_types;

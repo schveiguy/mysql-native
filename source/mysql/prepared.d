@@ -7,7 +7,7 @@ import std.traits;
 import std.typecons;
 import std.variant;
 
-import mysql.commands;
+import mysql.safe.commands;
 import mysql.exceptions;
 import mysql.protocol.comms;
 import mysql.protocol.constants;
@@ -241,7 +241,6 @@ public:
 			setArg(index, val.get(), psn);
 	}
 
-	deprecated("Using Variant is deprecated, please use MySQLVal instead")
 	void setArg(T)(size_t index, T val, ParameterSpecialization psn = PSN(0, SQLType.INFER_FROM_D_TYPE, 0, null)) @system
 		if(is(T == Variant))
 	{
@@ -362,7 +361,6 @@ public:
 	}
 
 	/// ditto
-	deprecated("Using Variant is deprecated, please use MySQLVal instead")
 	void setArgs(Variant[] args, ParameterSpecialization[] psnList=null) @system
 	{
 		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
@@ -393,7 +391,6 @@ public:
 	}
 
 	/// ditto
-	deprecated("Using Variant is deprecated, please use getArg instead")
 	Variant vGetArg(size_t index) @system
 	{
 		// convert to Variant.
@@ -438,7 +435,7 @@ public:
 		immutable selectSQL = "SELECT * FROM `setNullArg`";
 		auto preparedInsert = cn.prepare(insertSQL);
 		assert(preparedInsert.sql == insertSQL);
-		Row[] rs;
+		SafeRow[] rs;
 
 		{
 			Nullable!int nullableInt;

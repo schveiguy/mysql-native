@@ -5,7 +5,6 @@ import std.conv;
 import std.exception;
 import std.range;
 import std.string;
-import std.variant;
 
 import mysql.connection;
 import mysql.exceptions;
@@ -13,6 +12,8 @@ import mysql.protocol.comms;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
 public import mysql.types;
+import std.typecons : Nullable;
+import std.variant;
 
 /++
 A struct to represent a single row of a result set.
@@ -28,7 +29,7 @@ I have been agitating for some kind of null indicator that can be set for a
 Variant without destroying its inherent type information. If this were the
 case, then the bool array could disappear.
 +/
-struct Row
+struct SafeRow
 {
 	import mysql.connection;
 
@@ -88,7 +89,7 @@ public:
 	unittest
 	{
 		import mysql.test.common;
-		import mysql.commands;
+		import mysql.safe.commands;
 		mixin(scopedCn);
 		cn.exec("DROP TABLE IF EXISTS `row_getName`");
 		cn.exec("CREATE TABLE `row_getName` (someValue INTEGER, another INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
@@ -177,21 +178,41 @@ public:
 }
 
 /// ditto
-deprecated("Usage of Variant is deprecated. Please switch code to use safe MySQLVal types")
-UnsafeRow unsafe(Row r)
+struct UnsafeRow
 {
-	return UnsafeRow(r);
+	SafeRow _safe;
+	alias _safe this;
+	Variant opIndex(size_t idx) {
+		return _safe[idx].asVariant;
+	}
 }
 
 /// ditto
-struct UnsafeRow
+UnsafeRow unsafe(SafeRow r) @safe
 {
-	Row safe;
-	alias safe this;
-	deprecated("Variant support is deprecated. Please switch to using MySQLVal")
-	Variant opIndex(size_t idx) {
-		return safe[idx].asVariant;
-	}
+	return Row(r);
+}
+
+/// ditto
+Nullable!UnsafeRow unsafe(Nullable!SafeRow r) @safe
+{
+	if(r.isNull)
+		return Nullable!UnsafeRow();
+	return Nullable!UnsafeRow(r.get.unsafe);
+}
+
+
+SafeRow safe(UnsafeRow r) @safe
+{
+	return r._safe;
+}
+
+
+Nullable!SafeRow safe(Nullable!UnsafeRow r) @safe
+{
+	if(r.isNull)
+		return Nullable!SafeRow();
+	return Nullable!SafeRow(r.get.safe);
 }
 
 /++
@@ -224,13 +245,13 @@ ResultRange oneAtATime = myConnection.query("SELECT * from myTable");
 Row[]       allAtOnce  = myConnection.query("SELECT * from myTable").array;
 ---
 +/
-struct ResultRange
+struct SafeResultRange
 {
 private:
 @safe:
 	Connection       _con;
 	ResultSetHeaders _rsh;
-	Row              _row; // current row
+	SafeRow          _row; // current row
 	string[]         _colNames;
 	size_t[string]   _colNameIndicies;
 	ulong            _numRowsFetched;
@@ -280,7 +301,7 @@ public:
 	/++
 	Gets the current row
 	+/
-	@property inout(Row) front() pure inout
+	@property inout(SafeRow) front() pure inout
 	{
 		ensureValid();
 		enforce!MYX(!empty, "Attempted 'front' on exhausted result sequence.");
@@ -346,20 +367,12 @@ public:
 }
 
 /// ditto
-deprecated("Usage of Variant is deprecated. Please switch code to use safe MySQLVal types")
-auto unsafe(ResultRange r)
-{
-	return UnsafeResultRange(r);
-}
-
-/// ditto
 struct UnsafeResultRange
 {
-	ResultRange safe;
+	SafeResultRange safe;
 	alias safe this;
-	inout(UnsafeRow) front() inout { return inout(UnsafeRow)(safe.front); }
+	inout(Row) front() inout { return inout(Row)(safe.front); }
 
-	deprecated("Variant support is deprecated. Please switch to using MySQLVal")
 	Variant[string] asAA()
 	{
 		ensureValid();
@@ -369,4 +382,21 @@ struct UnsafeResultRange
 			aa[s] = _row._values[i].asVariant;
 		return aa;
 	}
+}
+
+/// ditto
+UnsafeResultRange unsafe(SafeResultRange r) @safe
+{
+	return UnsafeResultRange(r);
+}
+
+version(MySQLSafeMode)
+{
+	alias Row = SafeRow;
+	alias ResultRange = SafeResultRange;
+}
+else
+{
+	alias Row = UnsafeRow;
+	alias ResultRange = UnsafeResultRange;
 }

@@ -6,7 +6,7 @@ import std.conv;
 import std.datetime;
 import std.exception;
 
-import mysql.commands;
+import mysql.safe.commands;
 import mysql.exceptions;
 import mysql.protocol.sockets;
 import mysql.result;

@@ -13,7 +13,7 @@ import std.traits;
 import std.typecons;
 import std.variant;
 
-import mysql.commands;
+import mysql.safe.commands;
 import mysql.connection;
 import mysql.exceptions;
 import mysql.metadata;
@@ -584,9 +584,9 @@ unittest
 			~")");
 
 	//DataSet ds;
-	Row[] rs;
+	SafeRow[] rs;
 	//Table tbl;
-	Row row;
+	SafeRow row;
 	Prepared stmt;
 
 	// Index out of bounds throws
@@ -974,7 +974,7 @@ unittest
 			" WHERE CHARACTER_SET_NAME=?");
 	auto val = "utf8";
 	stmt.setArg(0, val);
-	auto row = cn.queryRow(stmt);
+	auto row = cn.queryRow(stmt).get(SafeRow.init);
 	//assert(row.length == 4);
 	assert(row.length == 4);
 	assert(row[0] == "utf8");
@@ -1005,7 +1005,7 @@ unittest
 
 	{
 		// Test query
-		ResultRange rseq = cn.query(selectSQL);
+		SafeResultRange rseq = cn.query(selectSQL);
 		assert(!rseq.empty);
 		assert(rseq.front.length == 2);
 		assert(rseq.front[0] == 11);
@@ -1026,7 +1026,7 @@ unittest
 
 	{
 		// Test prepared query
-		ResultRange rseq = cn.query(prepared);
+		SafeResultRange rseq = cn.query(prepared);
 		assert(!rseq.empty);
 		assert(rseq.front.length == 2);
 		assert(rseq.front[0] == 11);
@@ -1047,7 +1047,7 @@ unittest
 
 	{
 		// Test reusing the same ResultRange
-		ResultRange rseq = cn.query(selectSQL);
+		SafeResultRange rseq = cn.query(selectSQL);
 		assert(!rseq.empty);
 		rseq.each();
 		assert(rseq.empty);
@@ -1058,7 +1058,7 @@ unittest
 	}
 
 	{
-		Nullable!Row nullableRow;
+		Nullable!SafeRow nullableRow;
 
 		// Test queryRow
 		nullableRow = cn.queryRow(selectSQL);
@@ -1129,7 +1129,7 @@ unittest
 	{
 		// Issue new command before old command was purged
 		// Ensure old result set is auto-purged and invalidated.
-		ResultRange rseq1 = cn.query(selectSQL);
+		SafeResultRange rseq1 = cn.query(selectSQL);
 		rseq1.popFront();
 		assert(!rseq1.empty);
 		assert(rseq1.isValid);
@@ -1142,7 +1142,7 @@ unittest
 
 	{
 		// Test using outdated ResultRange
-		ResultRange rseq1 = cn.query(selectSQL);
+		SafeResultRange rseq1 = cn.query(selectSQL);
 		rseq1.popFront();
 		assert(!rseq1.empty);
 		assert(rseq1.front[0] == 22);
@@ -1154,7 +1154,7 @@ unittest
 		assertThrown!MYXInvalidatedRange(rseq1.popFront());
 		assertThrown!MYXInvalidatedRange(rseq1.asAA());
 
-		ResultRange rseq2 = cn.query(selectBackwardsSQL);
+		SafeResultRange rseq2 = cn.query(selectBackwardsSQL);
 		assert(!rseq2.empty);
 		assert(rseq2.front.length == 2);
 		assert(rseq2.front[0] == "ccc");
