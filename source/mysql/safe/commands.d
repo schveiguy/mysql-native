@@ -16,14 +16,14 @@ import std.range;
 import std.typecons;
 import std.variant;
 
-import mysql.connection;
+import mysql.safe.connection;
 import mysql.exceptions;
-import mysql.prepared;
+import mysql.safe.prepared;
 import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
-import mysql.result;
+import mysql.internal.result;
 import mysql.types;
 
 /// This feature is not yet implemented. It currently has no effect.
@@ -238,15 +238,6 @@ ulong exec(Connection conn, ref Prepared prepared, MySQLVal[] args)
 	return exec(conn, prepared);
 }
 
-///ditto
-ulong exec(Connection conn, ref BackwardCompatPrepared prepared)
-{
-	auto p = prepared.prepared;
-	auto result = exec(conn, p);
-	prepared._prepared = p;
-	return result;
-}
-
 /// Common implementation for `exec` overloads
 package ulong execImpl(Connection conn, ExecQueryImplInfo info)
 {
@@ -329,13 +320,6 @@ SafeResultRange query(Connection conn, const(char[]) sql, ColumnSpecialization[]
 ///ditto
 SafeResultRange query(T...)(Connection conn, const(char[]) sql, T args)
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
-{
-	auto prepared = conn.prepare(sql);
-	prepared.setArgs(args);
-	return query(conn, prepared);
-}
-///ditto
-SafeResultRange query(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
@@ -491,15 +475,6 @@ Nullable!SafeRow queryRow(Connection conn, ref Prepared prepared, MySQLVal[] arg
 {
 	prepared.setArgs(args);
 	return queryRow(conn, prepared);
-}
-
-///ditto
-Nullable!SafeRow queryRow(Connection conn, ref BackwardCompatPrepared prepared)
-{
-	auto p = prepared.prepared;
-	auto result = queryRow(conn, p);
-	prepared._prepared = p;
-	return result;
 }
 
 /// Common implementation for `querySet` overloads.
@@ -735,7 +710,6 @@ debug(MYSQLN_TESTS)
 unittest
 {
 	import std.array;
-	import mysql.connection;
 	import mysql.test.common;
 	mixin(scopedCn);
 
@@ -767,16 +741,9 @@ unittest
 	assert(prepared.getArg(0) == 6);
 	assert(prepared.getArg(1) == "ff");
 
-	// exec: bcPrepared sql
-	auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-	bcPrepared.setArgs(7, "gg");
-	assert(cn.exec(bcPrepared) == 1);
-	assert(bcPrepared.getArg(0) == 7);
-	assert(bcPrepared.getArg(1) == "gg");
-
 	// Check results
 	auto rows = cn.query("SELECT * FROM `execOverloads`").array();
-	assert(rows.length == 7);
+	assert(rows.length == 6);
 
 	assert(rows[0].length == 2);
 	assert(rows[1].length == 2);
@@ -784,7 +751,6 @@ unittest
 	assert(rows[3].length == 2);
 	assert(rows[4].length == 2);
 	assert(rows[5].length == 2);
-	assert(rows[6].length == 2);
 
 	assert(rows[0][0] == 1);
 	assert(rows[0][1] == "aa");
@@ -798,8 +764,6 @@ unittest
 	assert(rows[4][1] == "ee");
 	assert(rows[5][0] == 6);
 	assert(rows[5][1] == "ff");
-	assert(rows[6][0] == 7);
-	assert(rows[6][1] == "gg");
 }
 
 @("queryOverloads")
@@ -807,7 +771,6 @@ debug(MYSQLN_TESTS)
 unittest
 {
 	import std.array;
-	import mysql.connection;
 	import mysql.test.common;
 	mixin(scopedCn);
 
@@ -863,15 +826,6 @@ unittest
 		assert(rows[0].length == 2);
 		assert(rows[0][0] == 3);
 		assert(rows[0][1] == "cc");
-
-		// BCPrepared sql
-		auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-		bcPrepared.setArgs(1, "aa");
-		rows = cn.query(bcPrepared).array;
-		assert(rows.length == 1);
-		assert(rows[0].length == 2);
-		assert(rows[0][0] == 1);
-		assert(rows[0][1] == "aa");
 	}
 
 	// Test queryRow
@@ -919,15 +873,6 @@ unittest
 		assert(row.length == 2);
 		assert(row[0] == 3);
 		assert(row[1] == "cc");
-
-		// BCPrepared sql
-		auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-		bcPrepared.setArgs(1, "aa");
-		nrow = cn.queryRow(bcPrepared);
-		assert(!nrow.isNull);
-		assert(row.length == 2);
-		assert(row[0] == 1);
-		assert(row[1] == "aa");
 	}
 
 	// Test queryRowTuple
@@ -946,13 +891,6 @@ unittest
 		cn.queryRowTuple(prepared, i, s);
 		assert(i == 2);
 		assert(s == "bb");
-
-		// BCPrepared sql
-		auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-		bcPrepared.setArgs(3, "cc");
-		cn.queryRowTuple(bcPrepared, i, s);
-		assert(i == 3);
-		assert(s == "cc");
 	}
 
 	// Test queryValue
@@ -992,13 +930,5 @@ unittest
 		assert(!value.isNull);
 		assert(value.get.kind != MySQLVal.Kind.Null);
 		assert(value.get == 3);
-
-		// BCPrepared sql
-		auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-		bcPrepared.setArgs(1, "aa");
-		value = cn.queryValue(bcPrepared);
-		assert(!value.isNull);
-		assert(value.get.kind != MySQLVal.Kind.Null);
-		assert(value.get == 1);
 	}
 }

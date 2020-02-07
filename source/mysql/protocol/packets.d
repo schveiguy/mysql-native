@@ -5,7 +5,7 @@ import std.exception;
 import std.range;
 import std.string;
 
-import mysql.commands : ColumnSpecialization, CSN;
+import mysql.safe.commands : ColumnSpecialization, CSN;
 import mysql.exceptions;
 import mysql.protocol.comms;
 import mysql.protocol.constants;

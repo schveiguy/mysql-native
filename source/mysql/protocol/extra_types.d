@@ -4,10 +4,10 @@ module mysql.protocol.extra_types;
 import std.exception;
 import std.variant;
 
-import mysql.commands;
+//import mysql.safe.commands;
 import mysql.exceptions;
 import mysql.protocol.sockets;
-import mysql.result;
+//import mysql.safe.result;
 import mysql.types;
 
 struct SQLValue

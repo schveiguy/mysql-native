@@ -4,6 +4,7 @@
 *.dll
 *.exe
 .dub
+.*.swp
 /bin
 /testConnectionStr.txt
 

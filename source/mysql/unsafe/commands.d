@@ -17,14 +17,14 @@ import std.range;
 import std.typecons;
 import std.variant;
 
-import mysql.connection;
+import mysql.unsafe.connection;
 import mysql.exceptions;
-import mysql.prepared;
+import mysql.unsafe.prepared;
 import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
-import mysql.result;
+import mysql.unsafe.result;
 import mysql.types;
 
 alias ColumnSpecialization = SC.ColumnSpecialization;
@@ -186,6 +186,16 @@ ulong exec(Connection conn, ref Prepared prepared, Variant[] args)
 	return exec(conn, prepared);
 }
 
+///ditto
+ulong exec(Connection conn, ref BackwardCompatPrepared prepared)
+{
+	auto p = prepared.prepared;
+	auto result = exec(conn, p);
+	prepared._prepared = p;
+	return result;
+}
+
+
 /++
 Execute an SQL SELECT command or prepared statement.
 
@@ -265,7 +275,7 @@ UnsafeResultRange query(Connection conn, const(char[]) sql, Variant[] args)
 	return query(conn, prepared);
 }
 ///ditto
-UnsafeResultRange query(Connection conn, ref Prepared prepared)
+UnsafeResultRange query(Connection conn, ref Prepared prepared) @safe
 {
 	return SC.query(conn, prepared).unsafe;
 }
@@ -355,7 +365,7 @@ delegate.
 csa = An optional array of `ColumnSpecialization` structs. If you need to
 use this with a prepared statement, please use `mysql.prepared.Prepared.columnSpecials`.
 +/
-Nullable!UnsafeRow queryRow(Connection conn, const(char[]) sql, ColumnSpecialization[] csa = null)
+Nullable!UnsafeRow queryRow(Connection conn, const(char[]) sql, ColumnSpecialization[] csa = null) @safe
 {
 	return SC.queryRow(conn, sql, csa).unsafe;
 }
@@ -373,7 +383,7 @@ Nullable!UnsafeRow queryRow(Connection conn, const(char[]) sql, Variant[] args) 
 	return queryRow(conn, prepared);
 }
 ///ditto
-Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared)
+Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared) @safe
 {
 	return SC.queryRow(conn, prepared).unsafe;
 }
@@ -391,7 +401,7 @@ Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared, Variant[] ar
 }
 
 ///ditto
-Nullable!UnsafeRow queryRow(Connection conn, ref BackwardCompatPrepared prepared)
+Nullable!UnsafeRow queryRow(Connection conn, ref BackwardCompatPrepared prepared) @safe
 {
 	auto p = prepared.prepared;
 	auto result = queryRow(conn, p);
@@ -555,7 +565,6 @@ debug(MYSQLN_TESTS)
 unittest
 {
 	import std.array;
-	import mysql.connection;
 	import mysql.test.common;
 	mixin(scopedCn);
 
@@ -627,7 +636,6 @@ debug(MYSQLN_TESTS)
 unittest
 {
 	import std.array;
-	import mysql.connection;
 	import mysql.test.common;
 	mixin(scopedCn);
 

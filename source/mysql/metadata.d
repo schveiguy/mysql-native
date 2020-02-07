@@ -9,8 +9,10 @@ import std.exception;
 import mysql.safe.commands;
 import mysql.exceptions;
 import mysql.protocol.sockets;
-import mysql.result;
+import mysql.safe.result;
 import mysql.types;
+
+@safe:
 
 /// A struct to hold column metadata
 struct ColumnInfo
@@ -100,7 +102,6 @@ information that is available to the connected user. This may well be quite limi
 +/
 struct MetaData
 {
-	@safe:
 	import mysql.connection;
 
 private:

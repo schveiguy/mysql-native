@@ -18,8 +18,8 @@ void main(string[] args)
 	// Query
 	ResultRange range = conn.query("SELECT * FROM `tablename`");
 	Row row = range.front;
-	auto id = row[0];
-	auto name = row[1];
+	Variant id = row[0];
+	Variant name = row[1];
 	assert(id == 1);
 	assert(name == "Ann");
 

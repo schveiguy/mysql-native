@@ -19,12 +19,12 @@ import std.string;
 import std.traits;
 import std.variant;
 
-import mysql.commands;
+import mysql.safe.commands;
 import mysql.connection;
 import mysql.exceptions;
 import mysql.prepared;
 import mysql.protocol.sockets;
-import mysql.result;
+import mysql.safe.result;
 import mysql.test.common;
 
 // Issue #24: Driver doesn't like BIT
@@ -294,8 +294,8 @@ version(Have_vibe_core)
 debug(MYSQLN_TESTS)
 unittest
 {
-	import mysql.commands;
-	import mysql.pool;
+	import mysql.safe.commands;
+	import mysql.safe.pool;
 	int count=0;
 
 	auto pool = new MySQLPool(testConnectionStr);

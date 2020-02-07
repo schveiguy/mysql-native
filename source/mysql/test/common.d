@@ -22,7 +22,7 @@ import mysql.connection;
 import mysql.exceptions;
 import mysql.protocol.extra_types;
 import mysql.protocol.sockets;
-import mysql.result;
+import mysql.safe.result;
 import mysql.types;
 
 /+

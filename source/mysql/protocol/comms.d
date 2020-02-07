@@ -28,7 +28,7 @@ import std.range;
 
 import mysql.connection;
 import mysql.exceptions;
-import mysql.prepared;
+import mysql.safe.prepared;
 import mysql.result;
 import mysql.types;
 

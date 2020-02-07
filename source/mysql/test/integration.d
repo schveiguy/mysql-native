@@ -14,14 +14,14 @@ import std.typecons;
 import std.variant;
 
 import mysql.safe.commands;
-import mysql.connection;
+import mysql.safe.connection;
 import mysql.exceptions;
 import mysql.metadata;
 import mysql.protocol.constants;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
 import mysql.protocol.sockets;
-import mysql.result;
+import mysql.safe.result;
 import mysql.test.common;
 @safe:
 
@@ -115,7 +115,7 @@ debug(MYSQLN_TESTS)
 debug(MYSQLN_TESTS)
 unittest
 {
-	import mysql.prepared;
+	import mysql.safe.prepared;
 
 	struct X
 	{
@@ -573,7 +573,7 @@ https://github.com/simendsjo/mysqln
 debug(MYSQLN_TESTS)
 unittest
 {
-	import mysql.prepared;
+	import mysql.safe.prepared;
 	mixin(scopedCn);
 	cn.exec("DROP TABLE IF EXISTS manytypes");
 	cn.exec( "CREATE TABLE manytypes ("
@@ -584,9 +584,9 @@ unittest
 			~")");
 
 	//DataSet ds;
-	SafeRow[] rs;
+	Row[] rs;
 	//Table tbl;
-	SafeRow row;
+	Row row;
 	Prepared stmt;
 
 	// Index out of bounds throws
@@ -851,7 +851,7 @@ unittest
 debug(MYSQLN_TESTS)
 unittest
 {
-	import mysql.prepared;
+	import mysql.safe.prepared;
 	mixin(scopedCn);
 
 	void assertBasicTests(T, U)(string sqlType, U[] values ...) @safe
@@ -967,14 +967,14 @@ unittest
 debug(MYSQLN_TESTS)
 unittest
 {
-	import mysql.prepared;
+	import mysql.safe.prepared;
 	mixin(scopedCn);
 	auto stmt = cn.prepare(
 			"SELECT * FROM information_schema.character_sets"~
 			" WHERE CHARACTER_SET_NAME=?");
 	auto val = "utf8";
 	stmt.setArg(0, val);
-	auto row = cn.queryRow(stmt).get(SafeRow.init);
+	auto row = cn.queryRow(stmt).get(Row.init);
 	//assert(row.length == 4);
 	assert(row.length == 4);
 	assert(row[0] == "utf8");
@@ -987,7 +987,7 @@ unittest
 debug(MYSQLN_TESTS)
 unittest
 {
-	import mysql.prepared;
+	import mysql.safe.prepared;
 	mixin(scopedCn);
 
 	cn.exec("DROP TABLE IF EXISTS `coupleTypes`");
@@ -1005,7 +1005,7 @@ unittest
 
 	{
 		// Test query
-		SafeResultRange rseq = cn.query(selectSQL);
+		ResultRange rseq = cn.query(selectSQL);
 		assert(!rseq.empty);
 		assert(rseq.front.length == 2);
 		assert(rseq.front[0] == 11);
@@ -1026,7 +1026,7 @@ unittest
 
 	{
 		// Test prepared query
-		SafeResultRange rseq = cn.query(prepared);
+		ResultRange rseq = cn.query(prepared);
 		assert(!rseq.empty);
 		assert(rseq.front.length == 2);
 		assert(rseq.front[0] == 11);
@@ -1047,7 +1047,7 @@ unittest
 
 	{
 		// Test reusing the same ResultRange
-		SafeResultRange rseq = cn.query(selectSQL);
+		ResultRange rseq = cn.query(selectSQL);
 		assert(!rseq.empty);
 		rseq.each();
 		assert(rseq.empty);
@@ -1058,7 +1058,7 @@ unittest
 	}
 
 	{
-		Nullable!SafeRow nullableRow;
+		Nullable!Row nullableRow;
 
 		// Test queryRow
 		nullableRow = cn.queryRow(selectSQL);
@@ -1129,7 +1129,7 @@ unittest
 	{
 		// Issue new command before old command was purged
 		// Ensure old result set is auto-purged and invalidated.
-		SafeResultRange rseq1 = cn.query(selectSQL);
+		ResultRange rseq1 = cn.query(selectSQL);
 		rseq1.popFront();
 		assert(!rseq1.empty);
 		assert(rseq1.isValid);
@@ -1142,7 +1142,7 @@ unittest
 
 	{
 		// Test using outdated ResultRange
-		SafeResultRange rseq1 = cn.query(selectSQL);
+		ResultRange rseq1 = cn.query(selectSQL);
 		rseq1.popFront();
 		assert(!rseq1.empty);
 		assert(rseq1.front[0] == 22);
@@ -1154,7 +1154,7 @@ unittest
 		assertThrown!MYXInvalidatedRange(rseq1.popFront());
 		assertThrown!MYXInvalidatedRange(rseq1.asAA());
 
-		SafeResultRange rseq2 = cn.query(selectBackwardsSQL);
+		ResultRange rseq2 = cn.query(selectBackwardsSQL);
 		assert(!rseq2.empty);
 		assert(rseq2.front.length == 2);
 		assert(rseq2.front[0] == "ccc");
