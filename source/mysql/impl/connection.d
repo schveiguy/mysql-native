@@ -1,5 +1,15 @@
-/// Connect to a MySQL/MariaDB server.
-module mysql.internal.connection;
+/++
+Connect to a MySQL/MariaDB server.
+
+WARNING:
+This module is used to consolidate the common implementation of the safe and
+unafe API. DO NOT directly import this module, please import one of
+`mysql.connection`, `mysql.safe.connection`, or `mysql.unsafe.connection`. This
+module will be removed in a future version without deprecation.
+
+$(SAFE_MIGRATION)
++/
+module mysql.impl.connection;
 
 import std.algorithm;
 import std.conv;
@@ -14,8 +24,8 @@ import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.packets;
 import mysql.protocol.sockets;
-import mysql.internal.result;
-import mysql.internal.prepared;
+import mysql.impl.result;
+import mysql.impl.prepared;
 import mysql.types;
 
 @safe:

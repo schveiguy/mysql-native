@@ -1,6 +1,13 @@
+/++
+Connect to a MySQL/MariaDB server.
+
+This is the @safe API for the Connection type. It publicly imports `mysql.impl.connection`, and also provides the safe version of the API for preparing statements.
+
+$(SAFE_MIGRATION)
++/
 module mysql.safe.connection;
 
-public import mysql.internal.connection;
+public import mysql.impl.connection;
 import mysql.safe.prepared;
 import mysql.safe.commands;
 
@@ -11,7 +18,7 @@ import mysql.safe.commands;
 Submit an SQL command to the server to be compiled into a prepared statement.
 
 This will automatically register the prepared statement on the provided connection.
-The resulting `mysql.prepared.Prepared` can then be used freely on ANY `Connection`,
+The resulting `mysql.impl.prepared.SafePrepared` can then be used freely on ANY `Connection`,
 as it will automatically be registered upon its first use on other connections.
 Or, pass it to `Connection.register` if you prefer eager registration.
 
@@ -26,10 +33,10 @@ followed by an EOF packet.
 
 Throws: `mysql.exceptions.MYX` if the server has a problem.
 +/
-Prepared prepare(Connection conn, const(char[]) sql)
+SafePrepared prepare(Connection conn, const(char[]) sql)
 {
 	auto info = conn.registerIfNeeded(sql);
-	return Prepared(sql, info.headers, info.numParams);
+	return SafePrepared(sql, info.headers, info.numParams);
 }
 
 /++
@@ -44,7 +51,7 @@ Params:
 	name = The name of the stored function.
 	numArgs = The number of arguments the stored procedure takes.
 +/
-Prepared prepareFunction(Connection conn, string name, int numArgs)
+SafePrepared prepareFunction(Connection conn, string name, int numArgs)
 {
 	auto sql = "select " ~ name ~ preparedPlaceholderArgs(numArgs);
 	return prepare(conn, sql);
@@ -89,7 +96,7 @@ Params:
 	numArgs = The number of arguments the stored procedure takes.
 
 +/
-Prepared prepareProcedure(Connection conn, string name, int numArgs)
+SafePrepared prepareProcedure(Connection conn, string name, int numArgs)
 {
 	auto sql = "call " ~ name ~ preparedPlaceholderArgs(numArgs);
 	return prepare(conn, sql);

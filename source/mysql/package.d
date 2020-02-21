@@ -59,19 +59,20 @@ $(TABLE
 	$(TR $(TD string    ) $(TD VARCHAR              ))
 	$(TR $(TD char[]    ) $(TD VARCHAR              ))
 	$(TR $(TD (u)byte[] ) $(TD SIGNED TINYBLOB      ))
-	$(TR $(TD other     ) $(TD unsupported (throws) ))
+	$(TR $(TD other     ) $(TD unsupported with Variant (throws) or MySQLVal (compiler error) ))
 )
 
 Note: This by default imports the unsafe version of the MySQL API. Please
 switch to the safe version (`import mysql.safe`) as this will be the default in
 the future. If you would prefer to use the unsafe version, it is advised to use
 the import `mysql.unsafe`, as this will be supported for at least one more
-major version.
+major version, albeit deprecated.
+
+$(SAFE_MIGRATION)
 +/
 module mysql;
 
-// by default we do the unsafe API. This will change in a future version to the
-// safe one.
+// by default we do the unsafe API.
 public import mysql.unsafe;
 
 debug(MYSQLN_TESTS)      version = DoCoreTests;

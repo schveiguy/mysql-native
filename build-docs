@@ -8,8 +8,11 @@
 # DMD 2.086.0 and up cause errors when building the docs because
 # gen-package-version and Scriptlike need updated.
 
-rdmd --build-only -c -Isource -Dddocs_tmp -X -Xfdocs/docs.json -version=MySQLDocs --force source/mysql/package.d
-rm -rf docs_tmp
+# Need taggedalgebraic
+rm -rf ta
+git clone https://github.com/s-ludwig/taggedalgebraic.git ta
+rdmd --build-only -c -Isource -Ita/source -Dddocs_tmp -X -Xfdocs/docs.json -version=MySQLDocs --force source/mysql/package.d
+rm -rf docs_tmp ta
 rm source/mysql/package.o
 
 dub --version

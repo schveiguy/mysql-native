@@ -1,21 +1,41 @@
+/++
+Connect to a MySQL/MariaDB server.
+
+This is the unsafe API for the Connection type. It publicly imports `mysql.impl.connection`, and also provides the unsafe version of the API for preparing statements.
+
+Note that unsafe prepared statements are no different from safe prepared statements, except for the mechanism to set parameters allows Variant.
+
+This module also contains the soon-to-be-deprecated BackwardCompatPrepared type.
+
+$(SAFE_MIGRATION)
++/
 module mysql.unsafe.connection;
 
+public import mysql.impl.connection;
 import mysql.unsafe.prepared;
 import mysql.unsafe.commands;
-public import mysql.internal.connection;
 private import CS = mysql.safe.connection;
 
-Prepared prepare(Connection conn, const(char[]) sql) @safe
+/++
+Convenience functions.
+
+Returns: an UnsafePrepared instance based on the result of the corresponding `mysql.safe.connection` function.
+
+See that module for more details on how these functions work.
++/
+UnsafePrepared prepare(Connection conn, const(char[]) sql) @safe
 {
 	return CS.prepare(conn, sql).unsafe;
 }
 
-Prepared prepareFunction(Connection conn, string name, int numArgs) @safe
+/// ditto
+UnsafePrepared prepareFunction(Connection conn, string name, int numArgs) @safe
 {
 	return CS.prepareFunction(conn, name, numArgs).unsafe;
 }
 
-Prepared prepareProcedure(Connection conn, string name, int numArgs) @safe
+/// ditto
+UnsafePrepared prepareProcedure(Connection conn, string name, int numArgs) @safe
 {
 	return CS.prepareProcedure(conn, name, numArgs).unsafe;
 }
@@ -38,7 +58,7 @@ package(mysql) BackwardCompatPrepared prepareBackwardCompatImpl(Connection conn,
 }
 
 /++
-This is a wrapper over `mysql.prepared.Prepared`, provided ONLY as a
+This is a wrapper over `mysql.unsafe.prepared.Prepared`, provided ONLY as a
 temporary aid in upgrading to mysql-native v2.0.0 and its
 new connection-independent model of prepared statements. See the
 $(LINK2 https://github.com/mysql-d/mysql-native/blob/master/MIGRATING_TO_V2.md, migration guide)
@@ -111,21 +131,21 @@ struct BackwardCompatPrepared
 	See `BackwardCompatPrepared` for more info.
 	+/
 	deprecated("Change 'preparedStmt.exec()' to 'conn.exec(preparedStmt)'")
-	ulong exec() @safe
+	ulong exec() @system
 	{
 		return .exec(_conn, _prepared);
 	}
 
 	///ditto
 	deprecated("Change 'preparedStmt.query()' to 'conn.query(preparedStmt)'")
-	ResultRange query() @safe
+	ResultRange query() @system
 	{
 		return .query(_conn, _prepared);
 	}
 
 	///ditto
 	deprecated("Change 'preparedStmt.queryRow()' to 'conn.queryRow(preparedStmt)'")
-	Nullable!Row queryRow() @safe
+	Nullable!Row queryRow() @system
 	{
 		return .queryRow(_conn, _prepared);
 	}

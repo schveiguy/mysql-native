@@ -8,13 +8,21 @@ If you don't want to, refer to `mysql.connection.Connection`.
 This provides various benefits over creating a new connection manually,
 such as automatically reusing old connections, and automatic cleanup (no need to close
 the connection when done).
+
+WARNING:
+This module is used to consolidate the common implementation of the safe and
+unafe API. DO NOT directly import this module, please import one of
+`mysql.pool`, `mysql.safe.pool`, or `mysql.unsafe.pool`. This module will be
+removed in a future version without deprecation.
+
+$(SAFE_MIGRATION)
 +/
-module mysql.internal.pool;
+module mysql.impl.pool;
 
 import std.conv;
 import std.typecons;
-import mysql.connection;
-import mysql.prepared;
+import mysql.impl.connection;
+import mysql.impl.prepared;
 import mysql.protocol.constants;
 debug(MYSQLN_TESTS)
 {
@@ -86,8 +94,14 @@ version(IncludeMySQLPool)
 
 	If, for any reason, this class doesn't suit your needs, it's easy to just
 	use vibe.d's $(LINK2 http://vibed.org/api/vibe.core.connectionpool/ConnectionPool, ConnectionPool)
-	directly. Simply provide it with a delegate that creates a new `mysql.connection.Connection`
-	and does any other custom processing if needed.
+	directly. Simply provide it with a delegate that creates a new
+	`mysql.impl.connection.Connection` and does any other custom processing if
+	needed.
+
+	You should not use this template directly, but rather import
+	`mysql.safe.pool` or `mysql.unsafe.pool` or `mysql.pool`, which will alias
+	MySQLPool to the correct instantiation. The boolean parameter here
+	specifies whether the pool is operating in safe mode or unsafe mode.
 	+/
 	class MySQLPoolImpl(bool isSafe)
 	{
@@ -198,7 +212,7 @@ version(IncludeMySQLPool)
 				return lockConnectionImpl();
 			}
 
-		// the implementation we want to imply attributes
+		// the implementation we want to infer attributes
 		private final lockConnectionImpl()
 		{
 			auto conn = m_pool.lockConnection();
@@ -376,7 +390,7 @@ version(IncludeMySQLPool)
 
 		/// Is the given statement set to be automatically registered on all
 		/// connections obtained from this connection pool?
-		bool isAutoRegistered(Prepared prepared) @safe
+		bool isAutoRegistered(SafePrepared prepared) @safe
 		{
 			return isAutoRegistered(prepared.sql);
 		}
@@ -393,7 +407,7 @@ version(IncludeMySQLPool)
 
 		/// Is the given statement set to be automatically released on all
 		/// connections obtained from this connection pool?
-		bool isAutoReleased(Prepared prepared) @safe
+		bool isAutoReleased(SafePrepared prepared) @safe
 		{
 			return isAutoReleased(prepared.sql);
 		}
@@ -415,7 +429,7 @@ version(IncludeMySQLPool)
 
 		Equivalent to `!isAutoRegistered && !isAutoReleased`.
 		+/
-		bool isAutoCleared(Prepared prepared) @safe
+		bool isAutoCleared(SafePrepared prepared) @safe
 		{
 			return isAutoCleared(prepared.sql);
 		}
@@ -490,9 +504,15 @@ version(IncludeMySQLPool)
 		static void doit(bool isSafe)()
 		{
 			static if(isSafe)
+			{
 				import mysql.safe.commands;
+				import mysql.safe.connection;
+			}
 			else
+			{
 				import mysql.unsafe.commands;
+				import mysql.unsafe.connection;
+			}
 			alias MySQLPool = MySQLPoolImpl!isSafe;
 			auto pool = new MySQLPool(testConnectionStr);
 

@@ -1,5 +1,15 @@
-/// Use a DB via SQL prepared statements.
-module mysql.internal.prepared;
+/++
+Use a DB via SQL prepared statements.
+
+WARNING:
+This module is used to consolidate the common implementation of the safe and
+unafe API. DO NOT directly import this module, please import one of
+`mysql.prepared`, `mysql.safe.prepared`, or `mysql.unsafe.prepared`. This
+module will be removed in a future version without deprecation.
+
+$(SAFE_MIGRATION)
++/
+module mysql.impl.prepared;
 
 import std.exception;
 import std.range;
@@ -12,7 +22,7 @@ import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.packets;
 import mysql.types;
-import mysql.internal.result;
+import mysql.impl.result;
 import mysql.safe.commands : ColumnSpecialization, CSN;
 debug(MYSQLN_TESTS)
 	import mysql.test.common;
@@ -26,6 +36,8 @@ If both are provided then the corresponding column will be populated by calling 
 The source should fill the indicated slice with data and arrange for the delegate to
 return the length of the data supplied (in bytes). If that is less than the `chunkSize`
 then the chunk will be assumed to be the last one.
+
+Please use one of the aliases instead of the Impl struct, as this name likely will be removed without deprecation in a future release.
 +/
 struct ParameterSpecializationImpl(bool isSafe)
 {
@@ -148,15 +160,15 @@ unittest
 /++
 Encapsulation of a prepared statement.
 
-Create this via the function `mysql.connection.prepare`. Set your arguments (if any) via
+Create this via the function `mysql.safe.connection.prepare`. Set your arguments (if any) via
 the functions provided, and then run the statement by passing it to
-`mysql.commands.exec`/`mysql.commands.query`/etc in place of the sql string parameter.
+`mysql.safe.commands.exec`/`mysql.safe.commands.query`/etc in place of the sql string parameter.
 
 Commands that are expected to return a result set - queries - have distinctive
 methods that are enforced. That is it will be an error to call such a method
 with an SQL command that does not produce a result set. So for commands like
-SELECT, use the `mysql.commands.query` functions. For other commands, like
-INSERT/UPDATE/CREATE/etc, use `mysql.commands.exec`.
+SELECT, use the `mysql.safe.commands.query` functions. For other commands, like
+INSERT/UPDATE/CREATE/etc, use `mysql.safe.commands.exec`.
 +/
 struct SafePrepared
 {
@@ -179,12 +191,12 @@ package(mysql):
 
 public:
 	/++
-	Constructor. You probably want `mysql.connection.prepare` instead of this.
+	Constructor. You probably want `mysql.safe.connection.prepare` instead of this.
 
-	Call `mysqln.connection.prepare` instead of this, unless you are creating
-	your own transport bypassing `mysql.connection.Connection` entirely.
+	Call `mysqln.safe.connection.prepare` instead of this, unless you are creating
+	your own transport bypassing `mysql.impl.connection.Connection` entirely.
 	The prepared statement must be registered on the server BEFORE this is
-	called (which `mysqln.connection.prepare` does).
+	called (which `mysqln.safe.connection.prepare` does).
 
 	Internally, the result of a successful outcome will be a statement handle - an ID -
 	for the prepared statement, a count of the parameters required for
@@ -368,22 +380,12 @@ public:
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params: index = The zero based index
-
-	Note: The type of getArg's return is now MySQLVal. As a stop-gap measure,
-		mysql-native provides the vGetArg version. This version will be removed
-		in a future update.
+	Returns: The MySQLVal representing the argument.
 	+/
 	MySQLVal getArg(size_t index)
 	{
 		enforce!MYX(index < _numParams, "Parameter index out of range.");
 		return _inParams[index];
-	}
-
-	/// ditto
-	Variant vGetArg(size_t index) @system
-	{
-		// convert to Variant.
-		return getArg(index).asVariant;
 	}
 
 	/++
@@ -396,6 +398,7 @@ public:
 
 	Params: index = The zero based index
 	+/
+	deprecated("Please use setArg(index, null)")
 	void setNullArg(size_t index)
 	{
 		setArg(index, null);
@@ -466,7 +469,7 @@ public:
 		assert(rs[1].isNull(0));
 		assert(rs[2].isNull(0));
 		assert(rs[1][0].kind == MySQLVal.Kind.Null);
-		assert(rs[2][0].kind == MySQLVal.Kind.Null);
+		assert(rs[2][0] == null);
 	}
 
 	/// Gets the number of arguments this prepared statement expects to be passed in.
@@ -515,10 +518,23 @@ public:
 	@property void columnSpecials(ColumnSpecialization[] csa) pure { _columnSpecials = csa; }
 }
 
-// unsafe wrapper
+/++
+Unsafe wrapper for SafePrepared.
+
+This wrapper contains a SafePrepared, and forwards common functionality to that
+type. It overrides the setting and fetching of arguments, converting them to
+and from Variant for backwards compatibility.
+
+It also sets up UnsafeParameterSpecialization items for the parameters. Note
+that these are simply cast to SafeParameterSpecialization. There are runtime
+guards in place to ensure a SafeParameterSpecialization with an unsafe delegate
+is not accessible as a safe delegate.
+
+$(SAFE_MIGRATION)
++/
 struct UnsafePrepared
 {
-	SafePrepared _safe;
+	private SafePrepared _safe;
 
 	private this(SafePrepared sp) @safe
 	{
@@ -530,25 +546,31 @@ struct UnsafePrepared
 		_safe = SafePrepared(sql, headers, numParams);
 	}
 
-	// redefine all functions that deal with unsafe types
+	/++
+	Redefine all functions that deal with MySQLVal to deal with Variant instead. Please see SafePrepared for details on how the methods work.
+
+	$(SAFE_MIGRATION)
+	+/
 	void setArg(T)(size_t index, T val, UnsafeParameterSpecialization psn = UPSN.init) @system
 		if(!is(T == Variant))
 	{
-		_safe.setArg(index, val, cast(SafeParameterSpecialization)psn);
+		_safe.setArg(index, val, cast(SPSN)psn);
 	}
 
+	/// ditto
 	void setArg(size_t index, Variant val, UnsafeParameterSpecialization psn = UPSN.init) @system
 	{
 		_safe.setArg(index, _toVal(val), cast(SPSN)psn);
 	}
 
-	// unfortunately, we need to redefine this here
+	/// ditto
 	void setArgs(T...)(T args)
 		if(T.length == 0 || (!is(T[0] == Variant[]) && !is(T[0] == MySQLVal[])))
 	{
 		_safe.setArgs(args);
 	}
 
+	/// ditto
 	void setArgs(Variant[] args, UnsafeParameterSpecialization[] psnList=null) @system
 	{
 		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
@@ -561,25 +583,35 @@ struct UnsafePrepared
 		}
 	}
 
+	/// ditto
 	Variant getArg(size_t index) @system
 	{
 		return _safe.getArg(index).asVariant;
 	}
 
-	alias _safe this;
+	/++
+	Allow conversion to a SafePrepared. UnsafePrepared with
+	UnsafeParameterSpecialization items that have chunk delegates are not
+	allowed to convert, because the delegates are possibly unsafe.
+	+/
+	ref SafePrepared safe() scope return @safe
+	{
+		// first, ensure there are no parameter specializations with delegates as
+		// those are possibly unsafe.
+		foreach(ref s; _safe._psa)
+			enforce!MYX(s.chunkDelegate is null, "Cannot convert UnsafePrepared into SafePrepared with unsafe chunk delegates");
+		return _safe;
+	}
+
+	/// Forward all other calls to the safe accessor
+	alias safe this;
 }
 
+/// Allow conversion to UnsafePrepared from SafePrepared.
 UnsafePrepared unsafe(SafePrepared p) @safe
 {
 	return UnsafePrepared(p);
 }
-
-SafePrepared safe(UnsafePrepared p) @safe
-{
-	return p._safe;
-}
-
-
 
 /// Template constraint for `PreparedRegistrations`
 private enum isPreparedRegistrationsPayload(Payload) =
@@ -593,7 +625,7 @@ private enum isPreparedRegistrationsPayload(Payload) =
 Common functionality for recordkeeping of prepared statement registration
 and queueing for unregister.
 
-Used by `Connection` and `MySQLPool`.
+Used by `Connection` and `MySQLPoolImpl`.
 
 Templated on payload type. The payload should be an aggregate that includes
 the field: `bool queuedForRelease = false;`

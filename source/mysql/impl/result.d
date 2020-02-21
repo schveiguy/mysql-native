@@ -1,12 +1,21 @@
-/// Structures for data received: rows and result sets (ie, a range of rows).
-module mysql.internal.result;
+/++
+Structures for data received: rows and result sets (ie, a range of rows).
+
+WARNING:
+This module is used to consolidate the common implementation of the safe and
+unafe API. DO NOT directly import this module, please import one of
+`mysql.result`, `mysql.safe.result`, or `mysql.unsafe.result`. This module will
+be removed in a future version without deprecation.
+
+$(SAFE_MIGRATION)
++/
+module mysql.impl.result;
 
 import std.conv;
 import std.exception;
 import std.range;
 import std.string;
 
-import mysql.connection;
 import mysql.exceptions;
 import mysql.protocol.comms;
 import mysql.protocol.extra_types;
@@ -22,20 +31,20 @@ Type_Mappings: $(TYPE_MAPPINGS)
 +/
 /+
 The row struct is used for both 'traditional' and 'prepared' result sets.
-It consists of parallel arrays of Variant and bool, with the bool array
+It consists of parallel arrays of MySQLVal and bool, with the bool array
 indicating which of the result set columns are NULL.
 
 I have been agitating for some kind of null indicator that can be set for a
-Variant without destroying its inherent type information. If this were the
+MySQLVal without destroying its inherent type information. If this were the
 case, then the bool array could disappear.
 +/
 struct SafeRow
 {
-	import mysql.connection;
 
 package(mysql):
 	MySQLVal[]   _values; // Temporarily "package" instead of "private"
 private:
+	import mysql.impl.connection;
 	bool[]      _nulls;
 	string[]    _names;
 
@@ -61,13 +70,15 @@ public:
 	/++
 	Simplify retrieval of a column value by index.
 
-	To check for null, use Variant's `type` property:
-	`row[index].type == typeid(typeof(null))`
+	To check for null, use MySQLVal's `kind` property:
+	`row[index].kind == MySQLVal.Kind.Null`
+	or use a direct comparison to null:
+	`row[index] == null`
 
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params: i = the zero based index of the column whose value is required.
-	Returns: A Variant holding the column value.
+	Returns: A MySQLVal holding the column value.
 	+/
 	ref inout(MySQLVal) opIndex(size_t i) inout
 	{
@@ -128,9 +139,9 @@ public:
 	Move the content of the row into a compatible struct
 
 	This method takes no account of NULL column values. If a column was NULL,
-	the corresponding Variant value would be unchanged in those cases.
+	the corresponding MySQLVal value would be unchanged in those cases.
 
-	The method will throw if the type of the Variant is not implicitly
+	The method will throw if the type of the MySQLVal is not implicitly
 	convertible to the corresponding struct member.
 
 	Type_Mappings: $(TYPE_MAPPINGS)
@@ -177,11 +188,24 @@ public:
 	}
 }
 
-/// ditto
+/+
+An UnsafeRow is almost identical to a SafeRow, except that it provides access
+to its values via Variant instead of MySQLVal. This makes the access unsafe.
+Only value access is unsafe, every other operation is forwarded to the internal
+SafeRow.
+
+Use the safe or unsafe UFCS methods to convert to and from these two types if
+needed.
+
+Note that there is a performance penalty when accessing via a Variant as the MySQLVal must be converted on every access.
+
+$(SAFE_MIGRATION)
++/
 struct UnsafeRow
 {
 	SafeRow _safe;
 	alias _safe this;
+	/// Converts SafeRow.opIndex result to Variant.
 	Variant opIndex(size_t idx) {
 		return _safe[idx].asVariant;
 	}
@@ -202,12 +226,14 @@ Nullable!UnsafeRow unsafe(Nullable!SafeRow r) @safe
 }
 
 
+/// ditto
 SafeRow safe(UnsafeRow r) @safe
 {
 	return r._safe;
 }
 
 
+/// ditto
 Nullable!SafeRow safe(Nullable!UnsafeRow r) @safe
 {
 	if(r.isNull)
@@ -217,37 +243,39 @@ Nullable!SafeRow safe(Nullable!UnsafeRow r) @safe
 
 /++
 An $(LINK2 http://dlang.org/phobos/std_range_primitives.html#isInputRange, input range)
-of Row.
+of SafeRow.
 
-This is returned by the `mysql.commands.query` functions.
+This is returned by the `mysql.safe.commands.query` functions.
 
 The rows are downloaded one-at-a-time, as you iterate the range. This allows
 for low memory usage, and quick access to the results as they are downloaded.
 This is especially ideal in case your query results in a large number of rows.
 
-However, because of that, this `ResultRange` cannot offer random access or
+However, because of that, this `SafeResultRange` cannot offer random access or
 a `length` member. If you need random access, then just like any other range,
 you can simply convert this range to an array via
 $(LINK2 https://dlang.org/phobos/std_array.html#array, `std.array.array()`).
 
-A `ResultRange` becomes invalidated (and thus cannot be used) when the server
-is sent another command on the same connection. When an invalidated `ResultRange`
-is used, a `mysql.exceptions.MYXInvalidatedRange` is thrown. If you need to
-send the server another command, but still access these results afterwords,
-you can save the results for later by converting this range to an array via
+A `SafeResultRange` becomes invalidated (and thus cannot be used) when the server
+is sent another command on the same connection. When an invalidated
+`SafeResultRange` is used, a `mysql.exceptions.MYXInvalidatedRange` is thrown.
+If you need to send the server another command, but still access these results
+afterwords, you can save the results for later by converting this range to an
+array via
 $(LINK2 https://dlang.org/phobos/std_array.html#array, `std.array.array()`).
 
 Type_Mappings: $(TYPE_MAPPINGS)
 
 Example:
 ---
-ResultRange oneAtATime = myConnection.query("SELECT * from myTable");
-Row[]       allAtOnce  = myConnection.query("SELECT * from myTable").array;
+SafeResultRange oneAtATime = myConnection.query("SELECT * from myTable");
+SafeRow[]       allAtOnce  = myConnection.query("SELECT * from myTable").array;
 ---
 +/
 struct SafeResultRange
 {
 private:
+	import mysql.impl.connection;
 @safe:
 	Connection       _con;
 	ResultSetHeaders _rsh;
@@ -277,11 +305,12 @@ public:
 	/++
 	Check whether the range can still be used, or has been invalidated.
 
-	A `ResultRange` becomes invalidated (and thus cannot be used) when the server
-	is sent another command on the same connection. When an invalidated `ResultRange`
-	is used, a `mysql.exceptions.MYXInvalidatedRange` is thrown. If you need to
-	send the server another command, but still access these results afterwords,
-	you can save the results for later by converting this range to an array via
+	A `SafeResultRange` becomes invalidated (and thus cannot be used) when the
+	server is sent another command on the same connection. When an invalidated
+	`SafeResultRange` is used, a `mysql.exceptions.MYXInvalidatedRange` is
+	thrown. If you need to send the server another command, but still access
+	these results afterwords, you can save the results for later by converting
+	this range to an array via
 	$(LINK2 https://dlang.org/phobos/std_array.html#array, `std.array.array()`).
 	+/
 	@property bool isValid() const pure nothrow
@@ -366,13 +395,23 @@ public:
 	@property ulong rowCount() const pure nothrow { return _numRowsFetched; }
 }
 
-/// ditto
+/+
+A wrapper of a SafeResultRange which converts each row into an UnsafeRow.
+
+Use the safe or unsafe UFCS methods to convert to and from these two types if
+needed.
+
+$(SAFE_MIGRATION)
++/
 struct UnsafeResultRange
 {
+	/// The underlying range is a SafeResultRange.
 	SafeResultRange safe;
 	alias safe this;
+	/// Equivalent to SafeResultRange.front, but wraps as an UnsafeRow.
 	inout(UnsafeRow) front() inout { return inout(UnsafeRow)(safe.front); }
 
+	/// Equivalent to SafeResultRange.asAA, but converts each value to a Variant
 	Variant[string] asAA()
 	{
 		ensureValid();
@@ -384,7 +423,7 @@ struct UnsafeResultRange
 	}
 }
 
-/// ditto
+/// Wrap a SafeResultRange as an UnsafeResultRange.
 UnsafeResultRange unsafe(SafeResultRange r) @safe
 {
 	return UnsafeResultRange(r);

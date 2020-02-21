@@ -24,7 +24,7 @@ import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
-import mysql.unsafe.result;
+import mysql.impl.result;
 import mysql.types;
 
 alias ColumnSpecialization = SC.ColumnSpecialization;
@@ -173,21 +173,21 @@ auto rowsAffected = myConnection.exec("INSERT INTO `myTable` (`a`) VALUES (?)", 
 +/
 alias exec = SC.exec;
 ///ditto
-ulong exec(Connection conn, const(char[]) sql, Variant[] args)
+ulong exec(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
 	return exec(conn, prepared);
 }
 ///ditto
-ulong exec(Connection conn, ref Prepared prepared, Variant[] args)
+ulong exec(Connection conn, ref Prepared prepared, Variant[] args) @system
 {
 	prepared.setArgs(args);
 	return exec(conn, prepared);
 }
 
 ///ditto
-ulong exec(Connection conn, ref BackwardCompatPrepared prepared)
+ulong exec(Connection conn, ref BackwardCompatPrepared prepared) @system
 {
 	auto p = prepared.prepared;
 	auto result = exec(conn, p);
@@ -268,32 +268,32 @@ UnsafeResultRange query(T...)(Connection conn, const(char[]) sql, T args)
 	return SC.query(conn, sql, args).unsafe;
 }
 ///ditto
-UnsafeResultRange query(Connection conn, const(char[]) sql, Variant[] args)
+UnsafeResultRange query(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
 	prepared.setArgs(args);
 	return query(conn, prepared);
 }
 ///ditto
-UnsafeResultRange query(Connection conn, ref Prepared prepared) @safe
+UnsafeResultRange query(Connection conn, ref Prepared prepared) @system
 {
 	return SC.query(conn, prepared).unsafe;
 }
 ///ditto
-UnsafeResultRange query(T...)(Connection conn, ref Prepared prepared, T args)
+UnsafeResultRange query(T...)(Connection conn, ref Prepared prepared, T args) @system
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	return SC.query(conn, prepared, args).unsafe;
 }
 ///ditto
-UnsafeResultRange query(Connection conn, ref Prepared prepared, Variant[] args)
+UnsafeResultRange query(Connection conn, ref Prepared prepared, Variant[] args) @system
 {
 	prepared.setArgs(args);
 	return query(conn, prepared);
 }
 
 ///ditto
-UnsafeResultRange query(Connection conn, ref BackwardCompatPrepared prepared)
+UnsafeResultRange query(Connection conn, ref BackwardCompatPrepared prepared) @system
 {
 	auto p = prepared.prepared;
 	auto result = query(conn, p);
@@ -383,12 +383,12 @@ Nullable!UnsafeRow queryRow(Connection conn, const(char[]) sql, Variant[] args) 
 	return queryRow(conn, prepared);
 }
 ///ditto
-Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared) @safe
+Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared) @system
 {
 	return SC.queryRow(conn, prepared).unsafe;
 }
 ///ditto
-Nullable!UnsafeRow queryRow(T...)(Connection conn, ref Prepared prepared, T args)
+Nullable!UnsafeRow queryRow(T...)(Connection conn, ref Prepared prepared, T args) @system
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	return SC.queryRow(conn, prepared, args).unsafe;
@@ -401,7 +401,7 @@ Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared, Variant[] ar
 }
 
 ///ditto
-Nullable!UnsafeRow queryRow(Connection conn, ref BackwardCompatPrepared prepared) @safe
+Nullable!UnsafeRow queryRow(Connection conn, ref BackwardCompatPrepared prepared) @system
 {
 	auto p = prepared.prepared;
 	auto result = queryRow(conn, p);
@@ -437,7 +437,7 @@ args = The variables, taken by reference, to receive the values.
 +/
 alias queryRowTuple = SC.queryRowTuple;
 ///ditto
-void queryRowTuple(T...)(Connection conn, ref BackwardCompatPrepared prepared, ref T args)
+void queryRowTuple(T...)(Connection conn, ref BackwardCompatPrepared prepared, ref T args) @system
 {
 	auto p = prepared.prepared;
 	.queryRowTuple(conn, p, args);
@@ -516,7 +516,7 @@ delegate.
 csa = An optional array of `ColumnSpecialization` structs. If you need to
 use this with a prepared statement, please use `mysql.prepared.Prepared.columnSpecials`.
 +/
-Nullable!Variant queryValue(Connection conn, const(char[]) sql, ColumnSpecialization[] csa = null)
+Nullable!Variant queryValue(Connection conn, const(char[]) sql, ColumnSpecialization[] csa = null) @system
 {
 	return SC.queryValue(conn, sql, csa).asVariant;
 }
@@ -534,12 +534,12 @@ Nullable!Variant queryValue(Connection conn, const(char[]) sql, Variant[] args) 
 	return queryValue(conn, prepared);
 }
 ///ditto
-Nullable!Variant queryValue(Connection conn, ref Prepared prepared)
+Nullable!Variant queryValue(Connection conn, ref Prepared prepared) @system
 {
 	return SC.queryValue(conn, prepared).asVariant;
 }
 ///ditto
-Nullable!Variant queryValue(T...)(Connection conn, ref Prepared prepared, T args)
+Nullable!Variant queryValue(T...)(Connection conn, ref Prepared prepared, T args) @system
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
 	return SC.queryValue(conn, prepared, args).asVariant;
@@ -551,7 +551,7 @@ Nullable!Variant queryValue(Connection conn, ref Prepared prepared, Variant[] ar
 	return queryValue(conn, prepared);
 }
 ///ditto
-Nullable!Variant queryValue(Connection conn, ref BackwardCompatPrepared prepared)
+Nullable!Variant queryValue(Connection conn, ref BackwardCompatPrepared prepared) @system
 {
 	auto p = prepared.prepared;
 	auto result = queryValue(conn, p);

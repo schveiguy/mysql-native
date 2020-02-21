@@ -1,11 +1,15 @@
 /++
-Use a DB via plain SQL statements.
-
 Commands that are expected to return a result set - queries - have distinctive
 methods that are enforced. That is it will be an error to call such a method
 with an SQL command that does not produce a result set. So for commands like
 SELECT, use the `query` functions. For other commands, like
 INSERT/UPDATE/CREATE/etc, use `exec`.
+
+This is the @safe version of mysql's command module, and as such uses the @safe
+rows and result ranges, and the `MySQLVal` type. For the `Variant` unsafe
+version, please import `mysql.unsafe.commands`.
+
+$(SAFE_MIGRATION)
 +/
 
 module mysql.safe.commands;
@@ -23,7 +27,7 @@ import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
-import mysql.internal.result;
+import mysql.impl.result;
 import mysql.types;
 
 /// This feature is not yet implemented. It currently has no effect.
@@ -167,25 +171,27 @@ same statement instead of manually preparing a statement.
 If `args` and `prepared` are both provided, `args` will be used,
 and any arguments that are already set in the prepared statement
 will automatically be replaced with `args` (note, just like calling
-`mysql.prepared.Prepared.setArgs`, this will also remove all
-`mysql.prepared.ParameterSpecialization` that may have been applied).
+`mysql.impl.prepared.SafePrepared.setArgs`, this will also remove all
+`mysql.impl.prepared.SafeParameterSpecialization` that may have been applied).
 
 Only use the `const(char[]) sql` overload that doesn't take `args`
 when you are not going to be using the same
 command repeatedly and you are CERTAIN all the data you're sending is properly
 escaped. Otherwise, consider using overload that takes a `Prepared`.
 
-If you need to use any `mysql.prepared.ParameterSpecialization`, use
-`mysql.connection.prepare` to manually create a `mysql.prepared.Prepared`,
-and set your parameter specializations using `mysql.prepared.Prepared.setArg`
-or `mysql.prepared.Prepared.setArgs`.
+If you need to use any `mysql.impl.prepared.SafeParameterSpecialization`, use
+`mysql.safe.connection.prepare` to manually create a
+`mysql.impl.prepared.SafePrepared`, and set your parameter specializations using
+`mysql.impl.prepared.SafePrepared.setArg` or
+`mysql.impl.prepared.SafePrepared.setArgs`.
 
 Type_Mappings: $(TYPE_MAPPINGS)
 
 Params:
-conn = An open `mysql.connection.Connection` to the database.
+conn = An open `mysql.impl.connection.Connection` to the database.
 sql = The SQL command to be run.
 prepared = The prepared statement to be run.
+args = The arguments to be passed in the `mysql.impl.prepared.SafePrepared`.
 
 Returns: The number of rows affected.
 
@@ -255,8 +261,8 @@ package ulong execImpl(Connection conn, ExecQueryImplInfo info)
 /++
 Execute an SQL SELECT command or prepared statement.
 
-This returns an input range of `mysql.result.Row`, so if you need random access
-to the `mysql.result.Row` elements, simply call
+This returns an input range of `mysql.impl.result.SafeRow`, so if you need random
+access to the `mysql.impl.result.SafeRow` elements, simply call
 $(LINK2 https://dlang.org/phobos/std_array.html#array, `std.array.array()`)
 on the result.
 
@@ -272,28 +278,30 @@ same statement instead of manually preparing a statement.
 If `args` and `prepared` are both provided, `args` will be used,
 and any arguments that are already set in the prepared statement
 will automatically be replaced with `args` (note, just like calling
-`mysql.prepared.Prepared.setArgs`, this will also remove all
-`mysql.prepared.ParameterSpecialization` that may have been applied).
+`mysql.impl.prepared.SafePrepared.setArgs`, this will also remove all
+`mysql.impl.prepared.SafeParameterSpecialization` that may have been applied).
 
 Only use the `const(char[]) sql` overload that doesn't take `args`
 when you are not going to be using the same
 command repeatedly and you are CERTAIN all the data you're sending is properly
 escaped. Otherwise, consider using overload that takes a `Prepared`.
 
-If you need to use any `mysql.prepared.ParameterSpecialization`, use
-`mysql.connection.prepare` to manually create a `mysql.prepared.Prepared`,
-and set your parameter specializations using `mysql.prepared.Prepared.setArg`
-or `mysql.prepared.Prepared.setArgs`.
+If you need to use any `mysql.safe.prepared.ParameterSpecialization`, use
+`mysql.safe.connection.prepare` to manually create a
+`mysql.impl.prepared.SafePrepared`, and set your parameter specializations using
+`mysql.impl.prepared.SafePrepared.setArg` or
+`mysql.impl.prepared.SafePrepared.setArgs`.
 
 Type_Mappings: $(TYPE_MAPPINGS)
 
 Params:
-conn = An open `mysql.connection.Connection` to the database.
+conn = An open `mysql.impl.connection.Connection` to the database.
 sql = The SQL command to be run.
 prepared = The prepared statement to be run.
 csa = Not yet implemented.
+args = Arguments to the SQL statement or `mysql.safe.prepared.Prepared` struct.
 
-Returns: A (possibly empty) `mysql.result.ResultRange`.
+Returns: A (possibly empty) `mysql.safe.result.ResultRange`.
 
 Example:
 ---
@@ -373,7 +381,7 @@ package SafeResultRange queryImpl(ColumnSpecialization[] csa,
 
 /++
 Execute an SQL SELECT command or prepared statement where you only want the
-first `mysql.result.Row`, if any.
+first `mysql.impl.result.SafeRow`, if any.
 
 If the SQL command does not produce a result set (such as INSERT/CREATE/etc),
 then `mysql.exceptions.MYXNoResultRecieved` will be thrown. Use
@@ -387,29 +395,31 @@ same statement instead of manually preparing a statement.
 If `args` and `prepared` are both provided, `args` will be used,
 and any arguments that are already set in the prepared statement
 will automatically be replaced with `args` (note, just like calling
-`mysql.prepared.Prepared.setArgs`, this will also remove all
-`mysql.prepared.ParameterSpecialization` that may have been applied).
+`mysql.impl.prepared.SafePrepared.setArgs`, this will also remove all
+`mysql.impl.prepared.SafeParameterSpecialization` that may have been applied).
 
 Only use the `const(char[]) sql` overload that doesn't take `args`
 when you are not going to be using the same
 command repeatedly and you are CERTAIN all the data you're sending is properly
 escaped. Otherwise, consider using overload that takes a `Prepared`.
 
-If you need to use any `mysql.prepared.ParameterSpecialization`, use
-`mysql.connection.prepare` to manually create a `mysql.prepared.Prepared`,
-and set your parameter specializations using `mysql.prepared.Prepared.setArg`
-or `mysql.prepared.Prepared.setArgs`.
+If you need to use any `mysql.impl.prepared.SafeParameterSpecialization`, use
+`mysql.safe.connection.prepare` to manually create a
+`mysql.impl.prepared.SafePrepared`, and set your parameter specializations using
+`mysql.impl.prepared.SafePrepared.setArg` or
+`mysql.impl.prepared.SafePrepared.setArgs`.
 
 Type_Mappings: $(TYPE_MAPPINGS)
 
 Params:
-conn = An open `mysql.connection.Connection` to the database.
+conn = An open `mysql.impl.connection.Connection` to the database.
 sql = The SQL command to be run.
 prepared = The prepared statement to be run.
 csa = Not yet implemented.
+args = Arguments to SQL statement or `mysql.impl.prepared.SafePrepared` struct.
 
-Returns: `Nullable!(mysql.result.Row)`: This will be null (check via `Nullable.isNull`) if the
-query resulted in an empty result set.
+Returns: `Nullable!(mysql.impl.result.SafeRow)`: This will be null (check
+		via `Nullable.isNull`) if the query resulted in an empty result set.
 
 Example:
 ---
@@ -513,7 +523,7 @@ escaped. Otherwise, consider using overload that takes a `Prepared`.
 Type_Mappings: $(TYPE_MAPPINGS)
 
 Params:
-conn = An open `mysql.connection.Connection` to the database.
+conn = An open `mysql.impl.connection.Connection` to the database.
 sql = The SQL command to be run.
 prepared = The prepared statement to be run.
 args = The variables, taken by reference, to receive the values.
@@ -578,11 +588,13 @@ Execute an SQL SELECT command or prepared statement and return a single value:
 the first column of the first row received.
 
 If the query did not produce any rows, or the rows it produced have zero columns,
-this will return `Nullable!Variant()`, ie, null. Test for this with `result.isNull`.
+this will return `Nullable!MySQLVal()`, ie, null. Test for this with
+`result.isNull`.
 
 If the query DID produce a result, but the value actually received is NULL,
-then `result.isNull` will be FALSE, and `result.get` will produce a Variant
-which CONTAINS null. Check for this with `result.get.type == typeid(typeof(null))`.
+then `result.isNull` will be FALSE, and `result.get` will produce a MySQLVal
+which CONTAINS null. Check for this with `result.get.kind == MySQLVal.Kind.Null`
+or `result.get == null`.
 
 If the SQL command does not produce a result set (such as INSERT/CREATE/etc),
 then `mysql.exceptions.MYXNoResultRecieved` will be thrown. Use
@@ -596,34 +608,34 @@ same statement instead of manually preparing a statement.
 If `args` and `prepared` are both provided, `args` will be used,
 and any arguments that are already set in the prepared statement
 will automatically be replaced with `args` (note, just like calling
-`mysql.prepared.Prepared.setArgs`, this will also remove all
-`mysql.prepared.ParameterSpecialization` that may have been applied).
+`mysql.impl.prepared.SafePrepared.setArgs`, this will also remove all
+`mysql.impl.prepared.SafeParameterSpecialization` that may have been applied).
 
 Only use the `const(char[]) sql` overload that doesn't take `args`
 when you are not going to be using the same
 command repeatedly and you are CERTAIN all the data you're sending is properly
 escaped. Otherwise, consider using overload that takes a `Prepared`.
 
-If you need to use any `mysql.prepared.ParameterSpecialization`, use
-`mysql.connection.prepare` to manually create a `mysql.prepared.Prepared`,
-and set your parameter specializations using `mysql.prepared.Prepared.setArg`
-or `mysql.prepared.Prepared.setArgs`.
+If you need to use any `mysql.impl.prepared.SafeParameterSpecialization`, use
+`mysql.safe.connection.prepare` to manually create a `mysql.impl.prepared.SafePrepared`,
+and set your parameter specializations using `mysql.impl.prepared.SafePrepared.setArg`
+or `mysql.impl.prepared.SafePrepared.setArgs`.
 
 Type_Mappings: $(TYPE_MAPPINGS)
 
 Params:
-conn = An open `mysql.connection.Connection` to the database.
+conn = An open `mysql.impl.connection.Connection` to the database.
 sql = The SQL command to be run.
 prepared = The prepared statement to be run.
 csa = Not yet implemented.
 
-Returns: `Nullable!Variant`: This will be null (check via `Nullable.isNull`) if the
+Returns: `Nullable!MySQLVal`: This will be null (check via `Nullable.isNull`) if the
 query resulted in an empty result set.
 
 Example:
 ---
 auto myInt = 7;
-Nullable!Variant value = myConnection.queryRow("SELECT * FROM `myTable` WHERE `a` = ?", myInt);
+Nullable!MySQLVal value = myConnection.queryRow("SELECT * FROM `myTable` WHERE `a` = ?", myInt);
 ---
 +/
 /+
