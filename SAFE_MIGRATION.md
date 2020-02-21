@@ -8,7 +8,7 @@ First, note that the latest version of mysql, while it supports a safe API, is d
 
 *related: please see D's [Memory Safety](https://dlang.org/spec/memory-safe-d.html) page to understand what `@safe` does in D*
 
-Since mysql-native is intended to be a key component of servers that are on the Internet, it must support the capability (even if not required) to be fully `@safe`. In addition, major web frameworks (e.g. [vibe.d](http://code.dlang.org/packages/vibe-d)) and arguably any other program is headed in this direction.
+Since mysql-native is intended to be a key component of servers that are on the Internet, it must support the capability (even if not required) to be fully `@safe`. In addition, major web frameworks (e.g. [vibe.d](http://code.dlang.org/packages/vibe-d)) and arguably any other program are headed in this direction.
 
 In other words, the world wants memory safe code, and libraries that provide safe interfaces and guarantees will be much more appealing. It's just not acceptable any more for the components of major development projects to be careless about memory safety.
 
@@ -127,7 +127,7 @@ struct EstablishedStruct
     void fetchFromDatabase(Connection conn)
     {
         // all safe calls except asVariant
-        value conn.queryValue("SELECT value FROM theTable WHERE id = ?", id).asVariant;
+        value = conn.queryValue("SELECT value FROM theTable WHERE id = ?", id).asVariant;
     }
 }
 ```
@@ -162,7 +162,7 @@ Even in cases where you elect to defer updating code, you can still import the `
 
 We recommend following these steps to transition. In most cases, you should see very little breakage of code:
 
-1. Adjust your imports to import the safe versions of mysql moduels. If you import the `mysql` package, instead import the `mysql.safe` package. If you import any of the individual modules listed in the [API](#The safe/unsafe API) section, use the `mysql.safe.modulename` equivalent instead.
+1. Adjust your imports to import the safe versions of mysql modules. If you import the `mysql` package, instead import the `mysql.safe` package. If you import any of the individual modules listed in the [API](#the-safeunsafe-api) section, use the `mysql.safe.modulename` equivalent instead.
 2. Adjust any explicit uses of `Variant` to `MySQLVal` or use `auto` for type inference. Remember that variables typed as `Variant` explicitly will consume `MySQLVal`, so you may not get compiler errors for these, but you will certainly get runtime errors.
 3. If there are cases where you cannot stop using `Variant`, use the `asVariant` compatibility shim.
 4. Adjust uses of `Variant`'s methods to use the `TaggedAlgebraic` versions. Most important is usage of the `kind` member, as comparing two `TypeInfo` objects is currently `@system`.
