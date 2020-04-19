@@ -1,5 +1,5 @@
 /++
-Structures for data received: rows and result sets (ie, a range of rows).
+Implementation - Data result structures.
 
 WARNING:
 This module is used to consolidate the common implementation of the safe and

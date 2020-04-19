@@ -1,5 +1,5 @@
 /++
-Connect to a MySQL/MariaDB server.
+Implementation - Connection class.
 
 WARNING:
 This module is used to consolidate the common implementation of the safe and
@@ -1132,7 +1132,7 @@ unittest
 	cn.exec("DROP TABLE `dropConnection`");
 }
 
-/+
+/*
 Test Prepared's ability to be safely refcount-released during a GC cycle
 (ie, `Connection.release` must not allocate GC memory).
 
@@ -1140,7 +1140,7 @@ Currently disabled because it's not guaranteed to always work
 (and apparently, cannot be made to work?)
 For relevant discussion, see issue #159:
 https://github.com/mysql-d/mysql-native/issues/159
-+/
+*/
 version(none)
 debug(MYSQLN_TESTS)
 {

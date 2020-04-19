@@ -1,5 +1,5 @@
 /++
-This module publicly imports `mysql.impl.result`. See that module for documentation on how to use result and result range structures.
+This module publicly imports `mysql.impl.result`. See that module for documentation on how to use result and result range structures (safe versions).
 
 This module also aliases the safe versions of these structs to the original
 struct names to aid in transitioning to using safe code with minimal impact.

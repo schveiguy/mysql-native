@@ -1,5 +1,5 @@
 /++
-Imports all of $(LINK2 https://github.com/mysql-d/mysql-native, mysql-native).
+Imports all of $(LINK2 https://github.com/mysql-d/mysql-native, mysql-native) (safe versions).
 
 This module will import all modules that use the safe API of the mysql library.
 In a future version, this will become the default.

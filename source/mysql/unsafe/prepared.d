@@ -1,6 +1,6 @@
 /++
-This module publicly imports `mysql.impl.prepared`. See that module for
-documentation on using prepared statements with a MySQL server.
+This module publicly imports `mysql.impl.prepared` (unsafe version). See that
+module for documentation on using prepared statements with a MySQL server.
 
 This module also aliases the unsafe versions of structs to the original struct
 names to aid in backwards compatibility.

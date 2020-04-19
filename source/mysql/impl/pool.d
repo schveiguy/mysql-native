@@ -1,4 +1,6 @@
 /++
+Implementation - Vibe.d MySQL Pool.
+
 Connect to a MySQL/MariaDB database using vibe.d's
 $(LINK2 http://vibed.org/api/vibe.core.connectionpool/ConnectionPool, ConnectionPool).
 

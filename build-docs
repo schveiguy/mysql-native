@@ -16,12 +16,18 @@ rm -rf docs_tmp ta
 rm source/mysql/package.o
 
 dub --version
-dub run gen-package-version -- mysql --ddoc=ddoc --src=source
+if ! dub run gen-package-version -- mysql --ddoc=ddoc --src=source; then
+  echo "Failed to build gen-package-version"
+  exit 1
+fi
 rm source/mysql/packageVersion.d
 
 echo Building ddox...
 cd ./ddox
-dub build
+if ! dub build; then
+   echo "Failed to build ddox"
+   exit 1
+fi
 cd ..
 echo Done building ddox...
 

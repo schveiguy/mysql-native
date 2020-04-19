@@ -1,7 +1,11 @@
 /++
-Connect to a MySQL/MariaDB server.
+Connect to a MySQL/MariaDB server (safe version).
 
 This is the @safe API for the Connection type. It publicly imports `mysql.impl.connection`, and also provides the safe version of the API for preparing statements.
+
+Note that the common pieces of the connection are documented and currently
+reside in `mysql.impl.connection`. Please see this module for documentation of
+the connection object.
 
 $(SAFE_MIGRATION)
 +/
@@ -18,9 +22,10 @@ import mysql.safe.commands;
 Submit an SQL command to the server to be compiled into a prepared statement.
 
 This will automatically register the prepared statement on the provided connection.
-The resulting `mysql.impl.prepared.SafePrepared` can then be used freely on ANY `Connection`,
-as it will automatically be registered upon its first use on other connections.
-Or, pass it to `Connection.register` if you prefer eager registration.
+The resulting `mysql.impl.prepared.SafePrepared` can then be used freely on ANY
+`mysql.impl.connection.Connection`, as it will automatically be registered upon
+its first use on other connections. Or, pass it to
+`mysql.impl.connection.Connection.register` if you prefer eager registration.
 
 Internally, the result of a successful outcome will be a statement handle - an ID -
 for the prepared statement, a count of the parameters required for

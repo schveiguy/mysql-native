@@ -1,11 +1,15 @@
 /++
-Use a DB via plain SQL statements.
+Use a DB via plain SQL statements (unsafe version).
 
 Commands that are expected to return a result set - queries - have distinctive
 methods that are enforced. That is it will be an error to call such a method
 with an SQL command that does not produce a result set. So for commands like
 SELECT, use the `query` functions. For other commands, like
 INSERT/UPDATE/CREATE/etc, use `exec`.
+
+This is the @system version of mysql's command module, and as such uses the @system
+rows and result ranges, and the `Variant` type. For the `MySQLVal` safe
+version, please import `mysql.safe.commands`.
 +/
 
 module mysql.unsafe.commands;
@@ -130,6 +134,9 @@ unittest
 /++
 Execute an SQL command or prepared statement, such as INSERT/UPDATE/CREATE/etc.
 
+Note: The safe `mysql.safe.commands.exec` is also aliased here, so you have access to all
+those overloads in addition to these.
+
 This method is intended for commands such as which do not produce a result set
 (otherwise, use one of the `query` functions instead.) If the SQL command does
 produces a result set (such as SELECT), `mysql.exceptions.MYXResultRecieved`
@@ -171,8 +178,6 @@ auto myInt = 7;
 auto rowsAffected = myConnection.exec("INSERT INTO `myTable` (`a`) VALUES (?)", myInt);
 ---
 +/
-alias exec = SC.exec;
-///ditto
 ulong exec(Connection conn, const(char[]) sql, Variant[] args) @system
 {
 	auto prepared = conn.prepare(sql);
@@ -194,6 +199,10 @@ ulong exec(Connection conn, ref BackwardCompatPrepared prepared) @system
 	prepared._prepared = p;
 	return result;
 }
+
+//ditto
+// Note: doesn't look right in ddox, so I removed this as a ditto.
+alias exec = SC.exec;
 
 
 /++

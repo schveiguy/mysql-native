@@ -75,6 +75,20 @@ module mysql;
 // by default we do the unsafe API.
 public import mysql.unsafe;
 
+// import the safe version for generating documentation.
+version(MySQLDocs)
+{
+	// also document safe items
+	import mysql.safe;
+
+	// also document forwarding modules
+	import mysql.commands;
+	import mysql.result;
+	import mysql.pool;
+	import mysql.prepared;
+	import mysql.connection;
+}
+
 debug(MYSQLN_TESTS)      version = DoCoreTests;
 debug(MYSQLN_CORE_TESTS) version = DoCoreTests;
 

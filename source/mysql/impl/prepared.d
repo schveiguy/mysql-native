@@ -1,5 +1,5 @@
 /++
-Use a DB via SQL prepared statements.
+Implementation - Prepared statements.
 
 WARNING:
 This module is used to consolidate the common implementation of the safe and

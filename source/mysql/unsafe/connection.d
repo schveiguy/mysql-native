@@ -1,9 +1,14 @@
 /++
-Connect to a MySQL/MariaDB server.
+Connect to a MySQL/MariaDB server (unsafe version).
 
-This is the unsafe API for the Connection type. It publicly imports `mysql.impl.connection`, and also provides the unsafe version of the API for preparing statements.
+This is the unsafe API for the Connection type. It publicly imports
+`mysql.impl.connection`, and also provides the unsafe version of the API for
+preparing statements. Note that unsafe prepared statements actually use safe
+code underneath.
 
-Note that unsafe prepared statements are no different from safe prepared statements, except for the mechanism to set parameters allows Variant.
+Note that the common pieces of the connection are documented and currently
+reside in `mysql.impl.connection`. Please see this module for documentation of
+the connection object.
 
 This module also contains the soon-to-be-deprecated BackwardCompatPrepared type.
 
