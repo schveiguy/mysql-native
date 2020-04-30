@@ -116,7 +116,7 @@ unittest
 	import mysql.test.integration;
 	import std.array;
 	mixin(scopedCn);
-	initBaseTestTables(cn);
+	initBaseTestTables!true(cn);
 
 	exec(cn, `DROP PROCEDURE IF EXISTS insert2`);
 	exec(cn, `

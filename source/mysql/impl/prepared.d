@@ -63,98 +63,103 @@ alias UPSN = UnsafeParameterSpecialization;
 
 @("paramSpecial")
 debug(MYSQLN_TESTS)
-unittest
+@system unittest
 {
-	import std.array;
-	import std.range;
-	import mysql.safe.connection;
-	import mysql.safe.commands;
-	import mysql.test.common;
-	mixin(scopedCn);
-
-	// Setup
-	cn.exec("DROP TABLE IF EXISTS `paramSpecial`");
-	cn.exec("CREATE TABLE `paramSpecial` (
-		`data` LONGBLOB
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-
-	immutable totalSize = 1000; // Deliberately not a multiple of chunkSize below
-	auto alph = cast(const(ubyte)[]) "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	auto data = alph.cycle.take(totalSize).array;
-
-	int chunkSize;
-	const(ubyte)[] dataToSend;
-	bool finished;
-	uint sender(ubyte[] chunk)
+	static void test(bool isSafe)()
 	{
-		assert(!finished);
-		assert(chunk.length == chunkSize);
+		import std.array;
+		import std.range;
+		import mysql.test.common;
+		mixin(doImports(isSafe, "connection", "commands", "prepared"));
+		mixin(scopedCn);
 
-		if(dataToSend.length < chunkSize)
+		// Setup
+		cn.exec("DROP TABLE IF EXISTS `paramSpecial`");
+		cn.exec("CREATE TABLE `paramSpecial` (
+											  `data` LONGBLOB
+											 ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+		immutable totalSize = 1000; // Deliberately not a multiple of chunkSize below
+		auto alph = cast(const(ubyte)[]) "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		auto data = alph.cycle.take(totalSize).array;
+
+		int chunkSize;
+		const(ubyte)[] dataToSend;
+		bool finished;
+		uint sender(ubyte[] chunk)
 		{
-			auto actualSize = cast(uint) dataToSend.length;
-			chunk[0..actualSize] = dataToSend[];
-			finished = true;
-			dataToSend.length = 0;
-			return actualSize;
+			assert(!finished);
+			assert(chunk.length == chunkSize);
+
+			if(dataToSend.length < chunkSize)
+			{
+				auto actualSize = cast(uint) dataToSend.length;
+				chunk[0..actualSize] = dataToSend[];
+				finished = true;
+				dataToSend.length = 0;
+				return actualSize;
+			}
+			else
+			{
+				chunk[] = dataToSend[0..chunkSize];
+				dataToSend = dataToSend[chunkSize..$];
+				return chunkSize;
+			}
 		}
-		else
-		{
-			chunk[] = dataToSend[0..chunkSize];
-			dataToSend = dataToSend[chunkSize..$];
-			return chunkSize;
-		}
-	}
 
-	immutable selectSQL = "SELECT `data` FROM `paramSpecial`";
+		immutable selectSQL = "SELECT `data` FROM `paramSpecial`";
 
-	// Sanity check
-	cn.exec("INSERT INTO `paramSpecial` VALUES (\""~(cast(string)data)~"\")");
-	auto value = cn.queryValue(selectSQL);
-	assert(!value.isNull);
-	assert(value.get == data);
-
-	{
-		// Clear table
-		cn.exec("DELETE FROM `paramSpecial`");
-		value = cn.queryValue(selectSQL); // Ensure deleted
-		assert(value.isNull);
-
-		// Test: totalSize as a multiple of chunkSize
-		chunkSize = 100;
-		assert(cast(int)(totalSize / chunkSize) * chunkSize == totalSize);
-		auto paramSpecial = SafeParameterSpecialization(0, SQLType.INFER_FROM_D_TYPE, chunkSize, &sender);
-
-		finished = false;
-		dataToSend = data;
-		auto prepared = cn.prepare("INSERT INTO `paramSpecial` VALUES (?)");
-		prepared.setArg(0, cast(ubyte[])[], paramSpecial);
-		assert(cn.exec(prepared) == 1);
-		value = cn.queryValue(selectSQL);
+		// Sanity check
+		cn.exec("INSERT INTO `paramSpecial` VALUES (\""~(cast(const(char)[])data)~"\")");
+		auto value = cn.queryValue(selectSQL);
 		assert(!value.isNull);
 		assert(value.get == data);
+
+		{
+			// Clear table
+			cn.exec("DELETE FROM `paramSpecial`");
+			value = cn.queryValue(selectSQL); // Ensure deleted
+			assert(value.isNull);
+
+			// Test: totalSize as a multiple of chunkSize
+			chunkSize = 100;
+			assert(cast(int)(totalSize / chunkSize) * chunkSize == totalSize);
+			auto paramSpecial = ParameterSpecialization(0, SQLType.INFER_FROM_D_TYPE, chunkSize, &sender);
+
+			finished = false;
+			dataToSend = data;
+			auto prepared = cn.prepare("INSERT INTO `paramSpecial` VALUES (?)");
+			prepared.setArg(0, cast(ubyte[])[], paramSpecial);
+			assert(cn.exec(prepared) == 1);
+			value = cn.queryValue(selectSQL);
+			assert(!value.isNull);
+			assert(value.get == data);
+		}
+
+		{
+			// Clear table
+			cn.exec("DELETE FROM `paramSpecial`");
+			value = cn.queryValue(selectSQL); // Ensure deleted
+			assert(value.isNull);
+
+			// Test: totalSize as a non-multiple of chunkSize
+			chunkSize = 64;
+			assert(cast(int)(totalSize / chunkSize) * chunkSize != totalSize);
+			auto paramSpecial = ParameterSpecialization(0, SQLType.INFER_FROM_D_TYPE, chunkSize, &sender);
+
+			finished = false;
+			dataToSend = data;
+			auto prepared = cn.prepare("INSERT INTO `paramSpecial` VALUES (?)");
+			prepared.setArg(0, cast(ubyte[])[], paramSpecial);
+			assert(cn.exec(prepared) == 1);
+			value = cn.queryValue(selectSQL);
+			assert(!value.isNull);
+			assert(value.get == data);
+		}
 	}
 
-	{
-		// Clear table
-		cn.exec("DELETE FROM `paramSpecial`");
-		value = cn.queryValue(selectSQL); // Ensure deleted
-		assert(value.isNull);
-
-		// Test: totalSize as a non-multiple of chunkSize
-		chunkSize = 64;
-		assert(cast(int)(totalSize / chunkSize) * chunkSize != totalSize);
-		auto paramSpecial = SafeParameterSpecialization(0, SQLType.INFER_FROM_D_TYPE, chunkSize, &sender);
-
-		finished = false;
-		dataToSend = data;
-		auto prepared = cn.prepare("INSERT INTO `paramSpecial` VALUES (?)");
-		prepared.setArg(0, cast(ubyte[])[], paramSpecial);
-		assert(cn.exec(prepared) == 1);
-		value = cn.queryValue(selectSQL);
-		assert(!value.isNull);
-		assert(value.get == data);
-	}
+	test!false();
+	() @safe {test!true();} ();
 }
 
 /++
@@ -266,51 +271,57 @@ public:
 
 	@("setArg-typeMods")
 	debug(MYSQLN_TESTS)
-	unittest
+	@system unittest
 	{
-		import mysql.safe.commands;
-		import mysql.test.common;
-		mixin(scopedCn);
-
-		// Setup
-		cn.exec("DROP TABLE IF EXISTS `setArg-typeMods`");
-		cn.exec("CREATE TABLE `setArg-typeMods` (
-			`i` INTEGER
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-
-		auto insertSQL = "INSERT INTO `setArg-typeMods` VALUES (?)";
-
-		// Sanity check
+		void test(bool isSafe)()
 		{
-			int i = 111;
-			assert(cn.exec(insertSQL, i) == 1);
-			auto value = cn.queryValue("SELECT `i` FROM `setArg-typeMods`");
-			assert(!value.isNull);
-			assert(value.get == i);
-		}
+			import mysql.test.common;
+			mixin(doImports(isSafe, "commands"));
+			mixin(scopedCn);
 
-		// Test const(int)
-		{
-			const(int) i = 112;
-			assert(cn.exec(insertSQL, i) == 1);
-		}
+			// Setup
+			cn.exec("DROP TABLE IF EXISTS `setArg-typeMods`");
+			cn.exec("CREATE TABLE `setArg-typeMods` (
+													 `i` INTEGER
+													) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
-		// Test immutable(int)
-		{
-			immutable(int) i = 113;
-			assert(cn.exec(insertSQL, i) == 1);
-		}
+			auto insertSQL = "INSERT INTO `setArg-typeMods` VALUES (?)";
 
-		// Note: Variant doesn't seem to support
-		// `shared(T)` or `shared(const(T)`. Only `shared(immutable(T))`.
+			// Sanity check
+			{
+				int i = 111;
+				assert(cn.exec(insertSQL, i) == 1);
+				auto value = cn.queryValue("SELECT `i` FROM `setArg-typeMods`");
+				assert(!value.isNull);
+				assert(value.get == i);
+			}
 
-		// Further note, shared immutable(int) is really
-		// immutable(int). This test is a duplicate, so removed.
-		// Test shared immutable(int)
-		/*{
+			// Test const(int)
+			{
+				const(int) i = 112;
+				assert(cn.exec(insertSQL, i) == 1);
+			}
+
+			// Test immutable(int)
+			{
+				immutable(int) i = 113;
+				assert(cn.exec(insertSQL, i) == 1);
+			}
+
+			// Note: Variant doesn't seem to support
+			// `shared(T)` or `shared(const(T)`. Only `shared(immutable(T))`.
+
+			// Further note, shared immutable(int) is really
+			// immutable(int). This test is a duplicate, so removed.
+			// Test shared immutable(int)
+			/*{
 			shared immutable(int) i = 113;
 			assert(cn.exec(insertSQL, i) == 1);
-		}*/
+			}*/
+		}
+
+		test!false();
+		() @safe {test!true();} ();
 	}
 
 	/++
@@ -414,62 +425,64 @@ public:
 	debug(MYSQLN_TESTS)
 	unittest
 	{
-		import mysql.safe.connection;
-		import mysql.test.common;
-		import mysql.safe.commands;
-		mixin(scopedCn);
-
-		cn.exec("DROP TABLE IF EXISTS `setNullArg`");
-		cn.exec("CREATE TABLE `setNullArg` (
-			`val` INTEGER
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-
-		immutable insertSQL = "INSERT INTO `setNullArg` VALUES (?)";
-		immutable selectSQL = "SELECT * FROM `setNullArg`";
-		auto preparedInsert = cn.prepare(insertSQL);
-		assert(preparedInsert.sql == insertSQL);
-		SafeRow[] rs;
-
+		static void test(bool isSafe)()
 		{
-			Nullable!int nullableInt;
-			nullableInt.nullify();
-			preparedInsert.setArg(0, nullableInt);
-			assert(preparedInsert.getArg(0).kind == MySQLVal.Kind.Null);
-			nullableInt = 7;
-			preparedInsert.setArg(0, nullableInt);
-			assert(preparedInsert.getArg(0) == 7);
+			import mysql.test.common;
+			mixin(doImports(isSafe, "connection", "commands"));
+			mixin(scopedCn);
 
-			nullableInt.nullify();
-			preparedInsert.setArgs(nullableInt);
-			assert(preparedInsert.getArg(0).kind == MySQLVal.Kind.Null);
-			nullableInt = 7;
-			preparedInsert.setArgs(nullableInt);
-			assert(preparedInsert.getArg(0) == 7);
+			cn.exec("DROP TABLE IF EXISTS `setNullArg`");
+			cn.exec("CREATE TABLE `setNullArg` (
+												`val` INTEGER
+											   ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+			immutable insertSQL = "INSERT INTO `setNullArg` VALUES (?)";
+			immutable selectSQL = "SELECT * FROM `setNullArg`";
+			auto preparedInsert = cn.prepare(insertSQL);
+			assert(preparedInsert.sql == insertSQL);
+			SafeRow[] rs;
+
+			{
+				Nullable!int nullableInt;
+				nullableInt.nullify();
+				preparedInsert.setArg(0, nullableInt);
+				assert(preparedInsert.getArg(0).kind == MySQLVal.Kind.Null);
+				nullableInt = 7;
+				preparedInsert.setArg(0, nullableInt);
+				assert(preparedInsert.getArg(0) == 7);
+
+				nullableInt.nullify();
+				preparedInsert.setArgs(nullableInt);
+				assert(preparedInsert.getArg(0).kind == MySQLVal.Kind.Null);
+				nullableInt = 7;
+				preparedInsert.setArgs(nullableInt);
+				assert(preparedInsert.getArg(0) == 7);
+			}
+
+			preparedInsert.setArg(0, 5);
+			cn.exec(preparedInsert);
+			rs = cn.query(selectSQL).array;
+			assert(rs.length == 1);
+			assert(rs[0][0] == 5);
+
+			preparedInsert.setArg(0, null);
+			cn.exec(preparedInsert);
+			rs = cn.query(selectSQL).array;
+			assert(rs.length == 2);
+			assert(rs[0][0] == 5);
+			assert(rs[1].isNull(0));
+			assert(rs[1][0].kind == MySQLVal.Kind.Null);
+
+			preparedInsert.setArg(0, MySQLVal(null));
+			cn.exec(preparedInsert);
+			rs = cn.query(selectSQL).array;
+			assert(rs.length == 3);
+			assert(rs[0][0] == 5);
+			assert(rs[1].isNull(0));
+			assert(rs[2].isNull(0));
+			assert(rs[1][0].kind == MySQLVal.Kind.Null);
+			assert(rs[2][0] == null);
 		}
-
-		preparedInsert.setArg(0, 5);
-		cn.exec(preparedInsert);
-		rs = cn.query(selectSQL).array;
-		assert(rs.length == 1);
-		assert(rs[0][0] == 5);
-
-		preparedInsert.setArg(0, null);
-		cn.exec(preparedInsert);
-		rs = cn.query(selectSQL).array;
-		assert(rs.length == 2);
-		assert(rs[0][0] == 5);
-		assert(rs[1].isNull(0));
-		assert(rs[1][0].kind == MySQLVal.Kind.Null);
-
-		preparedInsert.setArg(0, MySQLVal(null));
-		cn.exec(preparedInsert);
-		rs = cn.query(selectSQL).array;
-		assert(rs.length == 3);
-		assert(rs[0][0] == 5);
-		assert(rs[1].isNull(0));
-		assert(rs[2].isNull(0));
-		assert(rs[1][0].kind == MySQLVal.Kind.Null);
-		assert(rs[2][0] == null);
 	}
 
 	/// Gets the number of arguments this prepared statement expects to be passed in.
@@ -485,24 +498,29 @@ public:
 
 	@("lastInsertID")
 	debug(MYSQLN_TESTS)
-	unittest
+	@system unittest
 	{
-		import mysql.connection;
-		import mysql.safe.commands;
-		mixin(scopedCn);
-		cn.exec("DROP TABLE IF EXISTS `testPreparedLastInsertID`");
-		cn.exec("CREATE TABLE `testPreparedLastInsertID` (
-			`a` INTEGER NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (a)
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		static void test(bool isSafe)()
+		{
+			mixin(doImports(isSafe, "connection", "commands"));
+			mixin(scopedCn);
+			cn.exec("DROP TABLE IF EXISTS `testPreparedLastInsertID`");
+			cn.exec("CREATE TABLE `testPreparedLastInsertID` (
+				`a` INTEGER NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (a)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
-		auto stmt = cn.prepare("INSERT INTO `testPreparedLastInsertID` VALUES()");
-		cn.exec(stmt);
-		assert(stmt.lastInsertID == 1);
-		cn.exec(stmt);
-		assert(stmt.lastInsertID == 2);
-		cn.exec(stmt);
-		assert(stmt.lastInsertID == 3);
+			auto stmt = cn.prepare("INSERT INTO `testPreparedLastInsertID` VALUES()");
+			cn.exec(stmt);
+			assert(stmt.lastInsertID == 1);
+			cn.exec(stmt);
+			assert(stmt.lastInsertID == 2);
+			cn.exec(stmt);
+			assert(stmt.lastInsertID == 3);
+		}
+
+		test!false();
+		() @safe { test!true(); }();
 	}
 
 	/// Gets the prepared header's field descriptions.
@@ -573,7 +591,7 @@ struct UnsafePrepared
 	/// ditto
 	void setArgs(Variant[] args, UnsafeParameterSpecialization[] psnList=null) @system
 	{
-		enforce!MYX(args.length == _numParams, "Param count supplied does not match prepared statement");
+		enforce!MYX(args.length == _safe._numParams, "Param count supplied does not match prepared statement");
 		foreach(i, ref arg; args)
 			_safe.setArg(i, _toVal(arg));
 		if (psnList !is null)
@@ -603,8 +621,65 @@ struct UnsafePrepared
 		return _safe;
 	}
 
-	/// Forward all other calls to the safe accessor
-	alias safe this;
+	// this package method is to skip the ckeck for parameter specializations
+	// with chunk delegates. It can only be used when using the safe prepared
+	// statement for execution.
+	package(mysql) ref SafePrepared safeForExec() @system
+	{
+		return _safe;
+	}
+
+	/// forward all the methods from the safe struct. See `SafePrepared` for
+	/// details.
+	deprecated("Please use setArg(index, null)")
+	void setNullArg(size_t index) @safe
+	{
+		_safe.setArg(index, null);
+	}
+
+	@safe pure @property:
+
+	/// ditto
+	const(char)[] sql() const
+	{
+		return _safe.sql;
+	}
+
+	/// ditto
+	ushort numArgs() const nothrow
+	{
+		return _safe.numArgs;
+	}
+
+	/// ditto
+	ulong lastInsertID() const nothrow
+   	{
+	   	return _safe.lastInsertID;
+   	}
+	/// ditto
+	FieldDescription[] preparedFieldDescriptions()
+	{
+	   	return _safe.preparedFieldDescriptions;
+   	}
+
+	/// ditto
+	ParamDescription[] preparedParamDescriptions()
+	{
+	   	return _safe.preparedParamDescriptions;
+   	}
+
+	/// ditto
+	ColumnSpecialization[] columnSpecials()
+	{
+	   	return _safe.columnSpecials;
+   	}
+
+	///ditto
+	void columnSpecials(ColumnSpecialization[] csa)
+   	{
+	   	_safe.columnSpecials(csa);
+   	}
+
 }
 
 /// Allow conversion to UnsafePrepared from SafePrepared.

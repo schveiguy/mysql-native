@@ -552,66 +552,73 @@ public:
 	// ResultRange doesn't get invalidated upon reconnect
 	@("reconnect")
 	debug(MYSQLN_TESTS)
-	unittest
+	@system unittest
 	{
-		import std.variant;
-		import mysql.safe.commands;
-		mixin(scopedCn);
-		cn.exec("DROP TABLE IF EXISTS `reconnect`");
-		cn.exec("CREATE TABLE `reconnect` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-		cn.exec("INSERT INTO `reconnect` VALUES (1),(2),(3)");
+		static void test(bool doSafe)()
+		{
+			static if(doSafe)
+				import mysql.safe.commands;
+			else
+				import mysql.unsafe.commands;
+			mixin(scopedCn);
+			cn.exec("DROP TABLE IF EXISTS `reconnect`");
+			cn.exec("CREATE TABLE `reconnect` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+			cn.exec("INSERT INTO `reconnect` VALUES (1),(2),(3)");
 
-		enum sql = "SELECT a FROM `reconnect`";
+			enum sql = "SELECT a FROM `reconnect`";
 
-		// Sanity check
-		auto rows = cn.query(sql).array;
-		assert(rows[0][0] == 1);
-		assert(rows[1][0] == 2);
-		assert(rows[2][0] == 3);
+			// Sanity check
+			auto rows = cn.query(sql).array;
+			assert(rows[0][0] == 1);
+			assert(rows[1][0] == 2);
+			assert(rows[2][0] == 3);
 
-		// Ensure reconnect keeps the same connection when it's supposed to
-		auto range = cn.query(sql);
-		assert(range.front[0] == 1);
-		cn.reconnect();
-		assert(!cn.closed); // Is open?
-		assert(range.isValid); // Still valid?
-		range.popFront();
-		assert(range.front[0] == 2);
+			// Ensure reconnect keeps the same connection when it's supposed to
+			auto range = cn.query(sql);
+			assert(range.front[0] == 1);
+			cn.reconnect();
+			assert(!cn.closed); // Is open?
+			assert(range.isValid); // Still valid?
+			range.popFront();
+			assert(range.front[0] == 2);
 
-		// Ensure reconnect reconnects when it's supposed to
-		range = cn.query(sql);
-		assert(range.front[0] == 1);
-		cn._clientCapabilities = ~cn._clientCapabilities; // Pretend that we're changing the clientCapabilities
-		cn.reconnect(~cn._clientCapabilities);
-		assert(!cn.closed); // Is open?
-		assert(!range.isValid); // Was invalidated?
-		cn.query(sql).array; // Connection still works?
+			// Ensure reconnect reconnects when it's supposed to
+			range = cn.query(sql);
+			assert(range.front[0] == 1);
+			cn._clientCapabilities = ~cn._clientCapabilities; // Pretend that we're changing the clientCapabilities
+			cn.reconnect(~cn._clientCapabilities);
+			assert(!cn.closed); // Is open?
+			assert(!range.isValid); // Was invalidated?
+			cn.query(sql).array; // Connection still works?
 
-		// Try manually reconnecting
-		range = cn.query(sql);
-		assert(range.front[0] == 1);
-		cn.connect(cn._clientCapabilities);
-		assert(!cn.closed); // Is open?
-		assert(!range.isValid); // Was invalidated?
-		cn.query(sql).array; // Connection still works?
+			// Try manually reconnecting
+			range = cn.query(sql);
+			assert(range.front[0] == 1);
+			cn.connect(cn._clientCapabilities);
+			assert(!cn.closed); // Is open?
+			assert(!range.isValid); // Was invalidated?
+			cn.query(sql).array; // Connection still works?
 
-		// Try manually closing and connecting
-		range = cn.query(sql);
-		assert(range.front[0] == 1);
-		cn.close();
-		assert(cn.closed); // Is closed?
-		assert(!range.isValid); // Was invalidated?
-		cn.connect(cn._clientCapabilities);
-		assert(!cn.closed); // Is open?
-		assert(!range.isValid); // Was invalidated?
-		cn.query(sql).array; // Connection still works?
+			// Try manually closing and connecting
+			range = cn.query(sql);
+			assert(range.front[0] == 1);
+			cn.close();
+			assert(cn.closed); // Is closed?
+			assert(!range.isValid); // Was invalidated?
+			cn.connect(cn._clientCapabilities);
+			assert(!cn.closed); // Is open?
+			assert(!range.isValid); // Was invalidated?
+			cn.query(sql).array; // Connection still works?
 
-		// Auto-reconnect upon a command
-		cn.close();
-		assert(cn.closed);
-		range = cn.query(sql);
-		assert(!cn.closed);
-		assert(range.front[0] == 1);
+			// Auto-reconnect upon a command
+			cn.close();
+			assert(cn.closed);
+			range = cn.query(sql);
+			assert(!cn.closed);
+			assert(range.front[0] == 1);
+		}
+		test!false();
+		() @safe { test!true(); } ();
 	}
 
 	private void quit()
@@ -820,6 +827,12 @@ public:
 	}
 
 	///ditto
+	void register(UnsafePrepared prepared)
+	{
+		register(prepared.sql);
+	}
+
+	///ditto
 	void register(const(char[]) sql)
 	{
 		registerIfNeeded(sql);
@@ -865,6 +878,12 @@ public:
 	an unexpected auto-purge.
 	+/
 	void release(SafePrepared prepared)
+	{
+		release(prepared.sql);
+	}
+
+	///ditto
+	void release(UnsafePrepared prepared)
 	{
 		release(prepared.sql);
 	}
@@ -926,36 +945,54 @@ public:
 
 	@("releaseAll")
 	debug(MYSQLN_TESTS)
-	unittest
+	@system unittest
 	{
-		import mysql.safe.commands;
-		import mysql.safe.connection;
-		mixin(scopedCn);
+		static void test(bool doSafe)()
+		{
+			static if(doSafe)
+			{
+				import mysql.safe.commands;
+				import mysql.safe.connection;
+			}
+			else
+			{
+				import mysql.unsafe.commands;
+				import mysql.unsafe.connection;
+			}
+			mixin(scopedCn);
 
-		cn.exec("DROP TABLE IF EXISTS `releaseAll`");
-		cn.exec("CREATE TABLE `releaseAll` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+			cn.exec("DROP TABLE IF EXISTS `releaseAll`");
+			cn.exec("CREATE TABLE `releaseAll` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
-		auto preparedSelect = cn.prepare("SELECT * FROM `releaseAll`");
-		auto preparedInsert = cn.prepare("INSERT INTO `releaseAll` (a) VALUES (1)");
-		assert(cn.isRegistered(preparedSelect));
-		assert(cn.isRegistered(preparedInsert));
+			auto preparedSelect = cn.prepare("SELECT * FROM `releaseAll`");
+			auto preparedInsert = cn.prepare("INSERT INTO `releaseAll` (a) VALUES (1)");
+			assert(cn.isRegistered(preparedSelect));
+			assert(cn.isRegistered(preparedInsert));
 
-		cn.releaseAll();
-		assert(!cn.isRegistered(preparedSelect));
-		assert(!cn.isRegistered(preparedInsert));
-		cn.exec("INSERT INTO `releaseAll` (a) VALUES (1)");
-		assert(!cn.isRegistered(preparedSelect));
-		assert(!cn.isRegistered(preparedInsert));
+			cn.releaseAll();
+			assert(!cn.isRegistered(preparedSelect));
+			assert(!cn.isRegistered(preparedInsert));
+			cn.exec("INSERT INTO `releaseAll` (a) VALUES (1)");
+			assert(!cn.isRegistered(preparedSelect));
+			assert(!cn.isRegistered(preparedInsert));
 
-		cn.exec(preparedInsert);
-		cn.query(preparedSelect).array;
-		assert(cn.isRegistered(preparedSelect));
-		assert(cn.isRegistered(preparedInsert));
-
+			cn.exec(preparedInsert);
+			cn.query(preparedSelect).array;
+			assert(cn.isRegistered(preparedSelect));
+			assert(cn.isRegistered(preparedInsert));
+		}
+		test!false();
+		() @safe { test!true(); } ();
 	}
 
 	/// Is the given statement registered on this connection as a prepared statement?
 	bool isRegistered(SafePrepared prepared)
+	{
+		return isRegistered( prepared.sql );
+	}
+
+	///ditto
+	bool isRegistered(UnsafePrepared prepared)
 	{
 		return isRegistered( prepared.sql );
 	}
@@ -976,131 +1013,154 @@ public:
 // Test register, release, isRegistered, and auto-register for prepared statements
 @("autoRegistration")
 debug(MYSQLN_TESTS)
-unittest
+@system unittest
 {
-	import mysql.connection;
-	import mysql.test.common;
-	import mysql.safe.prepared;
-	import mysql.safe.commands;
-
-	Prepared preparedInsert;
-	Prepared preparedSelect;
-	immutable insertSQL = "INSERT INTO `autoRegistration` VALUES (1), (2)";
-	immutable selectSQL = "SELECT `val` FROM `autoRegistration`";
-	int queryTupleResult;
-
+	static void test(bool doSafe)()
 	{
-		mixin(scopedCn);
+		import mysql.test.common;
+		static if(doSafe)
+		{
+			import mysql.safe.connection;
+			import mysql.safe.prepared;
+			import mysql.safe.commands;
+		}
+		else
+		{
+			import mysql.unsafe.connection;
+			import mysql.unsafe.prepared;
+			import mysql.unsafe.commands;
+		}
 
-		// Setup
-		cn.exec("DROP TABLE IF EXISTS `autoRegistration`");
-		cn.exec("CREATE TABLE `autoRegistration` (
-			`val` INTEGER
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		Prepared preparedInsert;
+		Prepared preparedSelect;
+		immutable insertSQL = "INSERT INTO `autoRegistration` VALUES (1), (2)";
+		immutable selectSQL = "SELECT `val` FROM `autoRegistration`";
+		int queryTupleResult;
 
-		// Initial register
-		preparedInsert = cn.prepare(insertSQL);
-		preparedSelect = cn.prepare(selectSQL);
+		{
+			mixin(scopedCn);
 
-		// Test basic register, release, isRegistered
-		assert(cn.isRegistered(preparedInsert));
-		assert(cn.isRegistered(preparedSelect));
-		cn.release(preparedInsert);
-		cn.release(preparedSelect);
-		assert(!cn.isRegistered(preparedInsert));
-		assert(!cn.isRegistered(preparedSelect));
+			// Setup
+			cn.exec("DROP TABLE IF EXISTS `autoRegistration`");
+			cn.exec("CREATE TABLE `autoRegistration` (
+													  `val` INTEGER
+													 ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
-		// Test manual re-register
-		cn.register(preparedInsert);
-		cn.register(preparedSelect);
-		assert(cn.isRegistered(preparedInsert));
-		assert(cn.isRegistered(preparedSelect));
+			// Initial register
+			preparedInsert = cn.prepare(insertSQL);
+			preparedSelect = cn.prepare(selectSQL);
 
-		// Test double register
-		cn.register(preparedInsert);
-		cn.register(preparedSelect);
-		assert(cn.isRegistered(preparedInsert));
-		assert(cn.isRegistered(preparedSelect));
+			// Test basic register, release, isRegistered
+			assert(cn.isRegistered(preparedInsert));
+			assert(cn.isRegistered(preparedSelect));
+			cn.release(preparedInsert);
+			cn.release(preparedSelect);
+			assert(!cn.isRegistered(preparedInsert));
+			assert(!cn.isRegistered(preparedSelect));
 
-		// Test double release
-		cn.release(preparedInsert);
-		cn.release(preparedSelect);
-		assert(!cn.isRegistered(preparedInsert));
-		assert(!cn.isRegistered(preparedSelect));
-		cn.release(preparedInsert);
-		cn.release(preparedSelect);
-		assert(!cn.isRegistered(preparedInsert));
-		assert(!cn.isRegistered(preparedSelect));
+			// Test manual re-register
+			cn.register(preparedInsert);
+			cn.register(preparedSelect);
+			assert(cn.isRegistered(preparedInsert));
+			assert(cn.isRegistered(preparedSelect));
+
+			// Test double register
+			cn.register(preparedInsert);
+			cn.register(preparedSelect);
+			assert(cn.isRegistered(preparedInsert));
+			assert(cn.isRegistered(preparedSelect));
+
+			// Test double release
+			cn.release(preparedInsert);
+			cn.release(preparedSelect);
+			assert(!cn.isRegistered(preparedInsert));
+			assert(!cn.isRegistered(preparedSelect));
+			cn.release(preparedInsert);
+			cn.release(preparedSelect);
+			assert(!cn.isRegistered(preparedInsert));
+			assert(!cn.isRegistered(preparedSelect));
+		}
+
+		// Note that at this point, both prepared statements still exist,
+		// but are no longer registered on any connection. In fact, there
+		// are no open connections anymore.
+
+		// Test auto-register: exec
+		{
+			mixin(scopedCn);
+
+			assert(!cn.isRegistered(preparedInsert));
+			cn.exec(preparedInsert);
+			assert(cn.isRegistered(preparedInsert));
+		}
+
+		// Test auto-register: query
+		{
+			mixin(scopedCn);
+
+			assert(!cn.isRegistered(preparedSelect));
+			cn.query(preparedSelect).each();
+			assert(cn.isRegistered(preparedSelect));
+		}
+
+		// Test auto-register: queryRow
+		{
+			mixin(scopedCn);
+
+			assert(!cn.isRegistered(preparedSelect));
+			cn.queryRow(preparedSelect);
+			assert(cn.isRegistered(preparedSelect));
+		}
+
+		// Test auto-register: queryRowTuple
+		{
+			mixin(scopedCn);
+
+			assert(!cn.isRegistered(preparedSelect));
+			cn.queryRowTuple(preparedSelect, queryTupleResult);
+			assert(cn.isRegistered(preparedSelect));
+		}
+
+		// Test auto-register: queryValue
+		{
+			mixin(scopedCn);
+
+			assert(!cn.isRegistered(preparedSelect));
+			cn.queryValue(preparedSelect);
+			assert(cn.isRegistered(preparedSelect));
+		}
 	}
-
-	// Note that at this point, both prepared statements still exist,
-	// but are no longer registered on any connection. In fact, there
-	// are no open connections anymore.
-
-	// Test auto-register: exec
-	{
-		mixin(scopedCn);
-
-		assert(!cn.isRegistered(preparedInsert));
-		cn.exec(preparedInsert);
-		assert(cn.isRegistered(preparedInsert));
-	}
-
-	// Test auto-register: query
-	{
-		mixin(scopedCn);
-
-		assert(!cn.isRegistered(preparedSelect));
-		cn.query(preparedSelect).each();
-		assert(cn.isRegistered(preparedSelect));
-	}
-
-	// Test auto-register: queryRow
-	{
-		mixin(scopedCn);
-
-		assert(!cn.isRegistered(preparedSelect));
-		cn.queryRow(preparedSelect);
-		assert(cn.isRegistered(preparedSelect));
-	}
-
-	// Test auto-register: queryRowTuple
-	{
-		mixin(scopedCn);
-
-		assert(!cn.isRegistered(preparedSelect));
-		cn.queryRowTuple(preparedSelect, queryTupleResult);
-		assert(cn.isRegistered(preparedSelect));
-	}
-
-	// Test auto-register: queryValue
-	{
-		mixin(scopedCn);
-
-		assert(!cn.isRegistered(preparedSelect));
-		cn.queryValue(preparedSelect);
-		assert(cn.isRegistered(preparedSelect));
-	}
+	test!false();
+	() @safe {test!true(); } ();
 }
 
 // An attempt to reproduce issue #81: Using mysql-native driver with no default database
 // I'm unable to actually reproduce the error, though.
 @("issue81")
 debug(MYSQLN_TESTS)
-unittest
+@system unittest
 {
-	import mysql.escape;
-	import mysql.safe.commands;
-	mixin(scopedCn);
+	static void test(bool doSafe)()
+	{
+		import mysql.escape;
+		static if(doSafe)
+			import mysql.safe.commands;
+		else
+			import mysql.unsafe.commands;
 
-	cn.exec("DROP TABLE IF EXISTS `issue81`");
-	cn.exec("CREATE TABLE `issue81` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-	cn.exec("INSERT INTO `issue81` (a) VALUES (1)");
+		mixin(scopedCn);
 
-	auto cn2 = new Connection(text("host=", cn._host, ";port=", cn._port, ";user=", cn._user, ";pwd=", cn._pwd));
-	scope(exit) cn2.close();
+		cn.exec("DROP TABLE IF EXISTS `issue81`");
+		cn.exec("CREATE TABLE `issue81` (a INTEGER) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		cn.exec("INSERT INTO `issue81` (a) VALUES (1)");
 
-	cn2.query("SELECT * FROM `"~mysqlEscape(cn._db).text~"`.`issue81`");
+		auto cn2 = new Connection(text("host=", cn._host, ";port=", cn._port, ";user=", cn._user, ";pwd=", cn._pwd));
+		scope(exit) cn2.close();
+
+		cn2.query("SELECT * FROM `"~mysqlEscape(cn._db).text~"`.`issue81`");
+	}
+	test!false();
+	() @safe {test!true(); } ();
 }
 
 // Regression test for Issue #154:
@@ -1110,26 +1170,40 @@ unittest
 // object itself.
 @("dropConnection")
 debug(MYSQLN_TESTS)
-unittest
+@system unittest
 {
-	import mysql.safe.commands;
-	import mysql.safe.connection;
-	mixin(scopedCn);
-
-	cn.exec("DROP TABLE IF EXISTS `dropConnection`");
-	cn.exec("CREATE TABLE `dropConnection` (
-		`val` INTEGER
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-	cn.exec("INSERT INTO `dropConnection` VALUES (1), (2), (3)");
-	import mysql.prepared;
+	static void test(bool doSafe)()
 	{
-		auto prep = cn.prepare("SELECT * FROM `dropConnection`");
-		cn.query(prep);
+		static if(doSafe)
+		{
+			import mysql.safe.commands;
+			import mysql.safe.connection;
+		}
+		else
+		{
+			import mysql.unsafe.commands;
+			import mysql.unsafe.connection;
+		}
+		mixin(scopedCn);
+
+		cn.exec("DROP TABLE IF EXISTS `dropConnection`");
+		cn.exec("CREATE TABLE `dropConnection` (
+												`val` INTEGER
+											   ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		cn.exec("INSERT INTO `dropConnection` VALUES (1), (2), (3)");
+		import mysql.safe.prepared;
+		{
+			auto prep = cn.prepare("SELECT * FROM `dropConnection`");
+			cn.query(prep);
+		}
+		// close the socket forcibly
+		cn._socket.close();
+		// this should still work (it should reconnect).
+		cn.exec("DROP TABLE `dropConnection`");
 	}
-	// close the socket forcibly
-	cn._socket.close();
-	// this should still work (it should reconnect).
-	cn.exec("DROP TABLE `dropConnection`");
+
+	test!false();
+	() @safe {test!true(); } ();
 }
 
 /*

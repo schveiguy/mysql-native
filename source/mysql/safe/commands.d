@@ -544,7 +544,7 @@ void queryRowTuple(T...)(Connection conn, ref Prepared prepared, ref T args)
 }
 
 /// Common implementation for `queryRowTuple` overloads.
-package void queryRowTupleImpl(T...)(Connection conn, ExecQueryImplInfo info, ref T args)
+package(mysql) void queryRowTupleImpl(T...)(Connection conn, ExecQueryImplInfo info, ref T args)
 {
 	ulong ra;
 	enforce!MYXNoResultRecieved(execQueryImpl(conn, info, ra));

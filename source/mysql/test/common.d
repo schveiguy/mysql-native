@@ -18,7 +18,7 @@ import std.traits;
 import std.variant;
 
 import mysql.safe.commands;
-import mysql.connection;
+import mysql.safe.connection;
 import mysql.exceptions;
 import mysql.protocol.extra_types;
 import mysql.protocol.sockets;
@@ -134,5 +134,17 @@ version(DoCoreTests)
 		int year   = cast(int) (x%10000);
 
 		return DateTime(year, month, day, hour, minute, second);
+	}
+
+	// generate safe or unsafe imports for unittests.
+	string doImports(bool isSafe, string[] imports...)
+	{
+		string result;
+		string subpackage = isSafe ? "safe" : "unsafe";
+		foreach(im; imports)
+		{
+			result ~= "import mysql." ~ subpackage ~ "." ~ im ~ ";";
+		}
+		return result;
 	}
 }

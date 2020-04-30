@@ -269,10 +269,16 @@ version(IncludeMySQLPool)
 		unittest
 		{
 			auto count = 0;
-			void callback(Connection conn)
-			{
-				count++;
-			}
+			static if(isSafe)
+				@safe void callback(Connection conn)
+				{
+					count++;
+				}
+			else
+				@system void callback(Connection conn)
+				{
+					count++;
+				}
 
 			// Test getting/setting
 			auto poolA = new MySQLPoolImpl(testConnectionStr, &callback);
@@ -353,6 +359,12 @@ version(IncludeMySQLPool)
 		}
 
 		///ditto
+		void autoRegister(UnsafePrepared prepared) @safe
+		{
+			autoRegister(prepared.sql);
+		}
+
+		///ditto
 		void autoRegister(const(char[]) sql) @safe
 		{
 			preparedRegistrations.registerIfNeeded(sql, (sql) => PreparedInfo());
@@ -385,6 +397,12 @@ version(IncludeMySQLPool)
 		}
 
 		///ditto
+		void autoRelease(UnsafePrepared prepared) @safe
+		{
+			autoRelease(prepared.sql);
+		}
+
+		///ditto
 		void autoRelease(const(char[]) sql) @safe
 		{
 			preparedRegistrations.queueForRelease(sql);
@@ -393,6 +411,11 @@ version(IncludeMySQLPool)
 		/// Is the given statement set to be automatically registered on all
 		/// connections obtained from this connection pool?
 		bool isAutoRegistered(SafePrepared prepared) @safe
+		{
+			return isAutoRegistered(prepared.sql);
+		}
+		///ditto
+		bool isAutoRegistered(UnsafePrepared prepared) @safe
 		{
 			return isAutoRegistered(prepared.sql);
 		}
@@ -410,6 +433,11 @@ version(IncludeMySQLPool)
 		/// Is the given statement set to be automatically released on all
 		/// connections obtained from this connection pool?
 		bool isAutoReleased(SafePrepared prepared) @safe
+		{
+			return isAutoReleased(prepared.sql);
+		}
+		///ditto
+		bool isAutoReleased(UnsafePrepared prepared) @safe
 		{
 			return isAutoReleased(prepared.sql);
 		}
@@ -459,6 +487,11 @@ version(IncludeMySQLPool)
 			return clearAuto(prepared.sql);
 		}
 		///ditto
+		void clearAuto(UnsafePrepared prepared) @safe
+		{
+			return clearAuto(prepared.sql);
+		}
+		///ditto
 		void clearAuto(const(char[]) sql) @safe
 		{
 			preparedRegistrations.directLookup.remove(sql);
@@ -503,18 +536,9 @@ version(IncludeMySQLPool)
 	debug(MYSQLN_TESTS)
 	unittest
 	{
-		static void doit(bool isSafe)()
+		static void test(bool isSafe)()
 		{
-			static if(isSafe)
-			{
-				import mysql.safe.commands;
-				import mysql.safe.connection;
-			}
-			else
-			{
-				import mysql.unsafe.commands;
-				import mysql.unsafe.connection;
-			}
+			mixin(doImports(isSafe, "commands", "connection"));
 			alias MySQLPool = MySQLPoolImpl!isSafe;
 			auto pool = new MySQLPool(testConnectionStr);
 
@@ -600,20 +624,17 @@ version(IncludeMySQLPool)
 		}
 
 		// run tests for both safe and unsafe options.
-		() @safe {doit!true(); }();
-		doit!false();
+		() @safe {test!true(); }();
+		test!false();
 	}
 
 	@("closedConnection") // "cct"
 	debug(MYSQLN_TESTS)
 	unittest
 	{
-		static void doit(bool isSafe)()
+		static void test(bool isSafe)()
 		{
-			static if(isSafe)
-				import mysql.safe.commands;
-			else
-				import mysql.unsafe.commands;
+			mixin(doImports(isSafe, "commands"));
 			alias MySQLPool = MySQLPoolImpl!isSafe;
 			MySQLPool cctPool;
 			int cctCount=0;
@@ -645,7 +666,7 @@ version(IncludeMySQLPool)
 		}
 
 		// run tests for both safe and unsafe options.
-		() @safe {doit!true(); }();
-		doit!false();
+		() @safe {test!true(); }();
+		test!false();
 	}
 }

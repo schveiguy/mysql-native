@@ -134,9 +134,6 @@ unittest
 /++
 Execute an SQL command or prepared statement, such as INSERT/UPDATE/CREATE/etc.
 
-Note: The safe `mysql.safe.commands.exec` is also aliased here, so you have access to all
-those overloads in addition to these.
-
 This method is intended for commands such as which do not produce a result set
 (otherwise, use one of the `query` functions instead.) If the SQL command does
 produces a result set (such as SELECT), `mysql.exceptions.MYXResultRecieved`
@@ -200,10 +197,29 @@ ulong exec(Connection conn, ref BackwardCompatPrepared prepared) @system
 	return result;
 }
 
-//ditto
-// Note: doesn't look right in ddox, so I removed this as a ditto.
-alias exec = SC.exec;
+///ditto
+ulong exec(Connection conn, ref Prepared prepared) @system
+{
+	return SC.exec(conn, prepared.safeForExec);
+}
 
+///ditto
+ulong exec(T...)(Connection conn, ref Prepared prepared, T args)
+	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]))
+{
+	// we are about to set all args, which will clear any parameter specializations.
+	prepared.setArgs(args);
+	return SC.exec(conn, prepared.safe);
+}
+
+// Note: this is a wrapper for the safe commands exec functions that do not
+// involve a Prepared struct directly.
+///ditto
+@safe ulong exec(T...)(Connection conn, const(char[]) sql, T args)
+	if(!is(T[0] == Variant[]))
+{
+	return SC.exec(conn, sql, args);
+}
 
 /++
 Execute an SQL SELECT command or prepared statement.
@@ -286,13 +302,15 @@ UnsafeResultRange query(Connection conn, const(char[]) sql, Variant[] args) @sys
 ///ditto
 UnsafeResultRange query(Connection conn, ref Prepared prepared) @system
 {
-	return SC.query(conn, prepared).unsafe;
+	return SC.query(conn, prepared.safeForExec).unsafe;
 }
 ///ditto
-UnsafeResultRange query(T...)(Connection conn, ref Prepared prepared, T args) @system
+UnsafeResultRange query(T...)(Connection conn, ref Prepared prepared, T args)
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
-	return SC.query(conn, prepared, args).unsafe;
+	// this is going to clear any parameter specialization
+	prepared.setArgs(args);
+	return SC.query(conn, prepared.safe, args).unsafe;
 }
 ///ditto
 UnsafeResultRange query(Connection conn, ref Prepared prepared, Variant[] args) @system
@@ -394,13 +412,14 @@ Nullable!UnsafeRow queryRow(Connection conn, const(char[]) sql, Variant[] args) 
 ///ditto
 Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared) @system
 {
-	return SC.queryRow(conn, prepared).unsafe;
+	return SC.queryRow(conn, prepared.safeForExec).unsafe;
 }
 ///ditto
 Nullable!UnsafeRow queryRow(T...)(Connection conn, ref Prepared prepared, T args) @system
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
-	return SC.queryRow(conn, prepared, args).unsafe;
+	prepared.setArgs(args);
+	return SC.queryRow(conn, prepared.safe, args).unsafe;
 }
 ///ditto
 Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared, Variant[] args) @system
@@ -444,12 +463,22 @@ sql = The SQL command to be run.
 prepared = The prepared statement to be run.
 args = The variables, taken by reference, to receive the values.
 +/
-alias queryRowTuple = SC.queryRowTuple;
+void queryRowTuple(T...)(Connection conn, const(char[]) sql, ref T args)
+{
+	return SC.queryRowTuple(conn, sql, args);
+}
+
+///ditto
+void queryRowTuple(T...)(Connection conn, ref Prepared prepared, ref T args)
+{
+	SC.queryRowTuple(conn, prepared.safeForExec, args);
+}
+
 ///ditto
 void queryRowTuple(T...)(Connection conn, ref BackwardCompatPrepared prepared, ref T args) @system
 {
 	auto p = prepared.prepared;
-	.queryRowTuple(conn, p, args);
+	SC.queryRowTuple(conn, p.safeForExec, args);
 	prepared._prepared = p;
 }
 
@@ -545,13 +574,14 @@ Nullable!Variant queryValue(Connection conn, const(char[]) sql, Variant[] args) 
 ///ditto
 Nullable!Variant queryValue(Connection conn, ref Prepared prepared) @system
 {
-	return SC.queryValue(conn, prepared).asVariant;
+	return SC.queryValue(conn, prepared.safeForExec).asVariant;
 }
 ///ditto
 Nullable!Variant queryValue(T...)(Connection conn, ref Prepared prepared, T args) @system
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
-	return SC.queryValue(conn, prepared, args).asVariant;
+	prepared.setArgs(args);
+	return queryValue(conn, prepared);
 }
 ///ditto
 Nullable!Variant queryValue(Connection conn, ref Prepared prepared, Variant[] args) @system

@@ -194,7 +194,7 @@ package MySQLVal _toVal(Variant v)
 	import std.traits;
 	import mysql.exceptions;
 	alias BasicTypes = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, DateTime, TimeOfDay, Date, Timestamp);
-	alias ArrayTypes = AliasSeq!(char, ubyte);
+	alias ArrayTypes = AliasSeq!(char[], const(char)[], ubyte[], const(ubyte)[], immutable(ubyte)[]);
 	switch (ts)
 	{
 		static foreach(Type; BasicTypes)
@@ -210,15 +210,24 @@ package MySQLVal _toVal(Variant v)
 		}
 		static foreach(Type; ArrayTypes)
 		{
-		case fullyQualifiedName!Type ~ "[]":
-		case "const(" ~ fullyQualifiedName!Type ~ ")[]":
-		case "immutable(" ~ fullyQualifiedName!Type ~ ")[]":
-		case "shared(immutable(" ~ fullyQualifiedName!Type ~ "))[]":
-			if(isRef)
-				return MySQLVal(v.get!(const(Type[]*)));
-			else
-				return MySQLVal(v.get!(const(Type[])));
+		case Type.stringof:
+			{
+				alias ET = Unqual!(typeof(Type.init[0]));
+				if(isRef)
+					return MySQLVal(v.get!(const(ET[]*)));
+				else
+					return MySQLVal(v.get!(Type));
+			}
 		}
+	case "immutable(char)[]":
+		// have to do this separately, because everything says "string" but
+		// Variant says "immutable(char)[]"
+		if(isRef)
+			return MySQLVal(v.get!(const(char[]*)));
+		else
+			return MySQLVal(v.get!(string));
+	case "typeof(null)":
+		return MySQLVal(null);
 	default:
 		throw new MYX("Unsupported Database Variant Type: " ~ ts);
 	}
@@ -257,6 +266,9 @@ Variant get function would provide implicit type conversions, but the
 TaggedAlgebraic version did not.
 
 All shims other than `type` will likely remain as convenience features.
+
+Note that `peek` is inferred @system because it returns a pointer to the
+provided value.
 
 $(SAFE_MIGRATION)
 +/

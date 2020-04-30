@@ -162,7 +162,7 @@ debug(MYSQLN_TESTS)
 unittest
 {
 	import std.exception;
-	import mysql.safe.commands;
+	import mysql.commands;
 	import mysql.connection;
 	import mysql.prepared;
 	import mysql.test.common : scopedCn, createCn;
