@@ -11,6 +11,7 @@ import std.typecons;
 
 import mysql.commands;
 import mysql.exceptions;
+import mysql.logger;
 import mysql.prepared;
 import mysql.protocol.comms;
 import mysql.protocol.constants;
@@ -387,6 +388,7 @@ package:
 
 	static PlainPhobosSocket defaultOpenSocketPhobos(string host, ushort port)
 	{
+		logDebug("opening phobos socket %s:%d", host, port);
 		auto s = new PlainPhobosSocket();
 		s.connect(new InternetAddress(host, port));
 		s.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
@@ -398,6 +400,7 @@ package:
 	{
 		version(Have_vibe_core)
 		{
+			logDebug("opening vibe-d socket %s:%d", host, port);
 			auto s = vibe.core.net.connectTCP(host, port);
 			s.tcpNoDelay = true;
 			s.keepAlive = true;
