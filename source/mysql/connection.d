@@ -387,13 +387,20 @@ package:
 	{
 		auto s = new PlainPhobosSocket();
 		s.connect(new InternetAddress(host, port));
+		s.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
+		s.setOption(SocketOptionLevel.SOCKET, SocketOption.KEEPALIVE, true);
 		return s;
 	}
 
 	static PlainVibeDSocket defaultOpenSocketVibeD(string host, ushort port)
 	{
 		version(Have_vibe_core)
-			return vibe.core.net.connectTCP(host, port);
+		{
+			auto s = vibe.core.net.connectTCP(host, port);
+			s.tcpNoDelay = true;
+			s.keepAlive = true;
+			return s;
+		}
 		else
 			assert(0);
 	}
