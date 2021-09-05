@@ -1335,3 +1335,17 @@ unittest
 	assert(rows[1].getName(0) == "another");
 	assert(rows[1].getName(1) == "someValue");
 }
+
+// issue 222, set column names when data is null.
+@("colNamesForBinary")
+debug(MYSQLN_TESTS)
+unittest
+{
+	import mysql.test.common;
+	import mysql.commands;
+	mixin(scopedCn);
+	// binary mode happens with prepared statements
+	auto row = cn.queryRow("SELECT `colname` FROM (SELECT 1 AS `id`, NULL AS `colname`) as `tbl` WHERE `id` = ?", 1);
+	assert(row.get[0] == null);
+	assert(row.get.getName(0) == "colname");
+}
