@@ -663,6 +663,7 @@ do
 		if(binary && _nulls[i])
 		{
 			_values[i] = null;
+			_names[i] = rh[i].name;
 			continue;
 		}
 
