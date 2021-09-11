@@ -1,3 +1,24 @@
+v3.0.3 - 2021-09-11
+=====================
+
+A couple minor behind-the-scenes fixes. First, all `body` keywords have been
+removed in favor of the `do` keyword. This cuts down on the wall of warnings
+that come from the latest compiler.
+
+Second, thanks to prodding from @kubo39 and @webloft, I have changed the
+default socket creation routines to mimic the standard mysql library in turning
+off Nagle's algorithm (TCP_NODELAY), and enabling KEEPALIVE. If you wish to
+reverse this, you can use the connection constructor which accepts a socket
+setup routine.
+
+- **Fixed:** [#222](https://github.com/mysql-d/mysql-native/issues/222):
+   Column name is empty in result row if column value was NULL
+- **Change:** [#246](https://github.com/mysql-d/mysql-native/pull/246):
+   Change `body` to `do` (@jrfondren), [#245](https://github.com/mysql-d/mysql-native/pull/245):
+   Fix outdated URLs (@kubo39), [#242](https://github.com/mysql-d/mysql-native/pull/242):
+   Fix nullable errors from 2.097, [#249](https://github.com/mysql-d/mysql-native/pull/249):
+   Standard mysql uses the socket options for TCP_NODELAY and KEEPALIVE
+
 v3.0.2 - 2021-05-28
 =====================
 
