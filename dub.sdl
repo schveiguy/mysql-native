@@ -20,3 +20,9 @@ configuration "unittest" {
 	debugVersions "MYSQLN_TESTS"
 	targetType "sourceLibrary"
 }
+
+buildType "ddox" {
+        dflags "-c" "-Df__dummy.html" "-Xfdocs.json"
+        versions "MySQLDocs"
+        buildOptions "syntaxOnly"
+}
