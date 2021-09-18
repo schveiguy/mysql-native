@@ -84,6 +84,7 @@ Be careful that your `numArgs` is correct. If it isn't, you may get a
 Throws: `mysql.exceptions.MYX` if the server has a problem.
 
 Params:
+	conn = The connection.
 	name = The name of the stored function.
 	numArgs = The number of arguments the stored procedure takes.
 +/
@@ -105,6 +106,7 @@ Be careful that your `numArgs` is correct. If it isn't, you may get a
 Throws: `mysql.exceptions.MYX` if the server has a problem.
 
 Params:
+	conn = The connection.
 	name = The name of the stored procedure.
 	numArgs = The number of arguments the stored procedure takes.
 
@@ -554,7 +556,7 @@ public:
 			subclassed from Phobos's or Vibe.d's sockets.
 		host = An IP address in numeric dotted form, or as a host  name.
 		user = The user name to authenticate.
-		password = User's password.
+		pwd = User's password.
 		db = Desired initial database.
 		capFlags = The set of flag bits from the server's capabilities that the client requires
 	+/

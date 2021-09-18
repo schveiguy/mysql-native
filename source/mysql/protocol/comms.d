@@ -1,4 +1,4 @@
-﻿/++
+/++
 Internal - Low-level communications.
 
 Consider this module the main entry point for the low-level MySQL/MariaDB
@@ -1097,7 +1097,9 @@ This can be used later if this feature was not requested in the client capabilit
 
 Warning: This functionality is currently untested.
 
-Params: on = Boolean value to turn the capability on or off.
+Params:
+	conn = The connection.
+	on = Boolean value to turn the capability on or off.
 +/
 //TODO: Need to test this
 package(mysql) void enableMultiStatements(Connection conn, bool on)
