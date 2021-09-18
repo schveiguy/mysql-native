@@ -42,18 +42,18 @@ API
 [API Reference](https://mysql-d.github.io/mysql-native/)
 
 The primary interfaces:
-- [Connection](https://mysql-d.github.io/mysql-native/mysql.connection.Connection.html): Connection to the server, and querying and setting of server parameters.
-- [MySQLPool](https://mysql-d.github.io/mysql-native/mysql.pool.MySQLPool.html): Connection pool, for Vibe.d users.
-- [exec()](https://mysql-d.github.io/mysql-native/mysql.commands.exec.1.html): Plain old SQL statement that does NOT return rows (like INSERT/UPDATE/CREATE/etc), returns number of rows affected
-- [query()](https://mysql-d.github.io/mysql-native/mysql.commands.query.1.html): Execute an SQL statement that DOES return rows (ie, SELECT) and handle the rows one at a time, as an input range.
-- [queryRow()](https://mysql-d.github.io/mysql-native/mysql.commands.queryRow.1.html): Execute an SQL statement and get the first row.
-- [queryValue()](https://mysql-d.github.io/mysql-native/mysql.commands.queryValue.1.html): Execute an SQL statement and get the first value in the first row.
-- [prepare()](https://mysql-d.github.io/mysql-native/mysql.connection.prepare.html): Create a prepared statement
-- [Prepared](https://mysql-d.github.io/mysql-native/mysql.prepared.Prepared.html): A prepared statement, optionally pass it to the exec/query function in place of an SQL string.
-- [Row](https://mysql-d.github.io/mysql-native/mysql.result.Row.html): One "row" of results, used much like an array of Variant.
-- [ResultRange](https://mysql-d.github.io/mysql-native/mysql.result.ResultRange.html): An input range of rows. Convert to random access with [std.array.array()](https://dlang.org/phobos/std_array.html#.array).
+- [Connection](https://mysql-d.github.io/mysql-native/mysql/connection/Connection.html): Connection to the server, and querying and setting of server parameters.
+- [MySQLPool](https://mysql-d.github.io/mysql-native/mysql/pool/MySQLPool.html): Connection pool, for Vibe.d users.
+- [exec()](https://mysql-d.github.io/mysql-native/mysql/commands/exec.html): Plain old SQL statement that does NOT return rows (like INSERT/UPDATE/CREATE/etc), returns number of rows affected
+- [query()](https://mysql-d.github.io/mysql-native/mysql/commands/query.html): Execute an SQL statement that DOES return rows (ie, SELECT) and handle the rows one at a time, as an input range.
+- [queryRow()](https://mysql-d.github.io/mysql-native/mysql/commands/queryRow.html): Execute an SQL statement and get the first row.
+- [queryValue()](https://mysql-d.github.io/mysql-native/mysql/commands/queryValue.html): Execute an SQL statement and get the first value in the first row.
+- [prepare()](https://mysql-d.github.io/mysql-native/mysql/connection/prepare.html): Create a prepared statement
+- [Prepared](https://mysql-d.github.io/mysql-native/mysql/prepared/Prepared.html): A prepared statement, optionally pass it to the exec/query function in place of an SQL string.
+- [Row](https://mysql-d.github.io/mysql-native/mysql/result/Row.html): One "row" of results, used much like an array of Variant.
+- [ResultRange](https://mysql-d.github.io/mysql-native/mysql/result/ResultRange.html): An input range of rows. Convert to random access with [std.array.array()](https://dlang.org/phobos/std_array.html#.array).
 
-Also note the [MySQL <-> D type mappings tables](https://mysql-d.github.io/mysql-native/mysql.html#details)
+Also note the [MySQL <-> D type mappings tables](https://mysql-d.github.io/mysql-native/mysql.html)
 
 Basic example
 -------------

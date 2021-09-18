@@ -25,12 +25,6 @@ jobs:
 
       - name: Build documentation
         run: |
-          # wget https://github.com/adamdruppe/adrdox/archive/master.zip
-          # unzip master.zip
-          # pushd adrdox-master && make && popd
-          # export PATH=$PATH:$PWD/adrdox-master
-          # doc2 --genSearchIndex --genSource -o generated-docs source
-
           # no way to get dub to include a custom macro file, but we can
           # run ddox directly instead with the same command line, including
           # our custom macro file
