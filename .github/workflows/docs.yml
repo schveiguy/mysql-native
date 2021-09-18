@@ -35,6 +35,8 @@ jobs:
           # run ddox directly instead with the same command line, including
           # our custom macro file
 
+          # need to use the docs recipe file. This includes the required versions
+          cp dub-docs.sdl dub.sdl
           # build original docs, this gets the json file properly set up
           dub build -b ddox
           # remove docs generated without macro file
