@@ -36,7 +36,7 @@ jobs:
           # our custom macro file
 
           # build original docs, this gets the json file properly set up
-          dub -b ddox
+          dub build -b ddox
           # remove docs generated without macro file
           rm -rf docs
           # regenerate the docs with the macros included
