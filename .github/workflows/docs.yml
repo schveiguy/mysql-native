@@ -25,15 +25,26 @@ jobs:
 
       - name: Build documentation
         run: |
-          wget https://github.com/adamdruppe/adrdox/archive/master.zip
-          unzip master.zip
-          pushd adrdox-master && make && popd
-          export PATH=$PATH:$PWD/adrdox-master
-          doc2 --genSearchIndex --genSource -o generated-docs source
+          # wget https://github.com/adamdruppe/adrdox/archive/master.zip
+          # unzip master.zip
+          # pushd adrdox-master && make && popd
+          # export PATH=$PATH:$PWD/adrdox-master
+          # doc2 --genSearchIndex --genSource -o generated-docs source
+
+          # no way to get dub to include a custom macro file, but we can
+          # run ddox directly instead with the same command line, including
+          # our custom macro file
+
+          # build original docs, this gets the json file properly set up
+          dub -b ddox
+          # remove docs generated without macro file
+          rm -rf docs
+          # regenerate the docs with the macros included
+          dub run ddox -- generate-html --navigation-type=ModuleTree --std-macros=ddoc/macros.ddoc docs.json docs
 
       - name: Deploy to Github Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: generated-docs
+          FOLDER: docs
