@@ -534,7 +534,9 @@ package(mysql) bool execQueryImpl(Connection conn, ExecQueryImplInfo info, out u
 		conn.resetPacket();
 		auto okp = OKErrorPacket(packet);
 
-		logError("packet error: %s %s", okp.error, okp.message);
+		if(okp.error) {
+			logError("packet error: %s", cast(string) okp.message);
+		}
 
 		enforcePacketOK(okp);
 		ra = okp.affected;

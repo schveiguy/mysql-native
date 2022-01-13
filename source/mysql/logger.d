@@ -42,7 +42,7 @@ version(Have_vibe_core) {
 	alias logError = std.experimental.logger.errorf;
 	alias logCritical = std.experimental.logger.criticalf;
 	//alias logFatal = std.experimental.logger.fatalf;
-}
+} else static assert(false);
 
 unittest {
 	version(Have_vibe_core) {
