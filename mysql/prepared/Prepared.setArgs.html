@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Prepared.setArgs - multiple declarations</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Prepared.setArgs - multiple declarations</h1>
+			<nav class="page-nav">
+				<ul>
+					<li>
+						<a href="#0">
+							Function <code>Prepared.setArgs</code>
+						</a>
+					</li>
+					<li>
+						<a href="#1">
+							Function <code>Prepared.setArgs</code>
+						</a>
+					</li>
+				</ul>
+			</nav><h2 id="0">Function Prepared.setArgs</h2><p>Bind a tuple of D variables to the parameters of a prepared statement.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="typ">void</span> <span class="pln">setArgs</span>(T...)
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="pln">T</span> <span class="pln">args</span>
+			<br/>
+			<span class="pun">)</span>
+			<br/>
+			<span class="kwd">if</span> <span class="pun">(</span><span class="pln">T<wbr/></span><span class="pun">.</span><span class="pln">length </span><span class="pun">== </span><span class="lit">0 </span><span class="pun">|| !</span><span class="kwd">is</span><span class="pun">(</span><span class="pln">T</span><span class="pun">[</span><span class="lit">0</span><span class="pun">] == </span><span class="typ">Variant</span><span class="pun">[])</span><span class="pun">);</span>
+					</div>
+				</code>
+			</div>
+			<section><p>You can use this method to bind a set of variables if you don't need any specialization,
+	that is chunked transfer is not neccessary.
+</p>
+
+<p>	The tuple must match the required number of parameters, and it is the programmer's
+	responsibility to ensure that they are of appropriate types.
+</p>
+</section>
+
+			<section><h3>Type Mappings</h3>
+<p>See the <a href="../..//mysql.html">MySQL/D Type Mappings tables</a>
+</p>
+</section>
+<h2 id="1">Function Prepared.setArgs</h2><p>Bind a Variant[] as the parameters of a prepared statement.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="typ">void</span> <span class="pln">setArgs</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">variant<wbr/></span><span class="pun">.</span><span class="typ">VariantN</span>!(32L)<span class="pun">[]</span> <span class="pln">args</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/prepared/ParameterSpecialization.html"><span class="typ">ParameterSpecialization</span></a><span class="pun">[]</span> <span class="pln">psnList</span> <span class="pun">=</span> <span class="kwd">null</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p>You can use this method to bind a set of variables in Variant form to
+	the parameters of a prepared statement.
+</p>
+
+<p>	Parameter specializations (ie, for chunked transfer) can be added if required.
+	If you wish to use chunked transfer (via <code class="lang-d"><span class="pln">psn</span></code>), note that you must supply
+	a dummy value for <code class="lang-d"><span class="pln">val</span></code> that's typed <code class="lang-d"><span class="typ">ubyte</span><span class="pun">[]</span></code>. For example: <code class="lang-d"><span class="kwd">cast</span><span class="pun">(</span><span class="typ">ubyte</span><span class="pun">[])[]</span></code>.
+</p>
+
+<p>	This method could be
+	used to add records from a data entry form along the lines of
+</p>
+<pre class="code"><code class="lang-d"><span class="kwd">auto </span><span class="pln">stmt </span><span class="pun">= </span><span class="pln">conn<wbr/></span><span class="pun">.</span><span class="pln">prepare</span><span class="pun">(</span><span class="str">"INSERT INTO `table42` VALUES(?, ?, ?)"</span><span class="pun">);
+</span><span class="typ">DataRecord </span><span class="pln">dr</span><span class="pun">;    </span><span class="com">// Some data input facility
+</span><span class="typ">ulong </span><span class="pln">ra</span><span class="pun">;
+</span><span class="kwd">do
+</span><span class="pun">{
+    </span><span class="pln">dr<wbr/></span><span class="pun">.</span><span class="pln">get</span><span class="pun">();
+    </span><span class="pln">stmt<wbr/></span><span class="pun">.</span><span class="pln">setArgs</span><span class="pun">(</span><span class="pln">dr</span><span class="pun">(</span><span class="str">"Name"</span><span class="pun">), </span><span class="pln">dr</span><span class="pun">(</span><span class="str">"City"</span><span class="pun">), </span><span class="pln">dr</span><span class="pun">(</span><span class="str">"Whatever"</span><span class="pun">));
+    </span><span class="typ">ulong </span><span class="pln">rowsAffected </span><span class="pun">= </span><span class="pln">conn<wbr/></span><span class="pun">.</span><span class="pln">exec</span><span class="pun">(</span><span class="pln">stmt</span><span class="pun">);
+} </span><span class="kwd">while</span><span class="pun">(!</span><span class="pln">dr<wbr/></span><span class="pun">.</span><span class="pln">done</span><span class="pun">);</span></code></pre>
+</section>
+
+			<section><h3>Type Mappings</h3>
+<p>See the <a href="../..//mysql.html">MySQL/D Type Mappings tables</a>
+</p>
+</section>
+<section><h3>Parameters</h3>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="args">args</td><td> External list of Variants to be used as parameters</td></tr>
+<tr><td id="psnList">psnList</td><td> Any required specializations</td></tr>
+</table>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

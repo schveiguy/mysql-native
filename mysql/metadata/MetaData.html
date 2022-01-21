@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Struct MetaData</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct MetaData</h1><p>Facilities to recover meta-data from a connection.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">struct</span> <span class="typ">MetaData</span>
+			<span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p>It is important to bear in mind that the methods provided will only return the
+information that is available to the connected user. This may well be quite limited.
+</p>
+</section>
+
+			<section><h2>Methods</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/MetaData.columns.html" class="public">
+								<code>columns</code>
+							</a>
+							<span class="tableEntryAnnotation">(table)</span>
+						</td>
+						<td>Get column metadata for a table in the current database
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/MetaData.databases.html" class="public">
+								<code>databases</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>List the available databases
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/MetaData.functions.html" class="public">
+								<code>functions</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>Get list of stored functions in the current database, and their properties.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/MetaData.procedures.html" class="public">
+								<code>procedures</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>Get list of stored procedures in the current database, and their properties.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/MetaData.tables.html" class="public">
+								<code>tables</code>
+							</a>
+							<span class="tableEntryAnnotation">()</span>
+						</td>
+						<td>List the tables in the current database
+</td>
+					</tr>
+				</table>
+			</section>
+			
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

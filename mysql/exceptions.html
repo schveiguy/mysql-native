@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module mysql.exceptions</title>
+		<link rel="stylesheet" type="text/css" href="../styles/ddox.css"/>
+		<link rel="stylesheet" href="../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../scripts/jquery.js">/**/</script><script type="text/javascript" src="../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Module mysql.exceptions</h1><p>Exceptions defined by mysql-native.
+</p>
+			<section></section>
+			<section>
+				<h2>Classes</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYX" class="public" href="../mysql/exceptions/MYX.html">MYX</a>
+							</code>
+						</td>
+						<td>An exception type to distinguish exceptions thrown by this package.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYXInvalidatedRange" class="public" href="../mysql/exceptions/MYXInvalidatedRange.html">MYXInvalidatedRange</a>
+							</code>
+						</td>
+						<td>Thrown when attempting to use a range that's been invalidated.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYXNoResultRecieved" class="public" href="../mysql/exceptions/MYXNoResultRecieved.html">MYXNoResultRecieved</a>
+							</code>
+						</td>
+						<td>Thrown when the executed query, unexpectedly, did not produce a result set.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYXNotPrepared" class="public" href="../mysql/exceptions/MYXNotPrepared.html">MYXNotPrepared</a>
+							</code>
+						</td>
+						<td>Deprecated - No longer thrown by mysql-native.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYXProtocol" class="public" href="../mysql/exceptions/MYXProtocol.html">MYXProtocol</a>
+							</code>
+						</td>
+						<td>Received invalid data from the server which violates the MySQL network protocol.
+(Quite possibly mysql-native's fault. Please
+<a href="https://github.com/mysql-d/mysql-native/issues">file an issue</a>
+if you receive this.)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYXReceived" class="public" href="../mysql/exceptions/MYXReceived.html">MYXReceived</a>
+							</code>
+						</td>
+						<td>The server sent back a MySQL error code and message. If the server is 4.1+,
+there should also be an ANSI/ODBC-standard SQLSTATE error code.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYXResultRecieved" class="public" href="../mysql/exceptions/MYXResultRecieved.html">MYXResultRecieved</a>
+							</code>
+						</td>
+						<td>Thrown when a result set was returned unexpectedly.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="MYXWrongFunction" class="public" href="../mysql/exceptions/MYXWrongFunction.html">MYXWrongFunction</a>
+							</code>
+						</td>
+						<td>Common base class of <code class="lang-d"><a href="../mysql/exceptions/MYXResultRecieved.html"><span class="typ">MYXResultRecieved</span></a></code> and <code class="lang-d"><a href="../mysql/exceptions/MYXNoResultRecieved.html"><span class="typ">MYXNoResultRecieved</span></a></code>.
+</td>
+					</tr>
+				</table>
+			</section>
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function MySQLPool.this</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Function MySQLPool.this</h1><p>Sets up a connection pool with the provided connection settings.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">host</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">user</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">password</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">database</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">ushort</span> <span class="pln">port</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">ushort</span><span class="pun">)</span><span class="lit">3306u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">uint</span> <span class="pln">maxConcurrent</span> <span class="pun">=</span> <span class="lit">4294967295u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../mysql/connection/Connection.html"><span class="typ">Connection</span></a><span class="pun">)</span> <span class="pln">onNewConnection</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">void </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">Connection</span><span class="pun">))</span><span class="kwd">null</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">host</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">user</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">password</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">database</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">ushort</span> <span class="pln">port</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../mysql/connection/Connection.html"><span class="typ">Connection</span></a><span class="pun">)</span> <span class="pln">onNewConnection</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">void </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">Connection</span><span class="pun">))</span><span class="kwd">null</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">host</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">user</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">password</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">database</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">ushort</span> <span class="pln">port</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../mysql/connection/Connection.html"><span class="typ">Connection</span></a><span class="pun">)</span> <span class="pln">onNewConnection</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">connStr</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">uint</span> <span class="pln">maxConcurrent</span> <span class="pun">=</span> <span class="lit">4294967295u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../mysql/connection/Connection.html"><span class="typ">Connection</span></a><span class="pun">)</span> <span class="pln">onNewConnection</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">void </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">Connection</span><span class="pun">))</span><span class="kwd">null</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">connStr</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../mysql/connection/Connection.html"><span class="typ">Connection</span></a><span class="pun">)</span> <span class="pln">onNewConnection</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">void </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">Connection</span><span class="pun">))</span><span class="kwd">null</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">connStr</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><a href="../../mysql/connection/Connection.html"><span class="typ">Connection</span></a><span class="pun">)</span> <span class="pln">onNewConnection</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p>The optional <code class="lang-d"><a href="../../mysql/pool/MySQLPool.this.html#onNewConnection"><span class="pln">onNewConnection</span></a></code> param allows you to set a callback
+which will be run every time a new connection is created.
+</p>
+</section>
+
+			
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

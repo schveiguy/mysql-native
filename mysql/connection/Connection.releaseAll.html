@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function Connection.releaseAll</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Function Connection.releaseAll</h1><p>Manually release all prepared statements on this connection.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="typ">void</span> <span class="pln">releaseAll</span><span class="pun">(</span><span class="pun">)</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p>While minimal, every prepared statement registered on a connection does
+	use up a small amount of resources in both mysql-native and on the server.
+	Additionally, servers can be configured
+	<a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_prepared_stmt_count">	to limit the number of prepared statements</a>
+	allowed on a connection at one time (the default, however
+	is quite high). Note also, that certain overloads of <code class="lang-d"><a href="../../mysql/commands/exec.html" title="mysql.commands.exec"><span class="pln">exec</span></a></code>,
+	<code class="lang-d"><a href="../../mysql/commands/query.html" title="mysql.commands.query"><span class="pln">query</span></a></code>, etc. register prepared statements behind-the-scenes
+	which are cached for quick re-use later.
+</p>
+
+<p>	Therefore, it may occasionally be useful to clear out all prepared
+	statements on a connection, together with all resources used by them (or
+	at least leave the resources ready for garbage-collection). This function
+	does just that.
+</p>
+
+<p>	Note that this is ALWAYS COMPLETELY SAFE to call, even if you still have
+	live prepared statements you intend to use again. This is safe because
+	mysql-native will automatically register or re-register prepared statements
+	as-needed.
+</p>
+</section>
+
+			<section><h2>Notes</h2>
+<p>In actuality, the prepared statements might not be immediately released
+	(although <code class="lang-d"><a href="../../mysql/connection/Connection.isRegistered.html"><span class="pln">isRegistered</span></a></code> will still report <code class="lang-d"><span class="kwd">false</span></code> for them).
+</p>
+
+<p>	This is because there could be a <code class="lang-d"><a href="../../mysql/result/ResultRange.html" title="mysql.result.ResultRange"><span class="typ">ResultRange</span></a></code> with results
+	still pending for retrieval, and the protocol doesn't allow sending commands
+	(such as "release a prepared statement") to the server while data is pending.
+	Therefore, this function may instead queue the statement to be released
+	when it is safe to do so: Either the next time a result set is purged or
+	the next time a command (such as <code class="lang-d"><a href="../../mysql/commands/query.html" title="mysql.commands.query"><span class="pln">query</span></a></code> or
+	<code class="lang-d"><a href="../../mysql/commands/exec.html" title="mysql.commands.exec"><span class="pln">exec</span></a></code>) is performed (because such commands automatically
+	purge any pending results).
+</p>
+
+<p>	This function does NOT auto-purge because, if this is ever called from
+	automatic resource management cleanup (refcounting, RAII, etc), that
+	would create ugly situations where hidden, implicit behavior triggers
+	an unexpected auto-purge.
+</p>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

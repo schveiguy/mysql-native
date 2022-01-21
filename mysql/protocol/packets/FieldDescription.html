@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Struct FieldDescription</title>
+		<link rel="stylesheet" type="text/css" href="../../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct FieldDescription</h1><p>A struct representing a field (column) description packet.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">struct</span> <span class="typ">FieldDescription</span>
+			<span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p>These packets, one for each column are sent before the data of a result set,
+followed by an EOF packet.
+</p>
+</section>
+
+			<section><h2>Constructors</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.this.html" class="public">
+								<code>this</code>
+							</a>
+							<span class="tableEntryAnnotation">(packet)</span>
+						</td>
+						<td>Construct a <code class="lang-d"><a href="../../../mysql/protocol/packets/FieldDescription.html"><span class="typ">FieldDescription</span></a></code> from the raw data packet
+</td>
+					</tr>
+				</table>
+			</section>
+			<section><h2>Properties</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Type</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.binary.html" class="public property"><code>binary</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Binary from flags
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.charSet.html" class="public property"><code>charSet</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ushort</span></code></td><td>The character set in force
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.db.html" class="public property"><code>db</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Database name for column as string
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.flags.html" class="public property"><code>flags</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><a href="../../../mysql/protocol/constants/FieldFlags.html"><span class="typ">FieldFlags</span></a></code></td><td>Column flags - unsigned, binary, null and so on
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.isenum.html" class="public property"><code>isenum</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is-enum from flags
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.isset.html" class="public property"><code>isset</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is-set (a SET column that is) from flags
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.length.html" class="public property"><code>length</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td><td>The 'length' of the column as defined at table creation
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.name.html" class="public property"><code>name</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Column name as string - this could be an alias
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.notNull.html" class="public property"><code>notNull</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>NotNull from flags
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.originalName.html" class="public property"><code>originalName</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Real column name as string
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.originalTable.html" class="public property"><code>originalTable</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Real table name for column as string
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.scale.html" class="public property"><code>scale</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ubyte</span></code></td><td>Precision for floating point values
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.table.html" class="public property"><code>table</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Table name for column as string - this could be an alias as in 'from tablename as foo'
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.type.html" class="public property"><code>type</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><a href="../../../mysql/protocol/constants/SQLType.html"><span class="typ">SQLType</span></a></code></td><td>The type of the column hopefully (but not always) corresponding to enum <code class="lang-d"><a href="../../../mysql/protocol/constants/SQLType.html" title="mysql.protocol.constants.SQLType"><span class="typ">SQLType</span></a></code>.
+Only the low byte currently used.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../../mysql/protocol/packets/FieldDescription.unsigned.html" class="public property"><code>unsigned</code></a><span class="tableEntryAnnotation">[get]</span>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Unsigned from flags
+</td>
+					</tr>
+				</table>
+			</section>
+			<section><h2>See Also</h2>
+<p><a href="http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Field_Packet">http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Field_Packet</a>
+</p>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

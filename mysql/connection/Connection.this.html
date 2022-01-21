@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Function Connection.this</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Function Connection.this</h1><p>Construct opened connection.
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">host</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">user</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">pwd</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">db</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">ushort</span> <span class="pln">port</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">ushort</span><span class="pun">)</span><span class="lit">3306u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">protocol<wbr/></span><span class="pun">.</span><span class="pln">sockets<wbr/></span><span class="pun">.</span><span class="typ">MySQLSocketType</span> <span class="pln">socketType</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">host</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">user</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">pwd</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">db</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">ushort</span> <span class="pln">port</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">ushort</span><span class="pun">)</span><span class="lit">3306u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">socket<wbr/></span><span class="pun">.</span><span class="typ">TcpSocket</span> <span class="kwd">function</span><span class="pun">(</span><span class="typ">string</span><span class="pun">, </span><span class="typ">ushort</span><span class="pun">)</span> <span class="pln">openSocket</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">host</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">user</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">pwd</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">db</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">ushort</span> <span class="pln">port</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">ushort</span><span class="pun">)</span><span class="lit">3306u</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">cs</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">protocol<wbr/></span><span class="pun">.</span><span class="pln">sockets<wbr/></span><span class="pun">.</span><span class="typ">MySQLSocketType</span> <span class="pln">socketType</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">cs</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+			<br/>
+			<br/>
+			<span class="pln">this</span>
+			<span class="pun">(</span>
+			<br/>
+			&nbsp;&nbsp;<span class="pln">std<wbr/></span><span class="pun">.</span><span class="pln">socket<wbr/></span><span class="pun">.</span><span class="typ">TcpSocket</span> <span class="kwd">function</span><span class="pun">(</span><span class="typ">string</span><span class="pun">, </span><span class="typ">ushort</span><span class="pun">)</span> <span class="pln">openSocket</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<span class="typ">string</span> <span class="pln">cs</span><span class="pun">,</span>
+			<br/>
+			&nbsp;&nbsp;<a href="../../mysql/protocol/constants/SvrCapFlags.html"><span class="typ">SvrCapFlags</span></a> <span class="pln">capFlags</span> <span class="pun">=</span> <span class="kwd">cast</span><span class="pun">(</span><span class="typ">SvrCapFlags</span><span class="pun">)</span><span class="lit">33293u</span>
+			<br/>
+			<span class="pun">)</span><span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			<section><p>Throws <code class="lang-d"><a href="../../mysql/exceptions/MYX.html" title="mysql.exceptions.MYX"><span class="pln">MYX</span></a></code> upon failure to connect.
+</p>
+
+<p>	If you are using Vibe.d, consider using <code class="lang-d"><a href="../../mysql/pool/MySQLPool.html" title="mysql.pool.MySQLPool"><span class="typ">MySQLPool</span></a></code> instead of
+	creating a new Connection directly. That will provide certain benefits,
+	such as reusing old connections and automatic cleanup (no need to close
+	the connection when done).
+</p>
+
+<pre class="code"><code class="lang-d"><span class="com">// Suggested usage:
+
+</span><span class="pun">{
+    </span><span class="kwd">auto </span><span class="pln">con </span><span class="pun">= </span><span class="kwd">new <a href="../../mysql/connection/Connection.html"></span><span class="typ">Connection</span></a><span class="pun">(</span><span class="str">"host=localhost;port=3306;user=joe;pwd=pass123;db=myappsdb"</span><span class="pun">);
+    </span><span class="kwd">scope</span><span class="pun">(</span><span class="pln">exit</span><span class="pun">) </span><span class="pln">con<wbr/></span><span class="pun">.</span><span class="pln">close</span><span class="pun">();
+
+    </span><span class="com">// Use the connection
+    </span><span class="pun">...
+}</span></code></pre>
+</section>
+
+			<section><h2>Parameters</h2>
+<table><col class="caption"><tr><th>Name</th><th>Description</th></tr>
+<tr><td id="cs">cs</td><td> A connection string of the form "host=localhost;user=user;pwd=password;db=mysqld"
+			(TODO: The connection string needs work to allow for semicolons in its parts!)</td></tr>
+<tr><td id="socketType">socketType</td><td> Whether to use a Phobos or Vibe.d socket. Default is Phobos,
+			unless compiled with <code class="lang-d"><span class="pun">-</span><span class="kwd">version</span><span class="pun">=</span><span class="typ">Have_vibe_core</span></code> (set automatically
+			if using <a href="http://code.dlang.org/getting_started">DUB</a>).</td></tr>
+<tr><td id="openSocket">openSocket</td><td> Optional callback which should return a newly-opened Phobos
+			or Vibe.d TCP socket. This allows custom sockets to be used,
+			subclassed from Phobos's or Vibe.d's sockets.</td></tr>
+<tr><td id="host">host</td><td> An IP address in numeric dotted form, or as a host  name.</td></tr>
+<tr><td id="user">user</td><td> The user name to authenticate.</td></tr>
+<tr><td id="pwd">pwd</td><td> User's password.</td></tr>
+<tr><td id="db">db</td><td> Desired initial database.</td></tr>
+<tr><td id="capFlags">capFlags</td><td> The set of flag bits from the server's capabilities that the client requires</td></tr>
+</table>
+</section>
+
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

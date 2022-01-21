@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module mysql</title>
+		<link rel="stylesheet" type="text/css" href="./styles/ddox.css"/>
+		<link rel="stylesheet" href="./prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="./scripts/jquery.js">/**/</script><script type="text/javascript" src="./scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="./symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "./";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package selected">
+						<a href="./mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Module mysql</h1><p>Imports all of <a href="https://github.com/mysql-d/mysql-native">mysql-native</a>.
+</p><section></section>
+
+			<section><section><h2>MySQL to D Type Mappings</h2>
+<p><table>	<tr><th>MySQL      </th> <th>D            </th></tr>
+	<tr><td>NULL       </td> <td>typeof(null) </td></tr>
+	<tr><td>BIT        </td> <td>bool         </td></tr>
+	<tr><td>TINY       </td> <td>(u)byte      </td></tr>
+	<tr><td>SHORT      </td> <td>(u)short     </td></tr>
+	<tr><td>INT24      </td> <td>(u)int       </td></tr>
+	<tr><td>INT        </td> <td>(u)int       </td></tr>
+	<tr><td>LONGLONG   </td> <td>(u)long      </td></tr>
+	<tr><td>FLOAT      </td> <td>float        </td></tr>
+	<tr><td>DOUBLE     </td> <td>double       </td></tr>
+</table>
+</p>
+
+<p><table>	<tr><th>MySQL      </th> <th>D            </th></tr>
+	<tr><td>TIMESTAMP  </td> <td>DateTime     </td></tr>
+	<tr><td>TIME       </td> <td>TimeOfDay    </td></tr>
+	<tr><td>YEAR       </td> <td>ushort       </td></tr>
+	<tr><td>DATE       </td> <td>Date         </td></tr>
+	<tr><td>DATETIME   </td> <td>DateTime     </td></tr>
+</table>
+</p>
+
+<p><table>	<tr><th>MySQL                                             </th> <th>D                    </th></tr>
+	<tr><td>VARCHAR, ENUM, SET, VARSTRING, STRING, NEWDECIMAL </td> <td>string               </td></tr>
+	<tr><td>TINYBLOB, MEDIUMBLOB, BLOB, LONGBLOB              </td> <td>ubyte[]              </td></tr>
+	<tr><td>TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT              </td> <td>string               </td></tr>
+	<tr><td>other                                             </td> <td>unsupported (throws) </td></tr>
+</table>
+</p>
+</section>
+<section><h2>D to MySQL Type Mappings</h2>
+<p><table>	<tr><th>D            </th> <th>MySQL               </th></tr>
+	<tr><td>typeof(null) </td> <td>NULL                </td></tr>
+	<tr><td>bool         </td> <td>BIT                 </td></tr>
+	<tr><td>(u)byte      </td> <td>(UNSIGNED) TINY     </td></tr>
+	<tr><td>(u)short     </td> <td>(UNSIGNED) SHORT    </td></tr>
+	<tr><td>(u)int       </td> <td>(UNSIGNED) INT      </td></tr>
+	<tr><td>(u)long      </td> <td>(UNSIGNED) LONGLONG </td></tr>
+	<tr><td>float        </td> <td>(UNSIGNED) FLOAT    </td></tr>
+	<tr><td>double       </td> <td>(UNSIGNED) DOUBLE   </td></tr>
+	<tr><td><code class="lang-d"><a href="https://dlang.org/phobos/std_datetime_date.html#Date">Date</a></code>     </td> <td>DATE      </td></tr>
+	<tr><td><code class="lang-d"><a href="https://dlang.org/phobos/std_datetime_date.html#TimeOfDay">TimeOfDay</a></code></td> <td>TIME      </td></tr>
+	<tr><td><code class="lang-d"><a href="https://dlang.org/phobos/std_datetime_date.html#Time">Time</a></code>     </td> <td>TIME      </td></tr>
+	<tr><td><code class="lang-d"><a href="https://dlang.org/phobos/std_datetime_date.html#DateTime">DateTime</a></code> </td> <td>DATETIME  </td></tr>
+	<tr><td><code class="lang-d"><a href="./mysql/types/Timestamp.html" title="mysql.types.Timestamp"><span class="typ">Timestamp</span></a></code>       </td> <td>TIMESTAMP </td></tr>
+	<tr><td>string    </td> <td>VARCHAR              </td></tr>
+	<tr><td>char[]    </td> <td>VARCHAR              </td></tr>
+	<tr><td>(u)byte[] </td> <td>SIGNED TINYBLOB      </td></tr>
+	<tr><td>other     </td> <td>unsupported (throws) </td></tr>
+</table>
+</p>
+</section>
+</section>
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

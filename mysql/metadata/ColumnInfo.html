@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Struct ColumnInfo</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="../../symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="../../mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module selected">
+						<a href="../../mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../../mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>Struct ColumnInfo</h1><p>A struct to hold column metadata
+</p>
+			<div class="prototype">
+				<code class="lang-d">
+					<div class="single-prototype">
+			<span class="kwd">struct</span> <span class="typ">ColumnInfo</span>
+			<span class="pun">;</span>
+					</div>
+				</code>
+			</div>
+			
+			<section><h2>Fields</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Type</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.charSet.html" class="public"><code>charSet</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Character set, "<NULL>" if not applicable.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.charsMax.html" class="public"><code>charsMax</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">long</span></code></td><td>Capacity in characters, -1L if not applicable
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.collation.html" class="public"><code>collation</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Collation, "<NULL>" if not applicable.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.colType.html" class="public"><code>colType</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>More detail about the column type, e.g. "int(10) unsigned".
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.comment.html" class="public"><code>comment</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Any comment that was set at table definition time.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.defaultNull.html" class="public"><code>defaultNull</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Is the COLUMN_DEFAULT column (in the information schema's COLUMNS table) NULL?
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.defaultValue.html" class="public"><code>defaultValue</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>The default value as a string if not NULL.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.extra.html" class="public"><code>extra</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Extra information.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.index.html" class="public"><code>index</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ulong</span></code></td><td>Zero based index of the column within a table row.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.key.html" class="public"><code>key</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Information about the column's key status, blank if none.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.name.html" class="public"><code>name</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>The name of the column.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.nullable.html" class="public"><code>nullable</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td><td>Can the column value be set to NULL
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.numericPrecision.html" class="public"><code>numericPrecision</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">short</span></code></td><td>Presentation information for numerics, -1L if not applicable.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.numericScale.html" class="public"><code>numericScale</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">short</span></code></td><td>Scale information for numerics or NULL, -1L if not applicable.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.octetsMax.html" class="public"><code>octetsMax</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">long</span></code></td><td>Capacity in bytes - same as chars if not a unicode table definition, -1L if not applicable.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.privileges.html" class="public"><code>privileges</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>Privileges for logged in user.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.schema.html" class="public"><code>schema</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>The database that the table having this column belongs to.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.table.html" class="public"><code>table</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>The table that this column belongs to.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="../../mysql/metadata/ColumnInfo.type.html" class="public"><code>type</code></a>
+						</td>
+						<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td><td>What type is the column - tinyint, char, varchar, blob, date etc
+</td>
+					</tr>
+				</table>
+			</section>
+			
+			<footer>
+				<table class="license-info">
+					<tr>
+						<th>Authors</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>Copyright</th>
+						<td>
+							
+						</td>
+					</tr>
+					<tr>
+						<th>License</th>
+						<td>
+							
+						</td>
+					</tr>
+				</table>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>

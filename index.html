@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>API documentation</title>
+		<link rel="stylesheet" type="text/css" href="./styles/ddox.css"/>
+		<link rel="stylesheet" href="./prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="./scripts/jquery.js">/**/</script><script type="text/javascript" src="./scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+			<noscript>
+				<p style="color: red">The search functionality needs JavaScript enabled</p>
+			</noscript>
+			<div id="symbolSearchPane" style="display: none">
+				<form action="#" method="GET">
+					<input id="symbolSearch" type="text" name="q" placeholder="Search for symbols" autocomplete="off" onchange="performSymbolSearch(40);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+				</form>
+				<ul id="symbolSearchResults" class="symbolList" style="display: none"></ul><script type="application/javascript" src="./symbols.js"></script><script type="application/javascript">var symbolSearchRootDir = "./";
+$('#symbolSearchPane').show();</script>
+			</div>
+			<ul class="tree-view">
+				<li class="tree-view ">
+					<div class="package ">
+						<a href="./mysql.html">mysql</a>
+					</div>
+			<ul class="tree-view">
+				<li class="tree-view collapsed">
+					<div class="package ">protocol
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/comms.html">comms</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/constants.html">constants</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/extra_types.html">extra_types</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/packet_helpers.html">packet_helpers</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/packets.html">packets</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/escape.html">escape</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/exceptions.html">exceptions</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/metadata.html">metadata</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/result.html">result</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/types.html">types</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+			</ul>
+		</nav>
+		<div id="main-contents">
+			<h1>API documentation</h1>
+			<table>
+				<col class="caption"/>
+				<tr>
+					<th>Module</th><th>Description</th>
+				</tr>
+			<tr>
+				<td>
+					<a href="./mysql/protocol/comms.html">mysql.protocol.comms</a>
+				</td>
+				<td>
+					Internal - Low-level communications.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/protocol/constants.html">mysql.protocol.constants</a>
+				</td>
+				<td>
+					Internal - Misc protocol constants.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/protocol/extra_types.html">mysql.protocol.extra_types</a>
+				</td>
+				<td>
+					Internal - Protocol-related data types.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/protocol/packet_helpers.html">mysql.protocol.packet_helpers</a>
+				</td>
+				<td>
+					Internal - Helper functions for the communication protocol.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/protocol/packets.html">mysql.protocol.packets</a>
+				</td>
+				<td>
+					Internal - Tools for working with MySQL's communications packets.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/protocol/sockets.html">mysql.protocol.sockets</a>
+				</td>
+				<td>
+					Internal - Phobos and vibe.d sockets.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/commands.html">mysql.commands</a>
+				</td>
+				<td>
+					Use a DB via plain SQL statements.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/connection.html">mysql.connection</a>
+				</td>
+				<td>
+					Connect to a MySQL/MariaDB server.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/escape.html">mysql.escape</a>
+				</td>
+				<td>
+					Escape special characters in MySQL strings.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/exceptions.html">mysql.exceptions</a>
+				</td>
+				<td>
+					Exceptions defined by mysql-native.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/metadata.html">mysql.metadata</a>
+				</td>
+				<td>
+					Retrieve metadata from a DB.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/pool.html">mysql.pool</a>
+				</td>
+				<td>
+					Connect to a MySQL/MariaDB database using a connection pool.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/prepared.html">mysql.prepared</a>
+				</td>
+				<td>
+					Use a DB via SQL prepared statements.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/result.html">mysql.result</a>
+				</td>
+				<td>
+					Structures for data received: rows and result sets (ie, a range of rows).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/types.html">mysql.types</a>
+				</td>
+				<td>
+					Structures for MySQL types not built-in to D/Phobos.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql.html">mysql</a>
+				</td>
+				<td>
+					Imports all of <a href="https://github.com/mysql-d/mysql-native">mysql-native</a>.
+
+				</td>
+			</tr>
+			</table>
+			<footer>
+				<p class="faint">Generated using the DDOX documentation generator</p>
+			</footer>
+		</div>
+	</body>
+</html>
