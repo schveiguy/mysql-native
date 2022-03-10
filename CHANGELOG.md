@@ -1,3 +1,20 @@
+v3.1.0 - 2022-03-10
+=====================
+
+This release adds logging to mysql-native! If you are using it with vibe, it
+will by default use the vibe logging facilities. Otherwise, it will use
+std.experimental.logger.
+
+This release is thanks to the efforts of @singingbush
+- **Fixed:** [#113](https://github.com/mysql-d/mysql-native/issues/113):
+   use vibe.core.log when `Have_vibe_d_core`
+
+A warning to users of this new version, std.experimental.logger prior to DMD
+version 2.099.0, used a default level of `all`, which includes trace messages.
+If you do not wish to see these messages (there will be a lot of them), either
+use a compiler based on DMD 2.099.0 or later, or change the log level of the
+default logger to something less.
+
 v3.0.3 - 2021-09-11
 =====================
 
