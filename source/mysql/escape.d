@@ -14,9 +14,9 @@ Simple escape function for dangerous SQL characters
 
 Params:
 	input = string to escape
-	buffer = buffer to use for the output
+	output = output range to write to
 +/
-void mysql_escape ( Buffer, Input ) ( Input input, Buffer buffer )
+void mysql_escape ( Output, Input ) ( Input input, Output output )
 {
 	import std.string : translate;
 
@@ -30,30 +30,27 @@ void mysql_escape ( Buffer, Input ) ( Input input, Buffer buffer )
 		'\032' : "\\Z"
 	];
 
-	translate(input, transTable, null, buffer);
+	translate(input, transTable, null, output);
 }
 
 
 /++
-Struct to wrap around a string so it can be passed to formattedWrite and be
-properly escaped all using the buffer that formattedWrite provides.
+Struct to wrap around an input range so it can be passed to formattedWrite and be
+properly escaped without allocating a temporary buffer
 
 Params:
-	Input = (Template Param) Type of the input
+	Input = (Template Param) Type of the input range
+
+Note:
+    The delegate is expected to be @safe as of version 3.1.0.
 +/
 struct MysqlEscape ( Input )
 {
 	Input input;
 
-	const void toString ( scope void delegate(const(char)[]) sink )
+	const void toString ( scope void delegate(const(char)[]) @safe sink )
 	{
-		struct SinkOutputRange
-		{
-			void put ( const(char)[] t ) { sink(t); }
-		}
-
-		SinkOutputRange r;
-		mysql_escape(input, r);
+		mysql_escape(input, sink);
 	}
 }
 
@@ -61,7 +58,7 @@ struct MysqlEscape ( Input )
 Helper function to easily construct a escape wrapper struct
 
 Params:
-	T = (Template Param) Type of the input
+	T = (Template Param) Type of the input range
 	input = Input to escape
 +/
 MysqlEscape!(T) mysqlEscape ( T ) ( T input )
@@ -71,7 +68,7 @@ MysqlEscape!(T) mysqlEscape ( T ) ( T input )
 
 @("mysqlEscape")
 debug(MYSQLN_TESTS)
-unittest
+@safe unittest
 {
 	import std.array : appender;
 

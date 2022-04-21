@@ -1,4 +1,4 @@
-﻿/// Retrieve metadata from a DB.
+/// Retrieve metadata from a DB.
 module mysql.metadata;
 
 import std.array;
@@ -6,10 +6,13 @@ import std.conv;
 import std.datetime;
 import std.exception;
 
-import mysql.commands;
+import mysql.safe.commands;
 import mysql.exceptions;
 import mysql.protocol.sockets;
-import mysql.result;
+import mysql.safe.result;
+import mysql.types;
+
+@safe:
 
 /// A struct to hold column metadata
 struct ColumnInfo

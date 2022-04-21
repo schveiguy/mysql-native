@@ -1,17 +1,28 @@
-﻿/// Structures for data received: rows and result sets (ie, a range of rows).
-module mysql.result;
+/++
+Implementation - Structures for data received: rows and result sets (ie, a range of rows).
+
+WARNING:
+This module is used to consolidate the common implementation of the safe and
+unafe API. DO NOT directly import this module, please import one of
+`mysql.result`, `mysql.safe.result`, or `mysql.unsafe.result`. This module will
+be removed in a future version without deprecation.
+
+$(SAFE_MIGRATION)
++/
+module mysql.impl.result;
 
 import std.conv;
 import std.exception;
 import std.range;
 import std.string;
-import std.variant;
 
-import mysql.connection;
 import mysql.exceptions;
 import mysql.protocol.comms;
 import mysql.protocol.extra_types;
 import mysql.protocol.packets;
+public import mysql.types;
+import std.typecons : Nullable;
+import std.variant;
 
 /++
 A struct to represent a single row of a result set.
@@ -20,34 +31,35 @@ Type_Mappings: $(TYPE_MAPPINGS)
 +/
 /+
 The row struct is used for both 'traditional' and 'prepared' result sets.
-It consists of parallel arrays of Variant and bool, with the bool array
+It consists of parallel arrays of MySQLVal and bool, with the bool array
 indicating which of the result set columns are NULL.
 
 I have been agitating for some kind of null indicator that can be set for a
-Variant without destroying its inherent type information. If this were the
+MySQLVal without destroying its inherent type information. If this were the
 case, then the bool array could disappear.
 +/
-struct Row
+struct SafeRow
 {
-	import mysql.connection;
 
-package:
-	Variant[]   _values; // Temporarily "package" instead of "private"
+package(mysql):
+	MySQLVal[]   _values; // Temporarily "package" instead of "private"
 private:
+	import mysql.impl.connection;
 	bool[]      _nulls;
 	string[]    _names;
 
 public:
+	@safe:
 
 	/++
 	A constructor to extract the column data from a row data packet.
-	
+
 	If the data for the row exceeds the server's maximum packet size, then several packets will be
 	sent for the row that taken together constitute a logical row data packet. The logic of the data
 	recovery for a Row attempts to minimize the quantity of data that is bufferred. Users can assist
 	in this by specifying chunked data transfer in cases where results sets can include long
 	column values.
-	
+
 	Type_Mappings: $(TYPE_MAPPINGS)
 	+/
 	this(Connection con, ref ubyte[] packet, ResultSetHeaders rh, bool binary)
@@ -57,16 +69,18 @@ public:
 
 	/++
 	Simplify retrieval of a column value by index.
-	
-	To check for null, use Variant's `type` property:
-	`row[index].type == typeid(typeof(null))`
+
+	To check for null, use MySQLVal's `kind` property:
+	`row[index].kind == MySQLVal.Kind.Null`
+	or use a direct comparison to null:
+	`row[index] == null`
 
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params: i = the zero based index of the column whose value is required.
-	Returns: A Variant holding the column value.
+	Returns: A MySQLVal holding the column value.
 	+/
-	inout(Variant) opIndex(size_t i) inout
+	ref inout(MySQLVal) opIndex(size_t i) inout
 	{
 		enforce!MYX(_nulls.length > 0, format("Cannot get column index %d. There are no columns", i));
 		enforce!MYX(i < _nulls.length, format("Cannot get column index %d. The last available index is %d", i, _nulls.length-1));
@@ -76,14 +90,14 @@ public:
 	/++
 	Get the name of the column with specified index.
 	+/
-	inout(string) getName(size_t index) inout
+	string getName(size_t index) const
 	{
 		return _names[index];
 	}
 
 	/++
 	Check if a column in the result row was NULL
-	
+
 	Params: i = The zero based column index.
 	+/
 	bool isNull(size_t i) const pure nothrow { return _nulls[i]; }
@@ -98,13 +112,13 @@ public:
 
 	/++
 	Move the content of the row into a compatible struct
-	
+
 	This method takes no account of NULL column values. If a column was NULL,
-	the corresponding Variant value would be unchanged in those cases.
-	
-	The method will throw if the type of the Variant is not implicitly
+	the corresponding MySQLVal value would be unchanged in those cases.
+
+	The method will throw if the type of the MySQLVal is not implicitly
 	convertible to the corresponding struct member.
-	
+
 	Type_Mappings: $(TYPE_MAPPINGS)
 
 	Params:
@@ -145,48 +159,102 @@ public:
 	{
 		import std.stdio;
 
-		foreach(Variant v; _values)
-			writef("%s, ", v.toString());
-		writeln("");
+		writefln("%(%s, %)", _values);
 	}
 }
 
 /++
-An $(LINK2 http://dlang.org/phobos/std_range_primitives.html#isInputRange, input range)
-of Row.
+An UnsafeRow is almost identical to a SafeRow, except that it provides access
+to its values via Variant instead of MySQLVal. This makes the access unsafe.
+Only value access is unsafe, every other operation is forwarded to the internal
+SafeRow.
 
-This is returned by the `mysql.commands.query` functions.
+Use the safe or unsafe UFCS methods to convert to and from these two types if
+needed.
+
+Note that there is a performance penalty when accessing via a Variant as the MySQLVal must be converted on every access.
+
+$(SAFE_MIGRATION)
++/
+struct UnsafeRow
+{
+	SafeRow _safe;
+	alias _safe this;
+	/// Converts SafeRow.opIndex result to Variant.
+	Variant opIndex(size_t idx) {
+		return _safe[idx].asVariant;
+	}
+}
+
+/// ditto
+UnsafeRow unsafe(SafeRow r) @safe
+{
+	return UnsafeRow(r);
+}
+
+/// ditto
+Nullable!UnsafeRow unsafe(Nullable!SafeRow r) @safe
+{
+	if(r.isNull)
+		return Nullable!UnsafeRow();
+	return Nullable!UnsafeRow(r.get.unsafe);
+}
+
+
+/// ditto
+SafeRow safe(UnsafeRow r) @safe
+{
+	return r._safe;
+}
+
+
+/// ditto
+Nullable!SafeRow safe(Nullable!UnsafeRow r) @safe
+{
+	if(r.isNull)
+		return Nullable!SafeRow();
+	return Nullable!SafeRow(r.get.safe);
+}
+
+/++
+An $(LINK2 http://dlang.org/phobos/std_range_primitives.html#isInputRange, input range)
+of SafeRow.
+
+This is returned by the `mysql.safe.commands.query` functions.
 
 The rows are downloaded one-at-a-time, as you iterate the range. This allows
 for low memory usage, and quick access to the results as they are downloaded.
 This is especially ideal in case your query results in a large number of rows.
 
-However, because of that, this `ResultRange` cannot offer random access or
+However, because of that, this `SafeResultRange` cannot offer random access or
 a `length` member. If you need random access, then just like any other range,
 you can simply convert this range to an array via
 $(LINK2 https://dlang.org/phobos/std_array.html#array, `std.array.array()`).
 
-A `ResultRange` becomes invalidated (and thus cannot be used) when the server
-is sent another command on the same connection. When an invalidated `ResultRange`
-is used, a `mysql.exceptions.MYXInvalidatedRange` is thrown. If you need to
-send the server another command, but still access these results afterwords,
-you can save the results for later by converting this range to an array via
+A `SafeResultRange` becomes invalidated (and thus cannot be used) when the server
+is sent another command on the same connection. When an invalidated
+`SafeResultRange` is used, a `mysql.exceptions.MYXInvalidatedRange` is thrown.
+If you need to send the server another command, but still access these results
+afterwords, you can save the results for later by converting this range to an
+array via
 $(LINK2 https://dlang.org/phobos/std_array.html#array, `std.array.array()`).
 
 Type_Mappings: $(TYPE_MAPPINGS)
 
 Example:
 ---
-ResultRange oneAtATime = myConnection.query("SELECT * from myTable");
-Row[]       allAtOnce  = myConnection.query("SELECT * from myTable").array;
+SafeResultRange oneAtATime = myConnection.query("SELECT * from myTable");
+SafeRow[]       allAtOnce  = myConnection.query("SELECT * from myTable").array;
 ---
 +/
-struct ResultRange
+struct SafeResultRange
 {
 private:
+	import mysql.impl.connection;
+@safe:
 	Connection       _con;
 	ResultSetHeaders _rsh;
-	Row              _row; // current row
+	SafeRow          _row; // current row
 	string[]         _colNames;
 	size_t[string]   _colNameIndicies;
 	ulong            _numRowsFetched;
@@ -198,7 +266,7 @@ private:
 			"This ResultRange has been invalidated and can no longer be used.");
 	}
 
-package:
+package(mysql):
 	this (Connection con, ResultSetHeaders rsh, string[] colNames)
 	{
 		_con       = con;
@@ -212,11 +280,12 @@ public:
 	/++
 	Check whether the range can still be used, or has been invalidated.
 
-	A `ResultRange` becomes invalidated (and thus cannot be used) when the server
-	is sent another command on the same connection. When an invalidated `ResultRange`
-	is used, a `mysql.exceptions.MYXInvalidatedRange` is thrown. If you need to
-	send the server another command, but still access these results afterwords,
-	you can save the results for later by converting this range to an array via
+	A `SafeResultRange` becomes invalidated (and thus cannot be used) when the
+	server is sent another command on the same connection. When an invalidated
+	`SafeResultRange` is used, a `mysql.exceptions.MYXInvalidatedRange` is
+	thrown. If you need to send the server another command, but still access
+	these results afterwords, you can save the results for later by converting
+	this range to an array via
 	$(LINK2 https://dlang.org/phobos/std_array.html#array, `std.array.array()`).
 	+/
 	@property bool isValid() const pure nothrow
@@ -236,7 +305,7 @@ public:
 	/++
 	Gets the current row
 	+/
-	@property inout(Row) front() pure inout
+	@property inout(SafeRow) front() pure inout
 	{
 		ensureValid();
 		enforce!MYX(!empty, "Attempted 'front' on exhausted result sequence.");
@@ -259,11 +328,11 @@ public:
 
 	Type_Mappings: $(TYPE_MAPPINGS)
 	+/
-	Variant[string] asAA()
+	MySQLVal[string] asAA()
 	{
 		ensureValid();
 		enforce!MYX(!empty, "Attempted 'front' on exhausted result sequence.");
-		Variant[string] aa;
+		MySQLVal[string] aa;
 		foreach (size_t i, string s; _colNames)
 			aa[s] = _row._values[i];
 		return aa;
@@ -295,8 +364,42 @@ public:
 
 	/++
 	Get the number of rows retrieved so far.
-	
+
 	Note that this is not neccessarlly the same as the length of the range.
 	+/
 	@property ulong rowCount() const pure nothrow { return _numRowsFetched; }
+}
+
+/+
+A wrapper of a SafeResultRange which converts each row into an UnsafeRow.
+
+Use the safe or unsafe UFCS methods to convert to and from these two types if
+needed.
+
+$(SAFE_MIGRATION)
++/
+struct UnsafeResultRange
+{
+	/// The underlying range is a SafeResultRange.
+	SafeResultRange safe;
+	alias safe this;
+	/// Equivalent to SafeResultRange.front, but wraps as an UnsafeRow.
+	inout(UnsafeRow) front() inout { return inout(UnsafeRow)(safe.front); }
+
+	/// Equivalent to SafeResultRange.asAA, but converts each value to a Variant
+	Variant[string] asAA()
+	{
+		ensureValid();
+		enforce!MYX(!safe.empty, "Attempted 'front' on exhausted result sequence.");
+		Variant[string] aa;
+		foreach (size_t i, string s; _colNames)
+			aa[s] = _row._values[i].asVariant;
+		return aa;
+	}
+}
+
+/// Wrap a SafeResultRange as an UnsafeResultRange.
+UnsafeResultRange unsafe(SafeResultRange r) @safe
+{
+	return UnsafeResultRange(r);
 }

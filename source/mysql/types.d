@@ -331,4 +331,3 @@ T *peek(T)(ref MySQLVal val)
 		return &val.get!T;
 	return null;
 }
-

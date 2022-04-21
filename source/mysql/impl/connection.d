@@ -1,5 +1,15 @@
-/// Connect to a MySQL/MariaDB server.
-module mysql.connection;
+/++
+Implementation - Connection class.
+
+WARNING:
+This module is used to consolidate the common implementation of the safe and
+unafe API. DO NOT directly import this module, please import one of
+`mysql.connection`, `mysql.safe.connection`, or `mysql.unsafe.connection`. This
+module will be removed in a future version without deprecation.
+
+$(SAFE_MIGRATION)
++/
+module mysql.impl.connection;
 
 import std.algorithm;
 import std.conv;
@@ -9,15 +19,17 @@ import std.socket;
 import std.string;
 import std.typecons;
 
-import mysql.commands;
 import mysql.exceptions;
 import mysql.logger;
-import mysql.prepared;
 import mysql.protocol.comms;
 import mysql.protocol.constants;
 import mysql.protocol.packets;
 import mysql.protocol.sockets;
-import mysql.result;
+import mysql.impl.result;
+import mysql.impl.prepared;
+import mysql.types;
+
+@safe:
 
 version(Have_vibe_core)
 {
@@ -34,91 +46,7 @@ immutable SvrCapFlags defaultClientFlags =
 		SvrCapFlags.SECURE_CONNECTION;// | SvrCapFlags.MULTI_STATEMENTS |
 		//SvrCapFlags.MULTI_RESULTS;
 
-/++
-Submit an SQL command to the server to be compiled into a prepared statement.
-
-This will automatically register the prepared statement on the provided connection.
-The resulting `mysql.prepared.Prepared` can then be used freely on ANY `Connection`,
-as it will automatically be registered upon its first use on other connections.
-Or, pass it to `Connection.register` if you prefer eager registration.
-
-Internally, the result of a successful outcome will be a statement handle - an ID -
-for the prepared statement, a count of the parameters required for
-execution of the statement, and a count of the columns that will be present
-in any result set that the command generates.
-
-The server will then proceed to send prepared statement headers,
-including parameter descriptions, and result set field descriptions,
-followed by an EOF packet.
-
-Throws: `mysql.exceptions.MYX` if the server has a problem.
-+/
-Prepared prepare(Connection conn, const(char[]) sql)
-{
-	auto info = conn.registerIfNeeded(sql);
-	return Prepared(sql, info.headers, info.numParams);
-}
-
-/++
-This function is provided ONLY as a temporary aid in upgrading to mysql-native v2.0.0.
-
-See `BackwardCompatPrepared` for more info.
-+/
-deprecated("This is provided ONLY as a temporary aid in upgrading to mysql-native v2.0.0. You should migrate from this to the Prepared-compatible exec/query overloads in 'mysql.commands'.")
-BackwardCompatPrepared prepareBackwardCompat(Connection conn, const(char[]) sql)
-{
-	return prepareBackwardCompatImpl(conn, sql);
-}
-
-/// Allow mysql-native tests to get around the deprecation message
-package BackwardCompatPrepared prepareBackwardCompatImpl(Connection conn, const(char[]) sql)
-{
-	return BackwardCompatPrepared(conn, prepare(conn, sql));
-}
-
-/++
-Convenience function to create a prepared statement which calls a stored function.
-
-Be careful that your `numArgs` is correct. If it isn't, you may get a
-`mysql.exceptions.MYX` with a very unclear error message.
-
-Throws: `mysql.exceptions.MYX` if the server has a problem.
-
-Params:
-	conn = The connection.
-	name = The name of the stored function.
-	numArgs = The number of arguments the stored procedure takes.
-+/
-Prepared prepareFunction(Connection conn, string name, int numArgs)
-{
-	auto sql = "select " ~ name ~ preparedPlaceholderArgs(numArgs);
-	return prepare(conn, sql);
-}
-
-/++
-Convenience function to create a prepared statement which calls a stored procedure.
-
-OUT parameters are currently not supported. It should generally be
-possible with MySQL to present them as a result set.
-
-Be careful that your `numArgs` is correct. If it isn't, you may get a
-`mysql.exceptions.MYX` with a very unclear error message.
-
-Throws: `mysql.exceptions.MYX` if the server has a problem.
-
-Params:
-	conn = The connection.
-	name = The name of the stored procedure.
-	numArgs = The number of arguments the stored procedure takes.
-
-+/
-Prepared prepareProcedure(Connection conn, string name, int numArgs)
-{
-	auto sql = "call " ~ name ~ preparedPlaceholderArgs(numArgs);
-	return prepare(conn, sql);
-}
-
-private string preparedPlaceholderArgs(int numArgs)
+package(mysql) string preparedPlaceholderArgs(int numArgs)
 {
 	auto sql = "(";
 	bool comma = false;
@@ -148,7 +76,7 @@ unittest
 }
 
 /// Per-connection info from the server about a registered prepared statement.
-package struct PreparedServerInfo
+package(mysql) struct PreparedServerInfo
 {
 	/// Server's identifier for this prepared statement.
 	/// Apperently, this is never 0 if it's been registered,
@@ -175,112 +103,6 @@ package struct PreparedServerInfo
 }
 
 /++
-This is a wrapper over `mysql.prepared.Prepared`, provided ONLY as a
-temporary aid in upgrading to mysql-native v2.0.0 and its
-new connection-independent model of prepared statements. See the
-$(LINK2 https://github.com/mysql-d/mysql-native/blob/master/MIGRATING_TO_V2.md, migration guide)
-for more info.
-
-In most cases, this layer shouldn't even be needed. But if you have many
-lines of code making calls to exec/query the same prepared statement,
-then this may be helpful.
-
-To use this temporary compatability layer, change instances of:
-
----
-auto stmt = conn.prepare(...);
----
-
-to this:
-
----
-auto stmt = conn.prepareBackwardCompat(...);
----
-
-And then your prepared statement should work as before.
-
-BUT DO NOT LEAVE IT LIKE THIS! Ultimately, you should update
-your prepared statement code to the mysql-native v2.0.0 API, by changing
-instances of:
-
----
-stmt.exec()
-stmt.query()
-stmt.queryRow()
-stmt.queryRowTuple(outputArgs...)
-stmt.queryValue()
----
-
-to this:
-
----
-conn.exec(stmt)
-conn.query(stmt)
-conn.queryRow(stmt)
-conn.queryRowTuple(stmt, outputArgs...)
-conn.queryValue(stmt)
----
-
-Both of the above syntaxes can be used with a `BackwardCompatPrepared`
-(the `Connection` passed directly to `mysql.commands.exec`/`mysql.commands.query`
-will override the one embedded associated with your `BackwardCompatPrepared`).
-
-Once all of your code is updated, you can change `prepareBackwardCompat`
-back to `prepare` again, and your upgrade will be complete.
-+/
-struct BackwardCompatPrepared
-{
-	import std.variant;
-
-	private Connection _conn;
-	Prepared _prepared;
-
-	/// Access underlying `Prepared`
-	@property Prepared prepared() { return _prepared; }
-
-	alias _prepared this;
-
-	/++
-	This function is provided ONLY as a temporary aid in upgrading to mysql-native v2.0.0.
-
-	See `BackwardCompatPrepared` for more info.
-	+/
-	deprecated("Change 'preparedStmt.exec()' to 'conn.exec(preparedStmt)'")
-	ulong exec()
-	{
-		return .exec(_conn, _prepared);
-	}
-
-	///ditto
-	deprecated("Change 'preparedStmt.query()' to 'conn.query(preparedStmt)'")
-	ResultRange query()
-	{
-		return .query(_conn, _prepared);
-	}
-
-	///ditto
-	deprecated("Change 'preparedStmt.queryRow()' to 'conn.queryRow(preparedStmt)'")
-	Nullable!Row queryRow()
-	{
-		return .queryRow(_conn, _prepared);
-	}
-
-	///ditto
-	deprecated("Change 'preparedStmt.queryRowTuple(outArgs...)' to 'conn.queryRowTuple(preparedStmt, outArgs...)'")
-	void queryRowTuple(T...)(ref T args) if(T.length == 0 || !is(T[0] : Connection))
-	{
-		return .queryRowTuple(_conn, _prepared, args);
-	}
-
-	///ditto
-	deprecated("Change 'preparedStmt.queryValue()' to 'conn.queryValue(preparedStmt)'")
-	Nullable!Variant queryValue()
-	{
-		return .queryValue(_conn, _prepared);
-	}
-}
-
-/++
 A class representing a database connection.
 
 If you are using Vibe.d, consider using `mysql.pool.MySQLPool` instead of
@@ -303,6 +125,7 @@ the connection when done).
 //TODO: All low-level commms should be moved into the mysql.protocol package.
 class Connection
 {
+	@safe:
 /+
 The Connection is responsible for handshaking with the server to establish
 authentication. It then passes client preferences to the server, and
@@ -322,7 +145,7 @@ After login all further sequences are initialized by the client sending a
 command packet with a zero sequence number, to which the server replies with
 zero or more packets with sequential sequence numbers.
 +/
-package:
+package(mysql):
 	enum OpenState
 	{
 		/// We have not yet connected to the server, or have sent QUIT to the
@@ -931,7 +754,13 @@ public:
 	This is provided for those who prefer eager registration over lazy
 	for performance reasons.
 	+/
-	void register(Prepared prepared)
+	void register(SafePrepared prepared)
+	{
+		register(prepared.sql);
+	}
+
+	///ditto
+	void register(UnsafePrepared prepared)
 	{
 		register(prepared.sql);
 	}
@@ -981,7 +810,13 @@ public:
 	would create ugly situations where hidden, implicit behavior triggers
 	an unexpected auto-purge.
 	+/
-	void release(Prepared prepared)
+	void release(SafePrepared prepared)
+	{
+		release(prepared.sql);
+	}
+
+	///ditto
+	void release(UnsafePrepared prepared)
 	{
 		release(prepared.sql);
 	}
@@ -1042,7 +877,13 @@ public:
 	}
 
 	/// Is the given statement registered on this connection as a prepared statement?
-	bool isRegistered(Prepared prepared)
+	bool isRegistered(SafePrepared prepared)
+	{
+		return isRegistered( prepared.sql );
+	}
+
+	///ditto
+	bool isRegistered(UnsafePrepared prepared)
 	{
 		return isRegistered( prepared.sql );
 	}

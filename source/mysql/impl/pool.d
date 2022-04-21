@@ -1,4 +1,4 @@
-﻿/++
+/++
 Connect to a MySQL/MariaDB database using a connection pool.
 
 This provides various benefits over creating a new connection manually,
@@ -9,13 +9,21 @@ Internally, this is based on vibe.d's
 $(LINK2 http://vibed.org/api/vibe.core.connectionpool/ConnectionPool, ConnectionPool).
 You have to include vibe.d in your project to be able to use this class.
 If you don't want to, refer to `mysql.connection.Connection`.
+
+WARNING:
+This module is used to consolidate the common implementation of the safe and
+unafe API. DO NOT directly import this module, please import one of
+`mysql.pool`, `mysql.safe.pool`, or `mysql.unsafe.pool`. This module will be
+removed in a future version without deprecation.
+
+$(SAFE_MIGRATION)
 +/
-module mysql.pool;
+module mysql.impl.pool;
 
 import std.conv;
 import std.typecons;
-import mysql.connection;
-import mysql.prepared;
+import mysql.impl.connection;
+import mysql.impl.prepared;
 import mysql.protocol.constants;
 
 version(Have_vibe_core)
@@ -27,6 +35,7 @@ version(Have_vibe_core)
 version(MySQLDocs)
 {
 	version = IncludeMySQLPool;
+	version = HaveCleanupFunction;
 }
 
 version(IncludeMySQLPool)
@@ -84,8 +93,13 @@ version(IncludeMySQLPool)
 	$(LINK2 http://vibed.org/api/vibe.core.connectionpool/ConnectionPool, ConnectionPool).
 	You have to include vibe.d in your project to be able to use this class.
 	If you don't want to, refer to `mysql.connection.Connection`.
+
+	You should not use this template directly, but rather import
+	`mysql.safe.pool` or `mysql.unsafe.pool` or `mysql.pool`, which will alias
+	MySQLPool to the correct instantiation. The boolean parameter here
+	specifies whether the pool is operating in safe mode or unsafe mode.
 	+/
-	class MySQLPool
+	class MySQLPoolImpl(bool isSafe)
 	{
 		private
 		{
@@ -95,7 +109,11 @@ version(IncludeMySQLPool)
 			string m_database;
 			ushort m_port;
 			SvrCapFlags m_capFlags;
-			void delegate(Connection) m_onNewConnection;
+			static if(isSafe)
+				alias NewConnectionDelegate = void delegate(Connection) @safe;
+			else
+				alias NewConnectionDelegate = void delegate(Connection) @system;
+			NewConnectionDelegate m_onNewConnection;
 			ConnectionPool!Connection m_pool;
 			PreparedRegistrations!PreparedInfo preparedRegistrations;
 
@@ -113,7 +131,7 @@ version(IncludeMySQLPool)
 		this(string host, string user, string password, string database,
 			ushort port = 3306, uint maxConcurrent = (uint).max,
 			SvrCapFlags capFlags = defaultClientFlags,
-			void delegate(Connection) onNewConnection = null)
+			NewConnectionDelegate onNewConnection = null)
 		{
 			m_host = host;
 			m_user = user;
@@ -127,34 +145,34 @@ version(IncludeMySQLPool)
 
 		///ditto
 		this(string host, string user, string password, string database,
-			ushort port, SvrCapFlags capFlags, void delegate(Connection) onNewConnection = null)
+			ushort port, SvrCapFlags capFlags, NewConnectionDelegate onNewConnection = null)
 		{
 			this(host, user, password, database, port, (uint).max, capFlags, onNewConnection);
 		}
 
 		///ditto
 		this(string host, string user, string password, string database,
-			ushort port, void delegate(Connection) onNewConnection)
+			ushort port, NewConnectionDelegate onNewConnection)
 		{
 			this(host, user, password, database, port, (uint).max, defaultClientFlags, onNewConnection);
 		}
 
 		///ditto
 		this(string connStr, uint maxConcurrent = (uint).max, SvrCapFlags capFlags = defaultClientFlags,
-			void delegate(Connection) onNewConnection = null)
+			NewConnectionDelegate onNewConnection = null)
 		{
 			auto parts = Connection.parseConnectionString(connStr);
 			this(parts[0], parts[1], parts[2], parts[3], to!ushort(parts[4]), capFlags, onNewConnection);
 		}
 
 		///ditto
-		this(string connStr, SvrCapFlags capFlags, void delegate(Connection) onNewConnection = null)
+		this(string connStr, SvrCapFlags capFlags, NewConnectionDelegate onNewConnection = null)
 		{
 			this(connStr, (uint).max, capFlags, onNewConnection);
 		}
 
 		///ditto
-		this(string connStr, void delegate(Connection) onNewConnection)
+		this(string connStr, NewConnectionDelegate onNewConnection)
 		{
 			this(connStr, (uint).max, defaultClientFlags, onNewConnection);
 		}
@@ -179,7 +197,19 @@ version(IncludeMySQLPool)
 		register/release may actually occur upon the first command sent via
 		the connection.)
 		+/
-		LockedConnection!Connection lockConnection()
+		static if(isSafe)
+			LockedConnection!Connection lockConnection() @safe
+			{
+				return lockConnectionImpl();
+			}
+		else
+			LockedConnection!Connection lockConnection()
+			{
+				return lockConnectionImpl();
+			}
+
+		// the implementation we want to infer attributes
+		private final lockConnectionImpl()
 		{
 			auto conn = m_pool.lockConnection();
 			if(conn.closed)
@@ -191,7 +221,7 @@ version(IncludeMySQLPool)
 
 		/// Applies any `autoRegister`/`autoRelease` settings to a connection,
 		/// if necessary.
-		package void applyAuto(T)(T conn)
+		package(mysql) void applyAuto(T)(T conn)
 		{
 			foreach(sql, info; preparedRegistrations.directLookup)
 			{
@@ -217,13 +247,13 @@ version(IncludeMySQLPool)
 
 		/// Get/set a callback delegate to be run every time a new connection
 		/// is created.
-		@property void onNewConnection(void delegate(Connection) onNewConnection)
+		@property void onNewConnection(NewConnectionDelegate onNewConnection) @safe
 		{
 			m_onNewConnection = onNewConnection;
 		}
 
 		///ditto
-		@property void delegate(Connection) onNewConnection()
+		@property NewConnectionDelegate onNewConnection() @safe
 		{
 			return m_onNewConnection;
 		}
@@ -232,13 +262,13 @@ version(IncludeMySQLPool)
 		Forwards to vibe.d's
 		$(LINK2 http://vibed.org/api/vibe.core.connectionpool/ConnectionPool.maxConcurrency, ConnectionPool.maxConcurrency)
 		+/
-		@property uint maxConcurrency()
+		@property uint maxConcurrency() @safe
 		{
 			return m_pool.maxConcurrency;
 		}
 
 		///ditto
-		@property void maxConcurrency(uint maxConcurrent)
+		@property void maxConcurrency(uint maxConcurrent) @safe
 		{
 			m_pool.maxConcurrency = maxConcurrent;
 		}
@@ -267,13 +297,19 @@ version(IncludeMySQLPool)
 		You can stop the pool from continuing to auto-register the statement
 		by calling either `autoRelease` or `clearAuto`.
 		+/
-		void autoRegister(Prepared prepared)
+		void autoRegister(SafePrepared prepared) @safe
 		{
 			autoRegister(prepared.sql);
 		}
 
 		///ditto
-		void autoRegister(const(char[]) sql)
+		void autoRegister(UnsafePrepared prepared) @safe
+		{
+			autoRegister(prepared.sql);
+		}
+
+		///ditto
+		void autoRegister(const(char[]) sql) @safe
 		{
 			preparedRegistrations.registerIfNeeded(sql, (sql) => PreparedInfo());
 		}
@@ -299,47 +335,63 @@ version(IncludeMySQLPool)
 		You can stop the pool from continuing to auto-release the statement
 		by calling either `autoRegister` or `clearAuto`.
 		+/
-		void autoRelease(Prepared prepared)
+		void autoRelease(SafePrepared prepared) @safe
 		{
 			autoRelease(prepared.sql);
 		}
 
 		///ditto
-		void autoRelease(const(char[]) sql)
+		void autoRelease(UnsafePrepared prepared) @safe
+		{
+			autoRelease(prepared.sql);
+		}
+
+		///ditto
+		void autoRelease(const(char[]) sql) @safe
 		{
 			preparedRegistrations.queueForRelease(sql);
 		}
 
 		/// Is the given statement set to be automatically registered on all
 		/// connections obtained from this connection pool?
-		bool isAutoRegistered(Prepared prepared)
+		bool isAutoRegistered(SafePrepared prepared) @safe
 		{
 			return isAutoRegistered(prepared.sql);
 		}
 		///ditto
-		bool isAutoRegistered(const(char[]) sql)
+		bool isAutoRegistered(UnsafePrepared prepared) @safe
+		{
+			return isAutoRegistered(prepared.sql);
+		}
+		///ditto
+		bool isAutoRegistered(const(char[]) sql) @safe
 		{
 			return isAutoRegistered(preparedRegistrations[sql]);
 		}
 		///ditto
-		package bool isAutoRegistered(Nullable!PreparedInfo info)
+		package bool isAutoRegistered(Nullable!PreparedInfo info) @safe
 		{
 			return info.isNull || !info.get.queuedForRelease;
 		}
 
 		/// Is the given statement set to be automatically released on all
 		/// connections obtained from this connection pool?
-		bool isAutoReleased(Prepared prepared)
+		bool isAutoReleased(SafePrepared prepared) @safe
 		{
 			return isAutoReleased(prepared.sql);
 		}
 		///ditto
-		bool isAutoReleased(const(char[]) sql)
+		bool isAutoReleased(UnsafePrepared prepared) @safe
+		{
+			return isAutoReleased(prepared.sql);
+		}
+		///ditto
+		bool isAutoReleased(const(char[]) sql) @safe
 		{
 			return isAutoReleased(preparedRegistrations[sql]);
 		}
 		///ditto
-		package bool isAutoReleased(Nullable!PreparedInfo info)
+		package bool isAutoReleased(Nullable!PreparedInfo info) @safe
 		{
 			return info.isNull || info.get.queuedForRelease;
 		}
@@ -351,17 +403,17 @@ version(IncludeMySQLPool)
 
 		Equivalent to `!isAutoRegistered && !isAutoReleased`.
 		+/
-		bool isAutoCleared(Prepared prepared)
+		bool isAutoCleared(SafePrepared prepared) @safe
 		{
 			return isAutoCleared(prepared.sql);
 		}
 		///ditto
-		bool isAutoCleared(const(char[]) sql)
+		bool isAutoCleared(const(char[]) sql) @safe
 		{
 			return isAutoCleared(preparedRegistrations[sql]);
 		}
 		///ditto
-		package bool isAutoCleared(Nullable!PreparedInfo info)
+		package bool isAutoCleared(Nullable!PreparedInfo info) @safe
 		{
 			return info.isNull;
 		}
@@ -374,12 +426,17 @@ version(IncludeMySQLPool)
 
 		This releases any relevent memory for potential garbage collection.
 		+/
-		void clearAuto(Prepared prepared)
+		void clearAuto(SafePrepared prepared) @safe
 		{
 			return clearAuto(prepared.sql);
 		}
 		///ditto
-		void clearAuto(const(char[]) sql)
+		void clearAuto(UnsafePrepared prepared) @safe
+		{
+			return clearAuto(prepared.sql);
+		}
+		///ditto
+		void clearAuto(const(char[]) sql) @safe
 		{
 			preparedRegistrations.directLookup.remove(sql);
 		}
@@ -389,7 +446,7 @@ version(IncludeMySQLPool)
 
 		This releases all relevent memory for potential garbage collection.
 		+/
-		void clearAllRegistrations()
+		void clearAllRegistrations() @safe
 		{
 			preparedRegistrations.clear();
 		}

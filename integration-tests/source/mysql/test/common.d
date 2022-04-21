@@ -17,13 +17,28 @@ import std.string;
 import std.traits;
 import std.variant;
 
-import mysql.commands;
-import mysql.connection;
+import mysql.safe.commands;
+import mysql.safe.connection;
 import mysql.exceptions;
 import mysql.protocol.extra_types;
 import mysql.protocol.sockets;
-import mysql.result;
+import mysql.safe.result;
 import mysql.types;
+
+// shim for prepareBackwardCompatImpl so I don't have to version whole tests
+alias prepareBackwardCompatImpl = prepare;
+
+// shim to check for null to check differences between Variant and MySQLVal
+bool valIsNull(MySQLVal val) @safe
+{
+	return val.kind == val.Kind.Null;
+}
+bool valIsNull(Variant val)
+{
+	return val.type == typeid(typeof(null));
+}
+
+
 
 /+
 To enable these tests, you have to add the MYSQLN_TESTS
@@ -39,6 +54,7 @@ version(DoCoreTests)
 	import std.conv;
 	import std.datetime;
 
+	@safe:
 	private @property string testConnectionStrFile()
 	{
 		import std.file, std.path;
@@ -82,10 +98,10 @@ version(DoCoreTests)
 				writeln(testConnectionStrFile);
 				writeln("Halting so the user can check connection string settings.");
 				import core.stdc.stdlib : exit;
-				exit(1);
+				() @trusted { exit(1); }();
 			}
 
-			cached = cast(string) std.file.read(testConnectionStrFile);
+			cached = std.file.readText(testConnectionStrFile);
 			cached = cached.strip();
 		}
 
@@ -143,5 +159,17 @@ version(DoCoreTests)
 		int year   = cast(int) (x%10000);
 
 		return DateTime(year, month, day, hour, minute, second);
+	}
+
+	// generate safe or unsafe imports for unittests.
+	string doImports(bool isSafe, string[] imports...)
+	{
+		string result;
+		string subpackage = isSafe ? "safe" : "unsafe";
+		foreach(im; imports)
+		{
+			result ~= "import mysql." ~ subpackage ~ "." ~ im ~ ";";
+		}
+		return result;
 	}
 }
