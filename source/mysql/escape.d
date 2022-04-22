@@ -42,7 +42,7 @@ Params:
 	Input = (Template Param) Type of the input range
 
 Note:
-    The delegate is expected to be @safe as of version 3.1.0.
+    The delegate is expected to be @safe as of version 3.2.0.
 +/
 struct MysqlEscape ( Input )
 {

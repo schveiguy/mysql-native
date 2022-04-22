@@ -1,6 +1,6 @@
 # Migrating code to use the @safe API of mysql-native
 
-Starting with version 3.1.0, mysql-native is transitioning to using a fully `@safe` API. This document describes how mysql-native is migrating, and how you can migrate your existing code to the new version.
+Starting with version 3.2.0, mysql-native is transitioning to using a fully `@safe` API. This document describes how mysql-native is migrating, and how you can migrate your existing code to the new version.
 
 First, note that the latest version of mysql-native, while it supports a safe API, defaults to using the unsafe mechanisms. This is so the new version can be selected *without modifying* any existing code or imports. Even though the default is unsafe, many tools are provided to allow you to use both safe and unsafe APIs in the same project. I have tried to make every effort to make this transition as seamless as possible. For details, read on.
 
@@ -32,7 +32,7 @@ In other words, the world wants memory safe code, and libraries that provide saf
 
 The intended roadmap for migrating to a safe API is the following:
 
-* v3.1.0 - In this version, the `safe` and `unsafe` packages were introduced, providing a way to specify exactly which API you want to use. The default modules and packges in this version import the `unsafe` versions of the API to maintain full backwards compatibility.
+* v3.2.0 - In this version, the `safe` and `unsafe` packages were introduced, providing a way to specify exactly which API you want to use. The default modules and packges in this version import the `unsafe` versions of the API to maintain full backwards compatibility.
 * v4.0.0 - In this version, the `unsafe` versions of the API will be deprecated, meaning you can still use them, but you will get warnings. In addition, the default modules and packages will import the `safe` API.
 * Future version (possibly v5.0.0) - In this version, the `unsafe` API will be completely removed, and the `safe` modules now simply publicly import the standard modules. The `mysql.impl` package will be removed.
 
@@ -183,4 +183,4 @@ We recommend following these steps to transition. In most cases, you should see 
 3. If there are cases where you cannot stop using `Variant`, use the `asVariant` compatibility shim.
 4. Adjust uses of `Variant`'s methods to use the `TaggedAlgebraic` versions. Most important is usage of the `kind` member, as comparing two `TypeInfo` objects is currently `@system`.
 5. `MySQLVal` provides a richer experience of type forwarding, so you may be able to relax some of your code that is concerned with first fetching the concrete type from the `Variant`. Notably, `MySQLVal` can access directly members of any of the `std.datetime` types, such as `year`, `month`, or `day`.
-6. Report ANY issues with compatibility or bugs to the issue tracker so we may deal with them ASAP. Our intention is to have you be able to use v3.1.0 without having to adjust any code that worked with 3.0.0.
+6. Report ANY issues with compatibility or bugs to the issue tracker so we may deal with them ASAP. Our intention is to have you be able to use v3.2.0 without having to adjust any code that worked with v3.1.0.
