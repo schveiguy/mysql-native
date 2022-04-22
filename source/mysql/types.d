@@ -84,7 +84,7 @@ private union _MYTYPE
 }
 
 /++
-MySQLVal is MySQL's tagged algebraic type that supports only @safe usage
+MySQLVal is mysql-native's tagged algebraic type that supports only @safe usage
 (see $(LINK2, http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic)
 for more information on the features of this type). Note that TaggedAlgebraic
 has UFCS methods that are not available without importing that module in your
@@ -166,6 +166,12 @@ assert(val.kind == MySQLVal.Kind.Int);
 auto val2 = conn.queryValue("SELECT some_float FROM sometable WHERE id=5") + 100.0;
 static assert(is(typeof(val2) == double));
 ------
+
+Note that per [TaggedAlgebraic's API](https://vibed.org/api/taggedalgebraic.taggedalgebraic/TaggedAlgebraic),
+using operators or members of a MySQLVal that aren't valid for the currently
+held type will throw an assertion error. If you wish to avoid this, and are not
+sure of the actual type, first validate the type is as you expect using the
+`kind` member.
 
 MySQLVal is used in all operations interally for mysql-native, and explicitly
 for all safe API calls. Version 3.0.x and earlier of the mysql-native library
@@ -263,7 +269,7 @@ TaggedAlgebraic.
 
 The `get` shim works differently than the TaggedAlgebraic version, as the
 Variant get function would provide implicit type conversions, but the
-TaggedAlgebraic version did not.
+TaggedAlgebraic version does not.
 
 All shims other than `type` will likely remain as convenience features.
 
@@ -287,7 +293,7 @@ T get(T)(auto ref MySQLVal val)
 		else
 		{
 			import mysql.exceptions;
-			throw new MYX("Cannot get type " ~ T.stringof ~ " with MySQLVal storing type " ~ V.stringof);
+			throw new MYX("Cannot get type " ~ T.stringof ~ " from MySQLVal storing type " ~ V.stringof);
 		}
 	}
 	return val.apply!convert();

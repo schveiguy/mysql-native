@@ -2,7 +2,23 @@
 
 Starting with version 3.1.0, mysql-native is transitioning to using a fully `@safe` API. This document describes how mysql-native is migrating, and how you can migrate your existing code to the new version.
 
-First, note that the latest version of mysql, while it supports a safe API, is defaulted to supporting the original unsafe API. We highly recommend reading and following the recommendations in this document so you can start using the safe version and be prepared for future changes that will deprecate and remove the unsafe API.
+First, note that the latest version of mysql-native, while it supports a safe API, defaults to using the unsafe mechanisms. This is so the new version can be selected *without modifying* any existing code or imports. Even though the default is unsafe, many tools are provided to allow you to use both safe and unsafe APIs in the same project. I have tried to make every effort to make this transition as seamless as possible. For details, read on.
+
+## Table of contents
+
+* [Why safe?](#why-safe)
+* [Roadmap](#roadmap)
+* [The Major Changes](#the-major-changes)
+    * [The safe/unsafe API](#the-safeunsafe-api)
+		* [Importing both safe and unsafe](#importing-both-safe-and-unsafe)
+    * [Migrating from Variant to MySQLVal](#migrating-from-variant-to-mysqlval)
+    * [Row and ResultRange](#row-and-resultrange)
+    * [Prepared](#prepared)
+    * [Connection](#connection)
+    * [MySQLPool](#mysqlpool)
+    * [The commands module](#the-commands-module)
+* [Recommended Transition Method](#recommended-transition-method)
+
 
 ## Why Safe?
 
@@ -34,18 +50,18 @@ In some cases, fixing memory safety in mysql-native was as simple as adding a `@
 
 But for the rest, to achieve full backwards compatibility, we have divided the API into two major sections -- safe and unsafe. The package `mysql.safe` will import all the safe versions of the API, the package `mysql.unsafe` will import the unsafe versions. If you import `mysql`, it will currently point at the unsafe version for backwards compatibility (see [Roadmap](#Roadmap) for details on how this will change).
 
-The following modules have been split into mysql.safe.*modname* and mysql.unsafe.*modname*. Importing mysql.*modname* will currently import the unsafe version for backwards compatibility.
-* `mysql.commands`
-* `mysql.pool`
-* `mysql.result`
-* `mysql.prepared`
-* `mysql.connection`
+The following modules have been split into mysql.safe.*modname* and mysql.unsafe.*modname*. Importing mysql.*modname* will currently import the unsafe version for backwards compatibility. In a future major version, the default will be to import the safe api.
+* `mysql.[safe|unsafe].commands`
+* `mysql.[safe|unsafe].pool`
+* `mysql.[safe|unsafe].result`
+* `mysql.[safe|unsafe].prepared`
+* `mysql.[safe|unsafe].connection`
 
-Each of these modules in unsafe mode provides the same API as the previous version of mysql. The safe version provides aliases to the original type names for the safe versions of types, and also provides the same functions as before that can be called via safe code. The one exception is in `mysql.safe.commands`, where some functions were for the deprecated `BackwardCompatPrepared`, which will eventually be removed.
+Each of these modules in unsafe mode provides the same API as the previous version of mysql. The safe version provides aliases to the original type names for the safe versions of types, and also provides the same functions as before that can be called via safe code. The one exception is in `mysql.safe.commands`, where some functions were for the deprecated `BackwardCompatPrepared`, which will be removed in the next major revision.
 
 If you are currently importing any of the above modules directly, or importing the `mysql` package, a first step to migration is to use the `mysql.safe` package. From there you will find that almost everything works exactly the same.
 
-In addition to these two new packages, we have introduced a package called `mysql.impl`. This package contains the common implementations of the `safe` and `unsafe` modules, and should NOT be directly imported ever. These modules are documented simply because that is where the code lives. But in the version of mysql that removes the `unsafe` API, this package will be removed. You should always use the `unsafe` or `safe` packages instead, which generally publicly import the `impl` modules anyway.
+In addition to these two new packages, we have introduced a package called `mysql.impl` (for internal use). This package contains the common implementations of the `safe` and `unsafe` modules, and should NEVER be directly imported. These modules are documented simply because that is where the code lives. But in a future version of mysql, this package will be removed. You should always use the `unsafe` or `safe` packages instead of trying to import the `mysql.impl` package.
 
 #### Importing both safe and unsafe
 
@@ -158,7 +174,7 @@ The `mysql.commands` module has been factored into 2 versions, a safe and unsafe
 
 Even in cases where you elect to defer updating code, you can still import the `safe` API, and use `unsafe` conversion functions to keep existing code working. In most cases, this will not be necessary as the API is kept as similar as possible.
 
-## Rcommended Transition Method
+## Recommended Transition Method
 
 We recommend following these steps to transition. In most cases, you should see very little breakage of code:
 
