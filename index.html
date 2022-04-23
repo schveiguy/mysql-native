@@ -26,6 +26,32 @@ $('#symbolSearchPane').show();</script>
 					</div>
 			<ul class="tree-view">
 				<li class="tree-view collapsed">
+					<div class="package ">impl
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="./mysql/impl/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/impl/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/impl/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/impl/result.html">result</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li class="tree-view collapsed">
 					<div class="package ">protocol
 					</div>
 			<ul class="tree-view">
@@ -57,6 +83,70 @@ $('#symbolSearchPane').show();</script>
 				<li>
 					<div class="module ">
 						<a href="./mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li class="tree-view collapsed">
+					<div class="package ">
+						<a href="./mysql/safe.html">safe</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="./mysql/safe/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/safe/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/safe/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/safe/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/safe/result.html">result</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li class="tree-view collapsed">
+					<div class="package ">
+						<a href="./mysql/unsafe.html">unsafe</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="./mysql/unsafe/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/unsafe/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/unsafe/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/unsafe/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="./mysql/unsafe/result.html">result</a>
 					</div>
 				</li>
 			</ul>
@@ -119,6 +209,42 @@ $('#symbolSearchPane').show();</script>
 				</tr>
 			<tr>
 				<td>
+					<a href="./mysql/impl/connection.html">mysql.impl.connection</a>
+				</td>
+				<td>
+					Implementation - Connection class.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/impl/pool.html">mysql.impl.pool</a>
+				</td>
+				<td>
+					Connect to a MySQL/MariaDB database using a connection pool.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/impl/prepared.html">mysql.impl.prepared</a>
+				</td>
+				<td>
+					Implementation - Prepared statements.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/impl/result.html">mysql.impl.result</a>
+				</td>
+				<td>
+					Implementation - Structures for data received: rows and result sets (ie, a range of rows).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./mysql/protocol/comms.html">mysql.protocol.comms</a>
 				</td>
 				<td>
@@ -173,10 +299,104 @@ $('#symbolSearchPane').show();</script>
 			</tr>
 			<tr>
 				<td>
+					<a href="./mysql/safe/commands.html">mysql.safe.commands</a>
+				</td>
+				<td>
+					Use a DB via plain SQL statements (safe version).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/safe/connection.html">mysql.safe.connection</a>
+				</td>
+				<td>
+					Connect to a MySQL/MariaDB server (safe version).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/safe/pool.html">mysql.safe.pool</a>
+				</td>
+				<td>
+					Connect to a MySQL/MariaDB database using vibe.d's
+<a href="http://vibed.org/api/vibe.core.connectionpool/ConnectionPool">ConnectionPool</a> (safe version).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/safe/prepared.html">mysql.safe.prepared</a>
+				</td>
+				<td>
+					This module publicly imports <code class="lang-d"><a href="./mysql/impl/prepared.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">impl<wbr/></span><span class="pun">.</span><span class="pln">prepared</span></a></code> (safe version). See that
+module for documentation on using prepared statements with a MySQL server.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/safe/result.html">mysql.safe.result</a>
+				</td>
+				<td>
+					This module publicly imports <code class="lang-d"><a href="./mysql/impl/result.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">impl<wbr/></span><span class="pun">.</span><span class="pln">result</span></a></code>. See that module for documentation on how to use result and result range structures (safe versions).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/unsafe/commands.html">mysql.unsafe.commands</a>
+				</td>
+				<td>
+					Use a DB via plain SQL statements (unsafe version).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/unsafe/connection.html">mysql.unsafe.connection</a>
+				</td>
+				<td>
+					Connect to a MySQL/MariaDB server (unsafe version).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/unsafe/pool.html">mysql.unsafe.pool</a>
+				</td>
+				<td>
+					Connect to a MySQL/MariaDB database using vibe.d's
+<a href="http://vibed.org/api/vibe.core.connectionpool/ConnectionPool">ConnectionPool</a> (unsafe version).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/unsafe/prepared.html">mysql.unsafe.prepared</a>
+				</td>
+				<td>
+					This module publicly imports <code class="lang-d"><a href="./mysql/impl/prepared.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">impl<wbr/></span><span class="pun">.</span><span class="pln">prepared</span></a></code> (unsafe version). See that
+module for documentation on using prepared statements with a MySQL server.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/unsafe/result.html">mysql.unsafe.result</a>
+				</td>
+				<td>
+					This module publicly imports <code class="lang-d"><a href="./mysql/impl/result.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">impl<wbr/></span><span class="pun">.</span><span class="pln">result</span></a></code>. See that module for documentation on how to use result and result range structures (unsafe versions).
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./mysql/commands.html">mysql.commands</a>
 				</td>
 				<td>
-					Use a DB via plain SQL statements.
+					This module publicly imports <code class="lang-d"><a href="./mysql/unsafe/commands.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">unsafe<wbr/></span><span class="pun">.</span><span class="pln">commands</span></a></code>. Please see that module for more documentation.
 
 				</td>
 			</tr>
@@ -185,7 +405,8 @@ $('#symbolSearchPane').show();</script>
 					<a href="./mysql/connection.html">mysql.connection</a>
 				</td>
 				<td>
-					Connect to a MySQL/MariaDB server.
+					This module publicly imports <code class="lang-d"><a href="./mysql/unsafe/connection.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">unsafe<wbr/></span><span class="pun">.</span><span class="pln">connection</span></a></code>. Please see that module
+for more documentation.
 
 				</td>
 			</tr>
@@ -221,7 +442,7 @@ $('#symbolSearchPane').show();</script>
 					<a href="./mysql/pool.html">mysql.pool</a>
 				</td>
 				<td>
-					Connect to a MySQL/MariaDB database using a connection pool.
+					This module publicly imports <code class="lang-d"><a href="./mysql/unsafe/pool.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">unsafe<wbr/></span><span class="pun">.</span><span class="pln">pool</span></a></code>. Please see that module for more documentation.
 
 				</td>
 			</tr>
@@ -230,7 +451,7 @@ $('#symbolSearchPane').show();</script>
 					<a href="./mysql/prepared.html">mysql.prepared</a>
 				</td>
 				<td>
-					Use a DB via SQL prepared statements.
+					This module publicly imports <code class="lang-d"><a href="./mysql/unsafe/prepared.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">unsafe<wbr/></span><span class="pun">.</span><span class="pln">prepared</span></a></code>. Please see that module for more documentation.
 
 				</td>
 			</tr>
@@ -239,7 +460,17 @@ $('#symbolSearchPane').show();</script>
 					<a href="./mysql/result.html">mysql.result</a>
 				</td>
 				<td>
-					Structures for data received: rows and result sets (ie, a range of rows).
+					This module publicly imports <code class="lang-d"><a href="./mysql/unsafe/result.html"><span class="pln">mysql<wbr/></span><span class="pun">.</span><span class="pln">unsafe<wbr/></span><span class="pun">.</span><span class="pln">result</span></a></code>. Please see that module for
+more documentation.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/safe.html">mysql.safe</a>
+				</td>
+				<td>
+					Imports all of <a href="https://github.com/mysql-d/mysql-native">mysql-native</a> (safe versions).
 
 				</td>
 			</tr>
@@ -249,6 +480,15 @@ $('#symbolSearchPane').show();</script>
 				</td>
 				<td>
 					Structures for MySQL types not built-in to D/Phobos.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./mysql/unsafe.html">mysql.unsafe</a>
+				</td>
+				<td>
+					Imports all of <a href="https://github.com/mysql-d/mysql-native">mysql-native</a> (unsafe versions).
 
 				</td>
 			</tr>

@@ -26,6 +26,32 @@ $('#symbolSearchPane').show();</script>
 					</div>
 			<ul class="tree-view">
 				<li class="tree-view collapsed">
+					<div class="package ">impl
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../mysql/impl/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/impl/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/impl/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/impl/result.html">result</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li class="tree-view collapsed">
 					<div class="package ">protocol
 					</div>
 			<ul class="tree-view">
@@ -57,6 +83,70 @@ $('#symbolSearchPane').show();</script>
 				<li>
 					<div class="module ">
 						<a href="../mysql/protocol/sockets.html">sockets</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li class="tree-view collapsed">
+					<div class="package ">
+						<a href="../mysql/safe.html">safe</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../mysql/safe/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/safe/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/safe/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/safe/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/safe/result.html">result</a>
+					</div>
+				</li>
+			</ul>
+				</li>
+				<li class="tree-view collapsed">
+					<div class="package ">
+						<a href="../mysql/unsafe.html">unsafe</a>
+					</div>
+			<ul class="tree-view">
+				<li>
+					<div class="module ">
+						<a href="../mysql/unsafe/commands.html">commands</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/unsafe/connection.html">connection</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/unsafe/pool.html">pool</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/unsafe/prepared.html">prepared</a>
+					</div>
+				</li>
+				<li>
+					<div class="module ">
+						<a href="../mysql/unsafe/result.html">result</a>
 					</div>
 				</li>
 			</ul>
@@ -115,6 +205,79 @@ $('#symbolSearchPane').show();</script>
 </p>
 			<section></section>
 			<section>
+				<h2>Functions</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="asVariant" class="public" href="../mysql/types/asVariant.html">asVariant</a><span class="tableEntryAnnotation">(v)</span>
+							</code>
+						</td>
+						<td>Convert a MySQLVal into a Variant. This provides a backwards-compatible shim to use if necessary when transitioning to the safe API.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="coerce" class="public" href="../mysql/types/coerce.html">coerce</a><span class="tableEntryAnnotation">(val)</span>
+							</code>
+						</td>
+						<td>Compatibility layer for MySQLVal. These functions provide methods that
+<a href="">http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic</a>
+does not provide in order to keep functionality that was available with Variant.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="convertsTo" class="public" href="../mysql/types/convertsTo.html">convertsTo</a><span class="tableEntryAnnotation">(val)</span>
+							</code>
+						</td>
+						<td>Compatibility layer for MySQLVal. These functions provide methods that
+<a href="">http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic</a>
+does not provide in order to keep functionality that was available with Variant.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="get" class="public" href="../mysql/types/get.html">get</a><span class="tableEntryAnnotation">(val)</span>
+							</code>
+						</td>
+						<td>Compatibility layer for MySQLVal. These functions provide methods that
+<a href="">http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic</a>
+does not provide in order to keep functionality that was available with Variant.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="peek" class="public" href="../mysql/types/peek.html">peek</a><span class="tableEntryAnnotation">(val)</span>
+							</code>
+						</td>
+						<td>Compatibility layer for MySQLVal. These functions provide methods that
+<a href="">http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic</a>
+does not provide in order to keep functionality that was available with Variant.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<code>
+								<a id="type" class="public" href="../mysql/types/type.html">type</a><span class="tableEntryAnnotation">(val)</span>
+							</code>
+						</td>
+						<td>Compatibility layer for MySQLVal. These functions provide methods that
+<a href="">http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic</a>
+does not provide in order to keep functionality that was available with Variant.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
 				<h2>Structs</h2>
 				<table>
 					<col class="caption"/>
@@ -137,6 +300,31 @@ $('#symbolSearchPane').show();</script>
 							</code>
 						</td>
 						<td>A D struct to stand for a TIMESTAMP
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Aliases</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th><th>Type</th><th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="MySQLVal" class="public" href="../mysql/types/MySQLVal.html">
+								<code>MySQLVal</code>
+							</a>
+						</td>
+						<td>
+							<code class="prettyprint lang-d"><span class="pln">taggedalgebraic<wbr/></span><span class="pun">.</span><span class="pln">taggedalgebraic<wbr/></span><span class="pun">.</span><span class="typ">TaggedAlgebraic</span>!(mysql.types._MYTYPE)</code>
+						</td>
+						<td>MySQLVal is mysql-native's tagged algebraic type that supports only @safe usage
+(see <a href="">http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic</a>
+for more information on the features of this type). Note that TaggedAlgebraic
+has UFCS methods that are not available without importing that module in your
+code.
 </td>
 					</tr>
 				</table>
