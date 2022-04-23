@@ -147,6 +147,10 @@
 <url><loc>http://127.0.0.1/mysql/impl/result/unsafe.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/impl/result/unsafe.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/impl/result/unsafe.html</loc></url>
+<url><loc>http://127.0.0.1/mysql/impl/result/UnsafeResultRange.html</loc></url>
+<url><loc>http://127.0.0.1/mysql/impl/result/UnsafeResultRange.asAA.html</loc></url>
+<url><loc>http://127.0.0.1/mysql/impl/result/UnsafeResultRange.front.html</loc></url>
+<url><loc>http://127.0.0.1/mysql/impl/result/UnsafeResultRange.safe.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/impl/result/UnsafeRow.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/impl/result/UnsafeRow.opIndex.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/protocol/comms.html</loc></url>
@@ -360,6 +364,7 @@
 <url><loc>http://127.0.0.1/mysql/metadata/MetaData.functions.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/metadata/MetaData.procedures.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/metadata/MetaData.tables.html</loc></url>
+<url><loc>http://127.0.0.1/mysql/metadata/MetaData.this.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/metadata/MySQLProcedure.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/pool.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/prepared.html</loc></url>

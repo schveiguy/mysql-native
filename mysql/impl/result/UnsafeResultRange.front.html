@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8"/>
-		<title>Function BackwardCompatPrepared.query</title>
+		<title>Function UnsafeResultRange.front</title>
 		<link rel="stylesheet" type="text/css" href="../../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../../scripts/jquery.js">/**/</script><script type="text/javascript" src="../../../scripts/ddox.js">/**/</script>
@@ -25,7 +25,7 @@ $('#symbolSearchPane').show();</script>
 						<a href="../../../mysql.html">mysql</a>
 					</div>
 			<ul class="tree-view">
-				<li class="tree-view collapsed">
+				<li class="tree-view ">
 					<div class="package ">impl
 					</div>
 			<ul class="tree-view">
@@ -45,7 +45,7 @@ $('#symbolSearchPane').show();</script>
 					</div>
 				</li>
 				<li>
-					<div class="module ">
+					<div class="module selected">
 						<a href="../../../mysql/impl/result.html">result</a>
 					</div>
 				</li>
@@ -119,7 +119,7 @@ $('#symbolSearchPane').show();</script>
 				</li>
 			</ul>
 				</li>
-				<li class="tree-view ">
+				<li class="tree-view collapsed">
 					<div class="package ">
 						<a href="../../../mysql/unsafe.html">unsafe</a>
 					</div>
@@ -130,7 +130,7 @@ $('#symbolSearchPane').show();</script>
 					</div>
 				</li>
 				<li>
-					<div class="module selected">
+					<div class="module ">
 						<a href="../../../mysql/unsafe/connection.html">connection</a>
 					</div>
 				</li>
@@ -201,19 +201,16 @@ $('#symbolSearchPane').show();</script>
 			</ul>
 		</nav>
 		<div id="main-contents">
-			<h1>Function BackwardCompatPrepared.query</h1><p>This function is provided ONLY as a temporary aid in upgrading to mysql-native v2.0.0.
+			<h1>Function UnsafeResultRange.front</h1><p>Equivalent to SafeResultRange.front, but wraps as an UnsafeRow.
 </p>
 			<div class="prototype">
 				<code class="lang-d">
 					<div class="single-prototype">
-			<span class="kwd">deprecated </span><a href="../../../mysql/impl/result/UnsafeResultRange.html"><span class="typ">UnsafeResultRange</span></a> <span class="pln">query</span><span class="pun">(</span><span class="pun">)</span><span class="pun">;</span>
+			<span class="kwd">inout </span><span class="kwd">inout</span><span class="pun">(</span><a href="../../../mysql/impl/result/UnsafeRow.html"><span class="typ">UnsafeRow</span></a><span class="pun">)</span> <span class="pln">front</span><span class="pun">(</span><span class="pun">)</span><span class="pun">;</span>
 					</div>
 				</code>
 			</div>
-			<section><p>See <code class="lang-d"><a href="../../../mysql/unsafe/connection/BackwardCompatPrepared.html"><span class="typ">BackwardCompatPrepared</span></a></code> for more info.
-</p>
-</section>
-
+			
 			
 			<footer>
 				<table class="license-info">
