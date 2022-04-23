@@ -370,7 +370,7 @@ public:
 	@property ulong rowCount() const pure nothrow { return _numRowsFetched; }
 }
 
-/+
+/++
 A wrapper of a SafeResultRange which converts each row into an UnsafeRow.
 
 Use the safe or unsafe UFCS methods to convert to and from these two types if

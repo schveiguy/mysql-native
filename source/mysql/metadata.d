@@ -170,6 +170,11 @@ private:
 	}
 
 public:
+	/++
+	Initialize a metadata struct with a connection.
+	Params:
+		con - The connection to use for fetching metadata
+	+/
 	this(Connection con)
 	{
 		_con = con;
