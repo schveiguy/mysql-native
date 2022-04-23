@@ -39,21 +39,21 @@ See also:
 API
 ---
 
-*NOTE: the most recent release of mysql-native has been updated to be usable from `@safe` code, using the `mysql.safe` package. This document is still relevant, as the default is to use the unsafe API. Please see the [safe migration document](SAFE_MIGRATION.md) for more details*
+*NOTE: the most recent release of mysql-native has been updated to be usable from `@safe` code, using the `mysql.safe` package. Please see the [safe migration document](SAFE_MIGRATION.md) for more details*
 
 [API Reference](https://mysql-d.github.io/mysql-native/)
 
-The primary interfaces:
-- [Connection](https://mysql-d.github.io/mysql-native/mysql/connection/Connection.html): Connection to the server, and querying and setting of server parameters.
-- [MySQLPool](https://mysql-d.github.io/mysql-native/mysql/pool/MySQLPool.html): Connection pool, for Vibe.d users.
-- [exec()](https://mysql-d.github.io/mysql-native/mysql/commands/exec.html): Plain old SQL statement that does NOT return rows (like INSERT/UPDATE/CREATE/etc), returns number of rows affected
-- [query()](https://mysql-d.github.io/mysql-native/mysql/commands/query.html): Execute an SQL statement that DOES return rows (ie, SELECT) and handle the rows one at a time, as an input range.
-- [queryRow()](https://mysql-d.github.io/mysql-native/mysql/commands/queryRow.html): Execute an SQL statement and get the first row.
-- [queryValue()](https://mysql-d.github.io/mysql-native/mysql/commands/queryValue.html): Execute an SQL statement and get the first value in the first row.
-- [prepare()](https://mysql-d.github.io/mysql-native/mysql/connection/prepare.html): Create a prepared statement
-- [Prepared](https://mysql-d.github.io/mysql-native/mysql/prepared/Prepared.html): A prepared statement, optionally pass it to the exec/query function in place of an SQL string.
-- [Row](https://mysql-d.github.io/mysql-native/mysql/result/Row.html): One "row" of results, used much like an array of Variant.
-- [ResultRange](https://mysql-d.github.io/mysql-native/mysql/result/ResultRange.html): An input range of rows. Convert to random access with [std.array.array()](https://dlang.org/phobos/std_array.html#.array).
+The primary interfaces (all these are the safe versions):
+- [Connection](https://mysql-d.github.io/mysql-native/mysql/impl/connection/Connection.html): Connection to the server, and querying and setting of server parameters.
+- [MySQLPool](https://mysql-d.github.io/mysql-native/mysql/impl/pool/MySQLPoolImpl.html): Connection pool, for Vibe.d users.
+- [exec()](https://mysql-d.github.io/mysql-native/mysql/safe/commands/exec.html): Plain old SQL statement that does NOT return rows (like INSERT/UPDATE/CREATE/etc), returns number of rows affected
+- [query()](https://mysql-d.github.io/mysql-native/mysql/safe/commands/query.html): Execute an SQL statement that DOES return rows (ie, SELECT) and handle the rows one at a time, as an input range.
+- [queryRow()](https://mysql-d.github.io/mysql-native/mysql/safe/commands/queryRow.html): Execute an SQL statement and get the first row.
+- [queryValue()](https://mysql-d.github.io/mysql-native/mysql/safe/commands/queryValue.html): Execute an SQL statement and get the first value in the first row.
+- [prepare()](https://mysql-d.github.io/mysql-native/mysql/safe/connection/prepare.html): Create a prepared statement
+- [Prepared](https://mysql-d.github.io/mysql-native/mysql/impl/prepared/SafePrepared.html): A prepared statement, optionally pass it to the exec/query function in place of an SQL string.
+- [Row](https://mysql-d.github.io/mysql-native/mysql/impl/result/SafeRow.html): One "row" of results, used much like an array of Variant.
+- [ResultRange](https://mysql-d.github.io/mysql-native/mysql/impl/result/SafeResultRange.html): An input range of rows. Convert to random access with [std.array.array()](https://dlang.org/phobos/std_array.html#.array).
 
 Also note the [MySQL <-> D type mappings tables](https://mysql-d.github.io/mysql-native/mysql.html)
 
@@ -61,8 +61,7 @@ Basic example
 -------------
 ```d
 import std.array : array;
-import std.variant;
-import mysql;
+import mysql.safe; // Please use the safe api, it's the future
 
 void main(string[] args)
 {
@@ -80,8 +79,8 @@ void main(string[] args)
 	// Query
 	ResultRange range = conn.query("SELECT * FROM `tablename`");
 	Row row = range.front;
-	Variant id = row[0];
-	Variant name = row[1];
+	MySQLVal id = row[0];
+	MySQLVal name = row[1];
 	assert(id == 1);
 	assert(name == "Ann");
 
@@ -115,7 +114,7 @@ void main(string[] args)
 		"INSERT INTO `tablename` (`id`, `name`) VALUES (?,?)",
 		null, "Cam"); // Can also take Nullable!T
 	range = conn.query("SELECT * FROM `tablename` WHERE `name`='Cam'");
-	assert( range.front[0].type == typeid(typeof(null)) );
+	assert( range.front[0].kind == MySQLVal.Kind.Null );
 }
 ```
 
