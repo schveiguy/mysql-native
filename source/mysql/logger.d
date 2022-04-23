@@ -1,5 +1,7 @@
 module mysql.logger;
 
+@safe:
+
 /*
   The aliased log functions in this module map to equivelant functions in either vibe.core.log or std.experimental.logger.
   For this reason, only log levels common to both are used. The exception to this is logDebug which is uses trace when

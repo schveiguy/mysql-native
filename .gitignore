@@ -7,6 +7,7 @@ dub.selections.json
 *.lib
 *.dll
 *.exe
+.*.swp
 /bin
 /testConnectionStr.txt
 
