@@ -48,7 +48,7 @@ struct MysqlEscape ( Input )
 {
 	Input input;
 
-	const void toString ( scope void delegate(const(char)[]) @safe sink )
+	const void toString ( scope void delegate(scope const(char)[]) @safe sink )
 	{
 		mysql_escape(input, sink);
 	}
