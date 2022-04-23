@@ -85,7 +85,7 @@ private union _MYTYPE
 
 /++
 MySQLVal is mysql-native's tagged algebraic type that supports only @safe usage
-(see $(LINK2, http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic)
+(see $(LINK2 http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic)
 for more information on the features of this type). Note that TaggedAlgebraic
 has UFCS methods that are not available without importing that module in your
 code.
@@ -259,7 +259,7 @@ Nullable!Variant asVariant(Nullable!MySQLVal v)
 
 /++
 Compatibility layer for MySQLVal. These functions provide methods that
-$(LINK2, http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic)
+$(LINK2 http://code.dlang.org/packages/taggedalgebraic, TaggedAlgebraic)
 does not provide in order to keep functionality that was available with Variant.
 
 Notes:
