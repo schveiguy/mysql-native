@@ -25,7 +25,7 @@ type based on whether Vibe.d is used in your project. (If you use
 Otherwise, you can use `-version=Have_vibe_d_core` to force Vibe.d sockets
 instead of Phobos ones.)
 
-Should work on D compilers from 2.068 through to the latest release but the CI only tests against version 2.080.1 and above. For a full list see the builds on Github Actions.
+Should work on D compilers from 2.068 through to the latest release but the CI only tests against version 2.085.1 and above. For a full list see the builds on Github Actions. Note that dub from prior to 2.085.0 will not work, but this is not an issue with mysql-native. To build with prior compilers, use a newer version of dub.
 
 In this document:
 * [API](#api)
@@ -38,6 +38,8 @@ See also:
 
 API
 ---
+
+*NOTE: the most recent release of mysql-native has been updated to be usable from `@safe` code, using the `mysql.safe` package. This document is still relevant, as the default is to use the unsafe API. Please see the [safe migration document](SAFE_MIGRATION.md) for more details*
 
 [API Reference](https://mysql-d.github.io/mysql-native/)
 

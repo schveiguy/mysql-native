@@ -37,6 +37,10 @@ including parameter descriptions, and result set field descriptions,
 followed by an EOF packet.
 
 Throws: `mysql.exceptions.MYX` if the server has a problem.
+
+Params:
+	conn = The connection to use.
+	sql = The SQL statement to prepare.
 +/
 SafePrepared prepare(Connection conn, const(char[]) sql)
 {
@@ -53,6 +57,7 @@ Be careful that your `numArgs` is correct. If it isn't, you may get a
 Throws: `mysql.exceptions.MYX` if the server has a problem.
 
 Params:
+	conn = The connection to use.
 	name = The name of the stored function.
 	numArgs = The number of arguments the stored procedure takes.
 +/
@@ -74,6 +79,7 @@ Be careful that your `numArgs` is correct. If it isn't, you may get a
 Throws: `mysql.exceptions.MYX` if the server has a problem.
 
 Params:
+	conn = The connection to use.
 	name = The name of the stored procedure.
 	numArgs = The number of arguments the stored procedure takes.
 
