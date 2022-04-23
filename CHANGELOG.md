@@ -1,3 +1,11 @@
+v3.2.0 - 2022-04-23
+=====================
+
+This release contains the long-awaited migration to fully `@safe` mysql-native. Please see the [Safe Migration Document](SAFE_MIGRATION.md) for all the details.
+
+- **Fixed:** [#175](https://github.com/mysql-d/mysql-native/issues/175):
+   Compiling with vibe.d 0.8.3 gives deprecation warning
+
 v3.1.0 - 2022-03-10
 =====================
 
