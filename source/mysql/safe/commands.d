@@ -58,6 +58,30 @@ struct ColumnSpecialization
 ///ditto
 alias CSN = ColumnSpecialization;
 
+// Common implementation for `queryRowTuple` overloads.
+package(mysql) void queryRowTupleImpl(T...)(Connection conn, ExecQueryImplInfo info, ref T args)
+{
+	ulong ra;
+	enforce!MYXNoResultRecieved(execQueryImpl(conn, info, ra));
+
+	auto rr = conn.getNextRow();
+	/+if (!rr._valid)   // The result set was empty - not a crime.
+		return;+/
+	enforce!MYX(rr._values.length == args.length, "Result column count does not match the target tuple.");
+	foreach (size_t i, dummy; args)
+	{
+		import taggedalgebraic.taggedalgebraic : get, hasType;
+		enforce!MYX(rr._values[i].hasType!(T[i]),
+			"Tuple "~to!string(i)~" type and column type are not compatible.");
+		// use taggedalgebraic get to avoid extra calls.
+		args[i] = get!(T[i])(rr._values[i]);
+	}
+	// If there were more rows, flush them away
+	// Question: Should I check in purgeResult and throw if there were - it's very inefficient to
+	// allow sloppy SQL that does not ensure just one row!
+	conn.purgeResult();
+}
+
 @safe:
 
 /++
@@ -444,30 +468,6 @@ void queryRowTuple(T...)(Connection conn, ref Prepared prepared, ref T args)
 	auto preparedInfo = conn.registerIfNeeded(prepared.sql);
 	queryRowTupleImpl(conn, prepared.getExecQueryImplInfo(preparedInfo.statementId), args);
 	prepared._lastInsertID = conn.lastInsertID; // Conceivably, this might be needed when multi-statements are enabled.
-}
-
-/// Common implementation for `queryRowTuple` overloads.
-package(mysql) void queryRowTupleImpl(T...)(Connection conn, ExecQueryImplInfo info, ref T args)
-{
-	ulong ra;
-	enforce!MYXNoResultRecieved(execQueryImpl(conn, info, ra));
-
-	auto rr = conn.getNextRow();
-	/+if (!rr._valid)   // The result set was empty - not a crime.
-		return;+/
-	enforce!MYX(rr._values.length == args.length, "Result column count does not match the target tuple.");
-	foreach (size_t i, dummy; args)
-	{
-		import taggedalgebraic.taggedalgebraic : get, hasType;
-		enforce!MYX(rr._values[i].hasType!(T[i]),
-			"Tuple "~to!string(i)~" type and column type are not compatible.");
-		// use taggedalgebraic get to avoid extra calls.
-		args[i] = get!(T[i])(rr._values[i]);
-	}
-	// If there were more rows, flush them away
-	// Question: Should I check in purgeResult and throw if there were - it's very inefficient to
-	// allow sloppy SQL that does not ensure just one row!
-	conn.purgeResult();
 }
 
 /++
