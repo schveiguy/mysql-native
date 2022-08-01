@@ -193,7 +193,9 @@ UnsafeResultRange query(Connection conn, const(char[]) sql, ColumnSpecialization
 UnsafeResultRange query(T...)(Connection conn, const(char[]) sql, T args)
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
-	return SC.query(conn, sql, args).unsafe;
+	auto prepared = conn.prepare(sql);
+	prepared.setArgs(args);
+	return query(conn, prepared);
 }
 ///ditto
 UnsafeResultRange query(Connection conn, const(char[]) sql, Variant[] args) @system
@@ -303,7 +305,9 @@ Nullable!UnsafeRow queryRow(Connection conn, const(char[]) sql, ColumnSpecializa
 Nullable!UnsafeRow queryRow(T...)(Connection conn, const(char[]) sql, T args)
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
-	return SC.queryRow(conn, sql, args).unsafe;
+	auto prepared = conn.prepare(sql);
+	prepared.setArgs(args);
+	return queryRow(conn, prepared);
 }
 ///ditto
 Nullable!UnsafeRow queryRow(Connection conn, const(char[]) sql, Variant[] args) @system
@@ -368,20 +372,22 @@ args = The variables, taken by reference, to receive the values.
 +/
 void queryRowTuple(T...)(Connection conn, const(char[]) sql, ref T args)
 {
-	return SC.queryRowTuple(conn, sql, args);
+	return SC.queryRowTupleImpl(conn, ExecQueryImplInfo(false, sql), args);
 }
 
 ///ditto
 void queryRowTuple(T...)(Connection conn, ref Prepared prepared, ref T args)
 {
-	SC.queryRowTuple(conn, prepared.safeForExec, args);
+	auto preparedInfo = conn.registerIfNeeded(prepared.sql);
+	SC.queryRowTupleImpl(conn, prepared.getExecQueryImplInfo(preparedInfo.statementId), args);
+	prepared._lastInsertID = conn.lastInsertID; // Conceivably, this might be needed when multi-statements are enabled.
 }
 
 ///ditto
 void queryRowTuple(T...)(Connection conn, ref BackwardCompatPrepared prepared, ref T args) @system
 {
 	auto p = prepared.prepared;
-	SC.queryRowTuple(conn, p.safeForExec, args);
+	queryRowTuple(conn, p, args);
 	prepared._prepared = p;
 }
 
@@ -465,8 +471,11 @@ Nullable!Variant queryValue(Connection conn, const(char[]) sql, ColumnSpecializa
 Nullable!Variant queryValue(T...)(Connection conn, const(char[]) sql, T args)
 	if(T.length > 0 && !is(T[0] == Variant[]) && !is(T[0] == MySQLVal[]) && !is(T[0] == ColumnSpecialization) && !is(T[0] == ColumnSpecialization[]))
 {
-	return SC.queryValue(conn, sql, args).asVariant;
+	auto prepared = conn.prepare(sql);
+	prepared.setArgs(args);
+	return queryValue(conn, prepared);
 }
+
 ///ditto
 Nullable!Variant queryValue(Connection conn, const(char[]) sql, Variant[] args) @system
 {

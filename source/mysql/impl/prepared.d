@@ -337,7 +337,15 @@ struct UnsafePrepared
 	void setArgs(T...)(T args)
 		if(T.length == 0 || (!is(T[0] == Variant[]) && !is(T[0] == MySQLVal[])))
 	{
-		_safe.setArgs(args);
+		// translate any variants to non-variants
+		import std.meta;
+		auto translateArg(alias arg)() {
+			static if(is(typeof(arg) == Variant))
+				return _toVal(arg);
+			else
+				return arg;
+		}
+		_safe.setArgs(staticMap!(translateArg, args));
 	}
 
 	/// ditto
