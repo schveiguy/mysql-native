@@ -379,8 +379,8 @@ void queryRowTuple(T...)(Connection conn, const(char[]) sql, ref T args)
 void queryRowTuple(T...)(Connection conn, ref Prepared prepared, ref T args)
 {
 	auto preparedInfo = conn.registerIfNeeded(prepared.sql);
-	SC.queryRowTupleImpl(conn, prepared.getExecQueryImplInfo(preparedInfo.statementId), args);
-	prepared._lastInsertID = conn.lastInsertID; // Conceivably, this might be needed when multi-statements are enabled.
+	SC.queryRowTupleImpl(conn, prepared.safe.getExecQueryImplInfo(preparedInfo.statementId), args);
+	prepared.safe._lastInsertID = conn.lastInsertID; // Conceivably, this might be needed when multi-statements are enabled.
 }
 
 ///ditto
