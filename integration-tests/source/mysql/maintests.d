@@ -172,17 +172,9 @@ unittest
 		assert(prepared.getArg(0) == 6);
 		assert(prepared.getArg(1) == "ff");
 
-		// exec: bcPrepared sql
-		auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-		static assert(doSafe || is(typeof(bcPrepared) == BackwardCompatPrepared));
-		bcPrepared.setArgs(7, "gg");
-		assert(cn.exec(bcPrepared) == 1);
-		assert(bcPrepared.getArg(0) == 7);
-		assert(bcPrepared.getArg(1) == "gg");
-
 		// Check results
 		auto rows = cn.query("SELECT * FROM `execOverloads`").array();
-		assert(rows.length == 7);
+		assert(rows.length == 6);
 
 		assert(rows[0].length == 2);
 		assert(rows[1].length == 2);
@@ -190,7 +182,6 @@ unittest
 		assert(rows[3].length == 2);
 		assert(rows[4].length == 2);
 		assert(rows[5].length == 2);
-		assert(rows[6].length == 2);
 
 		assert(rows[0][0] == 1);
 		assert(rows[0][1] == "aa");
@@ -204,8 +195,6 @@ unittest
 		assert(rows[4][1] == "ee");
 		assert(rows[5][0] == 6);
 		assert(rows[5][1] == "ff");
-		assert(rows[6][0] == 7);
-		assert(rows[6][1] == "gg");
 	}
 	test!false();
 	() @safe { test!true(); } ();
@@ -276,16 +265,6 @@ unittest
 			assert(rows[0].length == 2);
 			assert(rows[0][0] == 3);
 			assert(rows[0][1] == "cc");
-
-			// BCPrepared sql
-			auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-			static assert(doSafe || is(typeof(bcPrepared) == BackwardCompatPrepared));
-			bcPrepared.setArgs(1, "aa");
-			rows = cn.query(bcPrepared).array;
-			assert(rows.length == 1);
-			assert(rows[0].length == 2);
-			assert(rows[0][0] == 1);
-			assert(rows[0][1] == "aa");
 		}
 
 		// Test queryRow
@@ -328,15 +307,6 @@ unittest
 			assert(row.length == 2);
 			assert(row[0] == 3);
 			assert(row[1] == "cc");
-
-			// BCPrepared sql
-			auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-			static assert(doSafe || is(typeof(bcPrepared) == BackwardCompatPrepared));
-			bcPrepared.setArgs(1, "aa");
-			row = cn.queryRow(bcPrepared).get;
-			assert(row.length == 2);
-			assert(row[0] == 1);
-			assert(row[1] == "aa");
 		}
 
 		// Test queryRowTuple
@@ -355,14 +325,6 @@ unittest
 			cn.queryRowTuple(prepared, i, s);
 			assert(i == 2);
 			assert(s == "bb");
-
-			// BCPrepared sql
-			auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-			static assert(doSafe || is(typeof(bcPrepared) == BackwardCompatPrepared));
-			bcPrepared.setArgs(3, "cc");
-			cn.queryRowTuple(bcPrepared, i, s);
-			assert(i == 3);
-			assert(s == "cc");
 		}
 
 		// Test queryValue
@@ -396,14 +358,6 @@ unittest
 			value = cn.queryValue(prepared, [MYVAL(3), MYVAL("cc")]).get;
 			assert(!value.valIsNull);
 			assert(value == 3);
-
-			// BCPrepared sql
-			auto bcPrepared = cn.prepareBackwardCompatImpl(prepareSQL);
-			static assert(doSafe || is(typeof(bcPrepared) == BackwardCompatPrepared));
-			bcPrepared.setArgs(1, "aa");
-			value = cn.queryValue(bcPrepared).get;
-			assert(!value.valIsNull);
-			assert(value == 1);
 		}
 	}
 	test!false();

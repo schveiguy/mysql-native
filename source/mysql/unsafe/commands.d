@@ -92,15 +92,6 @@ ulong exec(Connection conn, ref Prepared prepared, Variant[] args) @system
 }
 
 ///ditto
-ulong exec(Connection conn, ref BackwardCompatPrepared prepared) @system
-{
-	auto p = prepared.prepared;
-	auto result = exec(conn, p);
-	prepared._prepared = p;
-	return result;
-}
-
-///ditto
 ulong exec(Connection conn, ref Prepared prepared) @system
 {
 	return SC.exec(conn, prepared.safeForExec);
@@ -224,15 +215,6 @@ UnsafeResultRange query(Connection conn, ref Prepared prepared, Variant[] args) 
 	return query(conn, prepared);
 }
 
-///ditto
-UnsafeResultRange query(Connection conn, ref BackwardCompatPrepared prepared) @system
-{
-	auto p = prepared.prepared;
-	auto result = query(conn, p);
-	prepared._prepared = p;
-	return result;
-}
-
 /++
 Execute an SQL SELECT command or prepared statement where you only want the
 first `mysql.result.UnsafeRow`, if any.
@@ -335,15 +317,6 @@ Nullable!UnsafeRow queryRow(Connection conn, ref Prepared prepared, Variant[] ar
 	return queryRow(conn, prepared);
 }
 
-///ditto
-Nullable!UnsafeRow queryRow(Connection conn, ref BackwardCompatPrepared prepared) @system
-{
-	auto p = prepared.prepared;
-	auto result = queryRow(conn, p);
-	prepared._prepared = p;
-	return result;
-}
-
 /++
 Execute an SQL SELECT command or prepared statement where you only want the
 first `mysql.result.UnsafeRow`, and place result values into a set of D variables.
@@ -381,14 +354,6 @@ void queryRowTuple(T...)(Connection conn, ref Prepared prepared, ref T args)
 	auto preparedInfo = conn.registerIfNeeded(prepared.sql);
 	SC.queryRowTupleImpl(conn, prepared.safe.getExecQueryImplInfo(preparedInfo.statementId), args);
 	prepared.safe._lastInsertID = conn.lastInsertID; // Conceivably, this might be needed when multi-statements are enabled.
-}
-
-///ditto
-void queryRowTuple(T...)(Connection conn, ref BackwardCompatPrepared prepared, ref T args) @system
-{
-	auto p = prepared.prepared;
-	queryRowTuple(conn, p, args);
-	prepared._prepared = p;
 }
 
 
@@ -500,12 +465,4 @@ Nullable!Variant queryValue(Connection conn, ref Prepared prepared, Variant[] ar
 {
 	prepared.setArgs(args);
 	return queryValue(conn, prepared);
-}
-///ditto
-Nullable!Variant queryValue(Connection conn, ref BackwardCompatPrepared prepared) @system
-{
-	auto p = prepared.prepared;
-	auto result = queryValue(conn, p);
-	prepared._prepared = p;
-	return result;
 }

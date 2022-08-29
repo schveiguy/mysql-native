@@ -8,6 +8,6 @@ version moved to this location.
 
 $(SAFE_MIGRATION)
 +/
-module mysql.connection;
 
+module mysql.connection;
 public import mysql.unsafe.connection;
