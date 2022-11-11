@@ -32,7 +32,7 @@ jobs:
           - ldc-1.28.1 # eq to dmd v2.098.1
           - ldc-1.27.1 # eq to dmd v2.097.2
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install D ${{ matrix.compiler }}
         uses: dlang-community/setup-dlang@v1
@@ -85,7 +85,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install D ${{ matrix.compiler }}
         uses: dlang-community/setup-dlang@v1
