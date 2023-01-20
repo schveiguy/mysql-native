@@ -251,7 +251,7 @@ package struct ProtocolPrepared
 					reAlloc(8);
 					double[1] d = isRef? *v.get!DoubleRef : v.get!Double;
 					ubyte[] uba = cast(ubyte[]) d[];
-					vals[vcl .. uba.length] = uba[];
+					vals[vcl .. vcl + uba.length] = uba[];
 					vcl += uba.length;
 					break;
 				case DateRef:

@@ -34,17 +34,23 @@ version(Have_vibe_core) {
 	alias logError = vibe.core.log.logError;
 	alias logCritical = vibe.core.log.logCritical;
 	//alias logFatal = vibe.core.log.logFatal;
-} else static if(__traits(compiles, (){ import std.experimental.logger; } )) {
-	import std.experimental.logger;
+} else {
+	static if(__traits(compiles, (){ import std.experimental.logger; } )) {
+		import stdlog = std.experimental.logger;
+	} else static if(__traits(compiles, (){ import std.logger; })) {
+		import stdlog = std.logger;
+	} else {
+		static assert(false, "no std.logger detected");
+	}
 
-	alias logTrace = std.experimental.logger.tracef;
-	alias logDebug = std.experimental.logger.tracef; // no debug level in std.experimental.logger but arguably trace/debug/verbose all mean the same
-	alias logInfo = std.experimental.logger.infof;
-	alias logWarn = std.experimental.logger.warningf;
-	alias logError = std.experimental.logger.errorf;
-	alias logCritical = std.experimental.logger.criticalf;
-	//alias logFatal = std.experimental.logger.fatalf;
-} else static assert(false);
+	alias logTrace = stdlog.tracef;
+	alias logDebug = stdlog.tracef; // no debug level in stdlog but arguably trace/debug/verbose all mean the same
+	alias logInfo = stdlog.infof;
+	alias logWarn = stdlog.warningf;
+	alias logError = stdlog.errorf;
+	alias logCritical = stdlog.criticalf;
+	//alias logFatal = stdlog.fatalf;
+}
 
 unittest {
 	version(Have_vibe_core) {
@@ -59,18 +65,18 @@ unittest {
 		logError("Test that a call to mysql.logger.logError maps to vibe.core.log.logError");
 		logCritical("Test that a call to mysql.logger.logCritical maps to vibe.core.log.logCritical");
 		//logFatal("Test that a call to mysql.logger.logFatal maps to vibe.core.log.logFatal");
-	} else static if(__traits(compiles, (){ import std.experimental.logger; } )) {
+	} else {
 		// Checks that when using std.experimental.logger the log entry is correct.
 		// This test kicks in when commenting out the 'vibe-core' dependency and running 'dub test', although
 		// not ideal if vibe-core is availble the logging goes through vibe anyway.
 		// Output can be seen in terminal when running 'dub test'.
-		import std.experimental.logger : Logger, LogLevel, sharedLog;
 		import std.stdio : writeln, writefln;
 		import std.conv : to;
 
 		writeln("Running the logger tests using (std.experimental.logger)");
+		alias LogLevel = stdlog.LogLevel;
 
-		class TestLogger : Logger {
+		class TestLogger : stdlog.Logger {
 			LogLevel logLevel;
 			string file;
 			string moduleName;
@@ -91,7 +97,12 @@ unittest {
 		}
 
 		auto logger = new TestLogger(LogLevel.all);
-		sharedLog = logger;
+		// handle differences between std.experimental.logger and std.logger
+		alias LogType = typeof(stdlog.sharedLog());
+		static if(is(LogType == shared))
+			stdlog.sharedLog = (() @trusted => cast(shared)logger)();
+		else
+			stdlog.sharedLog = logger;
 
 		// check that the various log alias functions get the expected results
 		logDebug("This is a TRACE message");
