@@ -40,7 +40,7 @@ interface MySQLSocket
 	void close();
 	@property bool connected() const;
 	void read(ubyte[] dst);
-	void write(in ubyte[] bytes);
+	void write(const scope ubyte[] bytes);
 
 	void acquire();
 	void release();
@@ -93,7 +93,7 @@ class MySQLSocketPhobos : MySQLSocket
 		}
 	}
 
-	void write(in ubyte[] bytes)
+	void write(const scope ubyte[] bytes)
 	{
 		socket.send(bytes);
 	}
@@ -143,7 +143,7 @@ version(Have_vibe_core) {
 			socket.read(dst);
 		}
 
-		void write(in ubyte[] bytes)
+		void write(const scope ubyte[] bytes)
 		{
 			socket.write(bytes);
 		}
