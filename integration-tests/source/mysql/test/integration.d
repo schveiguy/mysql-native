@@ -982,13 +982,20 @@ debug(MYSQLN_TESTS)
 		assertBasicTests!string("TEXT", "", "aoeu");
 		assertBasicTests!string("LONGTEXT", "", "aoeu");
 
-		assertBasicTests!(ubyte[])("TINYBLOB", "", "aoeu");
-		assertBasicTests!(ubyte[])("MEDIUMBLOB", "", "aoeu");
-		assertBasicTests!(ubyte[])("BLOB", "", "aoeu");
-		assertBasicTests!(ubyte[])("LONGBLOB", "", "aoeu");
+		import std.meta : AliasSeq;
+		static if(doSafe) alias blobTypes = AliasSeq!(ubyte[]);
+		else  alias blobTypes = AliasSeq!(ubyte[], byte[]);
 
-		assertBasicTests!(ubyte[])("TINYBLOB", cast(ubyte[])"".dup, cast(ubyte[])"aoeu".dup);
-		assertBasicTests!(ubyte[])("TINYBLOB", "".dup, "aoeu".dup);
+		static foreach(BT; blobTypes)
+		{
+			assertBasicTests!(BT)("TINYBLOB", "", "aoeu");
+			assertBasicTests!(BT)("MEDIUMBLOB", "", "aoeu");
+			assertBasicTests!(BT)("BLOB", "", "aoeu");
+			assertBasicTests!(BT)("LONGBLOB", "", "aoeu");
+
+			assertBasicTests!(BT)("TINYBLOB", cast(BT)"".dup, cast(BT)"aoeu".dup);
+			assertBasicTests!(BT)("TINYBLOB", "".dup, "aoeu".dup);
+		}
 
 		assertBasicTests!Date("DATE", Date(2013, 10, 03));
 		assertBasicTests!DateTime("DATETIME", DateTime(2013, 10, 03, 12, 55, 35));
