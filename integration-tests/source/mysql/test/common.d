@@ -122,8 +122,16 @@ version(DoCoreTests)
 
 		// Timestamp is a bit special as it's converted to a DateTime when
 		// returning from MySQL to avoid having to use a mysql specific type.
+		//
+		// byte[] is also special (for now) because it's supported with the
+		// unsafe portion of prepared statements. However, it's always ubyte[]
+		// underneath.
+		//
+		// TODO: remove this hack for byte[] when unsafe mysql-native is removed.
 		static if(is(T == DateTime) && is(U == Timestamp))
 			assert(result.get.get!DateTime == expected.toDateTime());
+		else static if(is(T == byte[]))
+			assert(cast(byte[])result.get.get!(ubyte[]) == expected);
 		else
 			assert(result.get.get!T == expected);
 	}

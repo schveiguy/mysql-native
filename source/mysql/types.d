@@ -183,7 +183,7 @@ $(SAFE_MIGRATION)
 alias MySQLVal = TaggedAlgebraic!_MYTYPE;
 
 // helper to convert variants to MySQLVal. Used wherever variant is still used.
-import std.variant : Variant;
+private import std.variant : Variant;
 package MySQLVal _toVal(Variant v)
 {
 	int x;
@@ -197,18 +197,36 @@ package MySQLVal _toVal(Variant v)
 	}
 
 	import std.meta;
-	import std.traits;
 	import mysql.exceptions;
+	import std.traits : Unqual;
+	// much simpler/focused fullyqualifiedname template
+	template FQN(T) {
+		static if(is(T == DateTime) || is(T == Date) || is(T == TimeOfDay))
+			enum FQN = "std.datetime.date." ~ T.stringof;
+		else static if(is(T == Timestamp))
+			enum FQN = "mysql.types.Timestamp";
+		else
+			enum FQN = T.stringof;
+	}
+
 	alias BasicTypes = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, DateTime, TimeOfDay, Date, Timestamp);
-	alias ArrayTypes = AliasSeq!(char[], const(char)[], ubyte[], const(ubyte)[], immutable(ubyte)[]);
+	alias ArrayTypes = AliasSeq!(char[], const(char)[],
+								 ubyte[], const(ubyte)[], immutable(ubyte)[]);
+
+	// types that worked with the old system via Variant, but have to be
+	// converted to work with MySQLVal
+	alias ConvertibleTypes = AliasSeq!(byte[],         const(byte)[],  immutable(byte)[]);
+	alias ConvertedTypes =   AliasSeq!(const(ubyte[]), const(ubyte[]), const(ubyte[])   );
+	static assert(ConvertibleTypes.length == ConvertedTypes.length);
+
 	switch (ts)
 	{
 		static foreach(Type; BasicTypes)
 		{
-		case fullyQualifiedName!Type:
-		case "const(" ~ fullyQualifiedName!Type ~ ")":
-		case "immutable(" ~ fullyQualifiedName!Type ~ ")":
-		case "shared(immutable(" ~ fullyQualifiedName!Type ~ "))":
+		case FQN!Type:
+		case "const(" ~ FQN!Type ~ ")":
+		case "immutable(" ~ FQN!Type ~ ")":
+		case "shared(immutable(" ~ FQN!Type ~ "))":
 			if(isRef)
 				return MySQLVal(v.get!(const(Type*)));
 			else
@@ -223,6 +241,16 @@ package MySQLVal _toVal(Variant v)
 					return MySQLVal(v.get!(const(ET[]*)));
 				else
 					return MySQLVal(v.get!(Type));
+			}
+		}
+		static foreach(i; 0 .. ConvertibleTypes.length)
+		{
+		case ConvertibleTypes[i].stringof:
+			{
+				if(isRef)
+					return MySQLVal(cast(ConvertedTypes[i]*)v.get!(ConvertibleTypes[i]*));
+				else
+					return MySQLVal(cast(ConvertedTypes[i])v.get!(ConvertibleTypes[i]));
 			}
 		}
 	case "immutable(char)[]":

@@ -324,7 +324,13 @@ struct UnsafePrepared
 	void setArg(T)(size_t index, T val, UnsafeParameterSpecialization psn = UPSN.init) @system
 		if(!is(T == Variant))
 	{
-		_safe.setArg(index, val, cast(SPSN)psn);
+		// forward to the safe API, but if not, fall back on what the unsafe
+		// version did.
+		static if(__traits(compiles, _safe.setArg(index, val, cast(SPSN)psn)))
+			_safe.setArg(index, val, cast(SPSN)psn);
+		else
+			// convert to variant first, then rely on the runtime to catch it.
+			setArg(index, Variant(val), psn);
 	}
 
 	/// ditto
@@ -342,8 +348,13 @@ struct UnsafePrepared
 		auto translateArg(alias arg)() {
 			static if(is(typeof(arg) == Variant))
 				return _toVal(arg);
-			else
+			else static if(__traits(compiles, setArg(0, arg)))
 				return arg;
+			else
+				// not settable using the safe API, convert to variant first,
+				// and then use the variant conversion routine to flesh out any
+				// cases.
+				return _toVal(Variant(arg));
 		}
 		_safe.setArgs(staticMap!(translateArg, args));
 	}
@@ -581,4 +592,3 @@ package(mysql) struct PreparedRegistrations(Payload)
 		return info;
 	}
 }
-
