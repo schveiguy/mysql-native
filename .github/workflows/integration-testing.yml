@@ -86,8 +86,10 @@ jobs:
         compiler:
           - dmd-latest
           - ldc-latest
+          - dmd-2.101.2
           - dmd-2.098.1
           - dmd-2.097.2
+          - ldc-1.31.0 # eq to dmd v2.101.2
           - ldc-1.28.1 # eq to dmd v2.098.1
           - ldc-1.27.0 # eq to dmd v2.097.2
 
@@ -157,8 +159,10 @@ jobs:
         compiler:
           - dmd-latest
           - ldc-latest
+          - dmd-2.101.2
           - dmd-2.098.1
           - dmd-2.097.2
+          - ldc-1.31.0 # eq to dmd v2.101.2
           - ldc-1.28.1 # eq to dmd v2.098.1
           - ldc-1.27.0 # eq to dmd v2.097.2
 
