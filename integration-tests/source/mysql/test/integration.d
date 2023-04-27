@@ -491,6 +491,11 @@ debug(MYSQLN_TESTS)
 			https://mariadb.com/kb/en/library/information-schema-columns-table/
 		+/
 
+		// note on integer type widths -- these are not shown in the column type name with mysql 8.
+		// From docs:
+		//    As of MySQL 8.0.17, the display width attribute is deprecated for integer data types;
+		//    you should expect support for it to be removed in a future version of MySQL.
+
 		ColumnInfo[] ca = md.columns("basetest");
 		assert( ca[0].schema == schemaName && ca[0].table == "basetest" && ca[0].name == "boolcol" && ca[0].index == 0 &&
 				ca[0].nullable && ca[0].type == "bit" && ca[0].charsMax == -1 && ca[0].octetsMax == -1 &&
@@ -499,36 +504,36 @@ debug(MYSQLN_TESTS)
 		assert( ca[1].schema == schemaName && ca[1].table == "basetest" && ca[1].name == "bytecol" && ca[1].index == 1 &&
 				ca[1].nullable && ca[1].type == "tinyint" && ca[1].charsMax == -1 && ca[1].octetsMax == -1 &&
 				ca[1].numericPrecision == 3 && ca[1].numericScale == 0 && ca[1].charSet == "<NULL>" && ca[1].collation == "<NULL>"  &&
-				ca[1].colType == "tinyint(4)");
+				(ca[1].colType == "tinyint(4)" || ca[1].colType == "tinyint"));
 		assert( ca[2].schema == schemaName && ca[2].table == "basetest" && ca[2].name == "ubytecol" && ca[2].index == 2 &&
 				ca[2].nullable && ca[2].type == "tinyint" && ca[2].charsMax == -1 && ca[2].octetsMax == -1 &&
 				ca[2].numericPrecision == 3 && ca[2].numericScale == 0 && ca[2].charSet == "<NULL>" && ca[2].collation == "<NULL>"  &&
-				ca[2].colType == "tinyint(3) unsigned");
+				(ca[2].colType == "tinyint(3) unsigned" || ca[2].colType == "tinyint unsigned"));
 		assert( ca[3].schema == schemaName && ca[3].table == "basetest" && ca[3].name == "shortcol" && ca[3].index == 3 &&
 				ca[3].nullable && ca[3].type == "smallint" && ca[3].charsMax == -1 && ca[3].octetsMax == -1 &&
 				ca[3].numericPrecision == 5 && ca[3].numericScale == 0 && ca[3].charSet == "<NULL>" && ca[3].collation == "<NULL>"  &&
-				ca[3].colType == "smallint(6)");
+				(ca[3].colType == "smallint(6)" || ca[3].colType == "smallint"));
 		assert( ca[4].schema == schemaName && ca[4].table == "basetest" && ca[4].name == "ushortcol" && ca[4].index == 4 &&
 				ca[4].nullable && ca[4].type == "smallint" && ca[4].charsMax == -1 && ca[4].octetsMax == -1 &&
 				ca[4].numericPrecision == 5 && ca[4].numericScale == 0 && ca[4].charSet == "<NULL>" && ca[4].collation == "<NULL>"  &&
-				ca[4].colType == "smallint(5) unsigned");
+				(ca[4].colType == "smallint(5) unsigned" || ca[4].colType == "smallint unsigned"));
 		assert( ca[5].schema == schemaName && ca[5].table == "basetest" && ca[5].name == "intcol" && ca[5].index == 5 &&
 				ca[5].nullable && ca[5].type == "int" && ca[5].charsMax == -1 && ca[5].octetsMax == -1 &&
 				ca[5].numericPrecision == 10 && ca[5].numericScale == 0 && ca[5].charSet == "<NULL>" && ca[5].collation == "<NULL>"  &&
-				ca[5].colType == "int(11)");
+				(ca[5].colType == "int(11)" || ca[5].colType == "int"));
 		assert( ca[6].schema == schemaName && ca[6].table == "basetest" && ca[6].name == "uintcol" && ca[6].index == 6 &&
 				ca[6].nullable && ca[6].type == "int" && ca[6].charsMax == -1 && ca[6].octetsMax == -1 &&
 				ca[6].numericPrecision == 10 && ca[6].numericScale == 0 && ca[6].charSet == "<NULL>" && ca[6].collation == "<NULL>"  &&
-				ca[6].colType == "int(10) unsigned");
+				(ca[6].colType == "int(10) unsigned" ||ca[6].colType == "int unsigned"));
 		assert( ca[7].schema == schemaName && ca[7].table == "basetest" && ca[7].name == "longcol" && ca[7].index == 7 &&
 				ca[7].nullable && ca[7].type == "bigint" && ca[7].charsMax == -1 && ca[7].octetsMax == -1 &&
 				ca[7].numericPrecision == 19 && ca[7].numericScale == 0 && ca[7].charSet == "<NULL>" && ca[7].collation == "<NULL>"  &&
-				ca[7].colType == "bigint(20)");
+				(ca[7].colType == "bigint(20)" || ca[7].colType == "bigint"));
 		assert( ca[8].schema == schemaName && ca[8].table == "basetest" && ca[8].name == "ulongcol" && ca[8].index == 8 &&
 				ca[8].nullable && ca[8].type == "bigint" && ca[8].charsMax == -1 && ca[8].octetsMax == -1 &&
 				//TODO: I'm getting numericPrecision==19, figure it out later
 				/+ca[8].numericPrecision == 20 &&+/ ca[8].numericScale == 0 && ca[8].charSet == "<NULL>" && ca[8].collation == "<NULL>"  &&
-				ca[8].colType == "bigint(20) unsigned");
+				(ca[8].colType == "bigint(20) unsigned" || ca[8].colType == "bigint unsigned"));
 		assert( ca[9].schema == schemaName && ca[9].table == "basetest" && ca[9].name == "charscol" && ca[9].index == 9 &&
 				ca[9].nullable && ca[9].type == "char" && ca[9].charsMax == 10 && ca[9].octetsMax == 10 &&
 				ca[9].numericPrecision == -1 && ca[9].numericScale == -1 && ca[9].charSet == "latin1" && ca[9].collation == "latin1_swedish_ci"  &&
@@ -564,7 +569,7 @@ debug(MYSQLN_TESTS)
 		assert( ca[17].schema == schemaName && ca[17].table == "basetest" && ca[17].name == "nullcol" && ca[17].index == 17 &&
 				ca[17].nullable && ca[17].type == "int" && ca[17].charsMax == -1 && ca[17].octetsMax == -1 &&
 				ca[17].numericPrecision == 10 && ca[17].numericScale == 0 && ca[17].charSet == "<NULL>" && ca[17].collation == "<NULL>"  &&
-				ca[17].colType == "int(11)");
+				(ca[17].colType == "int(11)" || ca[17].colType == "int"));
 		assert( ca[18].schema == schemaName && ca[18].table == "basetest" && ca[18].name == "decimalcol" && ca[18].index == 18 &&
 				ca[18].nullable && ca[18].type == "decimal" && ca[18].charsMax == -1 && ca[18].octetsMax == -1 &&
 				ca[18].numericPrecision == 11 && ca[18].numericScale == 4 && ca[18].charSet == "<NULL>" && ca[18].collation == "<NULL>"  &&
@@ -1024,7 +1029,8 @@ debug(MYSQLN_TESTS)
 		auto row = cn.queryRow(stmt).get;
 		assert(row.length == 4);
 		assert(row[0] == "utf8mb4");
-		assert(row[1] == "utf8mb4_general_ci");
+		// note, the second possibility is from mysql 8
+		assert(row[1] == "utf8mb4_general_ci" || row[1] == "utf8mb4_0900_ai_ci");
 		assert(row[2] == "UTF-8 Unicode");
 		assert(row[3] == 4);
 	}
@@ -1262,4 +1268,20 @@ unittest
 	// connection string including password.
 	auto exitCode = spawnProcess(["dub", "-q", "--", testConnectionStr]).wait;
 	assert(exitCode == 0);
+}
+
+// https://github.com/mysql-d/mysql-native/issues/276
+@("large result field count")
+debug(MYSQLN_TESTS)
+unittest
+{
+	mixin(scopedCn);
+	import mysql.safe.commands;
+	import std.format;
+
+	auto sql = format("SELECT 1 AS `%-(%s`, 1 AS `%)`",
+		iota(26*26).map!(i => [cast(char)(i / 26 + 'A'), cast(char)(i % 26 + 'A')]));
+	auto result = cn.queryRow(sql);
+	assert(!result.isNull);
+	assert(result.get.length == 26*26);
 }

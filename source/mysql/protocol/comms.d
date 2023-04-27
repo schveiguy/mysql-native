@@ -489,12 +489,12 @@ package(mysql) bool execQueryImpl(Connection conn, ExecQueryImplInfo info, out u
 	else
 	{
 		// There was presumably a result set
-		assert(packet.front >= 1 && packet.front <= 250); // Result set packet header should have this value
 		conn._headersPending = conn._rowsPending = true;
 		conn._binaryPending = info.isPrepared;
 		auto lcb = packet.consumeIfComplete!LCB();
 		assert(!lcb.isNull);
 		assert(!lcb.isIncomplete);
+		assert(lcb.value >= 1 && lcb.value <= ushort.max); // Result set packet header should have this value
 		conn._fieldCount = cast(ushort)lcb.value;
 		assert(conn._fieldCount == lcb.value);
 		rv = true;

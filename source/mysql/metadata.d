@@ -236,7 +236,8 @@ public:
 			" CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_TYPE," ~
 			" COLUMN_KEY, EXTRA, PRIVILEGES, COLUMN_COMMENT" ~
 			" FROM information_schema.COLUMNS WHERE" ~
-			" table_schema='" ~ _con.currentDB ~ "' AND table_name='" ~ table ~ "'";
+			" table_schema='" ~ _con.currentDB ~ "' AND table_name='" ~ table ~ "'" ~
+			" ORDER BY ORDINAL_POSITION";
 		auto rs = _con.query(query).array;
 		ColumnInfo[] ca;
 		ca.length = rs.length;
