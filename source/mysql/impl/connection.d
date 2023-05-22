@@ -631,8 +631,8 @@ public:
 	+/
 	void selectDB(string dbName)
 	{
-		this.sendCmd(CommandType.INIT_DB, dbName);
-		this.getCmdResponse();
+		auto packet = this.sendCmd(CommandType.INIT_DB, dbName);
+		this.getCmdResponse(packet);
 		_db = dbName;
 	}
 
@@ -645,8 +645,8 @@ public:
 	+/
 	OKErrorPacket pingServer()
 	{
-		this.sendCmd(CommandType.PING, []);
-		return this.getCmdResponse();
+		auto packet = this.sendCmd(CommandType.PING, []);
+		return this.getCmdResponse(packet);
 	}
 
 	/++
@@ -658,8 +658,8 @@ public:
 	+/
 	OKErrorPacket refreshServer(RefreshFlags flags)
 	{
-		this.sendCmd(CommandType.REFRESH, [flags]);
-		return this.getCmdResponse();
+		auto packet = this.sendCmd(CommandType.REFRESH, [flags]);
+		return this.getCmdResponse(packet);
 	}
 
 	/++

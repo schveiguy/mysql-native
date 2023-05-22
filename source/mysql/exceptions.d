@@ -156,3 +156,36 @@ class MYXInvalidatedRange: MYX
 		super(msg, file, line);
 	}
 }
+
+/++
+Thrown when a stale connection to the server is detected.
+
+To properly use this, it is suggested to use the following construct:
+
+----
+retry:
+try {
+	conn.exec(...); // do the command
+	// or prepare, query, etc.
+}
+catch(MYXStaleConnection)
+{
+	goto retry;
+}
+----
+
+In the future, when the protocol code is rewritten, this may become a built-in
+feature so the user does not have to do this on their own.
+
+NOTE: this is a new mechanism to try and capture this case so user code can
+properly handle the retry. Any bugs in this happening as an infinite loop,
+please file an issue with the exact case.
++/
+class MYXStaleConnection: MYX
+{
+@safe pure:
+	this(string msg, string file = __FILE__, size_t line = __LINE__)
+	{
+		super(msg, file, line);
+	}
+}
