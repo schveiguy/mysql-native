@@ -391,36 +391,60 @@ package struct ProtocolPrepared
 		}
 	}
 
-	static void sendCommand(Connection conn, uint hStmt, PreparedStmtHeaders psh,
+	static ubyte[] sendCommand(Connection conn, uint hStmt, PreparedStmtHeaders psh,
 		MySQLVal[] inParams, ParameterSpecialization[] psa)
 	{
-		conn.autoPurge();
-
-		ubyte[] packet;
-		conn.resetPacket();
-
-		ubyte[] prefix = makePSPrefix(hStmt, 0);
-		size_t len = prefix.length;
-		bool longData;
-
-		if (psh.paramCount)
+		ubyte[] impl()
 		{
-			ubyte[] one = [ 1 ];
-			ubyte[] vals;
-			ubyte[] types = analyseParams(inParams, psa, vals, longData);
-			ubyte[] nbm = makeBitmap(inParams);
-			packet = prefix ~ nbm ~ one ~ types ~ vals;
+			conn.autoPurge();
+
+			ubyte[] packet;
+			conn.resetPacket();
+
+			ubyte[] prefix = makePSPrefix(hStmt, 0);
+			size_t len = prefix.length;
+			bool longData;
+
+			if (psh.paramCount)
+			{
+				ubyte[] one = [ 1 ];
+				ubyte[] vals;
+				ubyte[] types = analyseParams(inParams, psa, vals, longData);
+				ubyte[] nbm = makeBitmap(inParams);
+				packet = prefix ~ nbm ~ one ~ types ~ vals;
+			}
+			else
+				packet = prefix;
+
+			if (longData)
+				sendLongData(conn._socket, hStmt, psa);
+
+			assert(packet.length <= uint.max);
+			packet.setPacketHeader(conn.pktNumber);
+			conn.bumpPacket();
+			conn._socket.send(packet);
+
+			return conn.getPacket();
+		}
+
+		if(conn._socket.connected)
+		{
+			try
+			{
+				return impl();
+			}
+			catch(Exception)
+			{
+				// convert all exceptions here as stale connections. This might be the
+				// first try to send a request to the server on an
+				// already-existing connection.
+				throw new MYXStaleConnection("Possible stale connection");
+			}
 		}
 		else
-			packet = prefix;
-
-		if (longData)
-			sendLongData(conn._socket, hStmt, psa);
-
-		assert(packet.length <= uint.max);
-		packet.setPacketHeader(conn.pktNumber);
-		conn.bumpPacket();
-		conn._socket.send(packet);
+		{
+			return impl();
+		}
 	}
 }
 
@@ -454,22 +478,21 @@ package(mysql) bool execQueryImpl(Connection conn, ExecQueryImplInfo info, out u
 	scope(failure) conn.kill();
 
 	// Send data
+	ubyte[] packet;
 	if(info.isPrepared)
 	{
 		logTrace("prepared SQL: %s", info.hStmt);
 
-		ProtocolPrepared.sendCommand(conn, info.hStmt, info.psh, info.inParams, info.psa);
+		packet = ProtocolPrepared.sendCommand(conn, info.hStmt, info.psh, info.inParams, info.psa);
 	}
 	else
 	{
 		logTrace("exec query: %s", info.sql);
 
-		conn.sendCmd(CommandType.QUERY, info.sql);
+		packet = conn.sendCmd(CommandType.QUERY, info.sql);
 		conn._fieldCount = 0;
 	}
 
-	// Handle response
-	ubyte[] packet = conn.getPacket();
 	bool rv;
 	if (packet.front == ResultPacketMarker.ok || packet.front == ResultPacketMarker.error)
 	{
@@ -688,7 +711,8 @@ do
 		_socket.write(data);
 }
 
-package(mysql) void sendCmd(T)(Connection conn, CommandType cmd, const(T)[] data)
+// returns the first packet received
+package(mysql) ubyte[] sendCmd(T)(Connection conn, CommandType cmd, const(T)[] data)
 in
 {
 	// Internal thread states. Clients shouldn't use this
@@ -709,39 +733,62 @@ in
 out
 {
 	// at this point we should have sent a command
-	assert(conn.pktNumber == 1);
+	//assert(conn.pktNumber == 1);
 }
 do
 {
-	scope(failure) conn.kill();
-
 	conn._lastCommandID++;
 
-	if(!conn._socket.connected)
+	ubyte[] impl()
+	{
+		scope(failure) conn.kill();
+
+		conn.autoPurge();
+
+		conn.resetPacket();
+
+		ubyte[] header;
+		header.length = 4 /*header*/ + 1 /*cmd*/;
+		header.setPacketHeader(conn.pktNumber, cast(uint)data.length +1/*cmd byte*/);
+		header[4] = cmd;
+		conn.bumpPacket();
+
+		conn._socket.send(header, cast(const(ubyte)[])data);
+
+		// now, get the first packet, but only if the command is not QUIT
+		if(cmd == CommandType.QUIT)
+			return null;
+
+		return conn.getPacket();
+	}
+
+	if(conn._socket.connected)
+	{
+		try
+		{
+			return impl();
+		}
+		catch(Exception)
+		{
+			// convert all exceptions here as stale connections. This is the
+			// first try to send a request to the server on an already-existing connection.
+			throw new MYXStaleConnection("Possible stale connection");
+		}
+	}
+	else
 	{
 		if(cmd == CommandType.QUIT)
-			return; // Don't bother reopening connection just to quit
+			return null; // Don't bother reopening connection just to quit
 
 		conn._open = Connection.OpenState.notConnected;
 		conn.connect(conn._clientCapabilities);
+		return impl();
 	}
-
-	conn.autoPurge();
-
-	conn.resetPacket();
-
-	ubyte[] header;
-	header.length = 4 /*header*/ + 1 /*cmd*/;
-	header.setPacketHeader(conn.pktNumber, cast(uint)data.length +1/*cmd byte*/);
-	header[4] = cmd;
-	conn.bumpPacket();
-
-	conn._socket.send(header, cast(const(ubyte)[])data);
 }
 
-package(mysql) OKErrorPacket getCmdResponse(Connection conn, bool asString = false)
+package(mysql) OKErrorPacket getCmdResponse(Connection conn, ubyte[] packet)
 {
-	auto okp = OKErrorPacket(conn.getPacket());
+	auto okp = OKErrorPacket(packet);
 	enforcePacketOK(okp);
 	conn._serverStatus = okp.serverStatus;
 	return okp;
@@ -960,10 +1007,9 @@ package(mysql) PreparedServerInfo performRegister(Connection conn, const(char[])
 
 	PreparedServerInfo info;
 
-	conn.sendCmd(CommandType.STMT_PREPARE, sql);
+	ubyte[] packet = conn.sendCmd(CommandType.STMT_PREPARE, sql);
 	conn._fieldCount = 0;
 
-	ubyte[] packet = conn.getPacket();
 	if(packet.front == ResultPacketMarker.ok)
 	{
 		packet.popFront();
@@ -1046,8 +1092,7 @@ Get a textual report on the server status.
 +/
 package(mysql) string serverStats(Connection conn)
 {
-	conn.sendCmd(CommandType.STATISTICS, []);
-	auto result = conn.getPacket();
+	auto result = conn.sendCmd(CommandType.STATISTICS, []);
 	return (() @trusted => cast(string)result)();
 }
 
@@ -1071,10 +1116,8 @@ package(mysql) void enableMultiStatements(Connection conn, bool on)
 	t.length = 2;
 	t[0] = on ? 0 : 1;
 	t[1] = 0;
-	conn.sendCmd(CommandType.STMT_OPTION, t);
-
 	// For some reason this command gets an EOF packet as response
-	auto packet = conn.getPacket();
+	auto packet = conn.sendCmd(CommandType.STMT_OPTION, t);
 	enforce!MYXProtocol(packet[0] == 254 && packet.length == 5, "Unexpected response to SET_OPTION command");
 }
 
