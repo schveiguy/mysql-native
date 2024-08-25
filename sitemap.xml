@@ -323,6 +323,7 @@
 <url><loc>http://127.0.0.1/mysql/exceptions/MYXProtocol.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/exceptions/MYXReceived.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/exceptions/MYXResultRecieved.html</loc></url>
+<url><loc>http://127.0.0.1/mysql/exceptions/MYXStaleConnection.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/exceptions/MYXWrongFunction.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/metadata.html</loc></url>
 <url><loc>http://127.0.0.1/mysql/metadata/ColumnInfo.html</loc></url>

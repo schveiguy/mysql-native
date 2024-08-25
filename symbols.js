@@ -252,6 +252,7 @@ var symbols = [
 {name: 'mysql.exceptions.MYXProtocol', kind: "classdeclaration", path: './mysql/exceptions/MYXProtocol.html', attributes: []},
 {name: 'mysql.exceptions.MYXReceived', kind: "classdeclaration", path: './mysql/exceptions/MYXReceived.html', attributes: []},
 {name: 'mysql.exceptions.MYXResultRecieved', kind: "classdeclaration", path: './mysql/exceptions/MYXResultRecieved.html', attributes: []},
+{name: 'mysql.exceptions.MYXStaleConnection', kind: "classdeclaration", path: './mysql/exceptions/MYXStaleConnection.html', attributes: []},
 {name: 'mysql.exceptions.MYXWrongFunction', kind: "classdeclaration", path: './mysql/exceptions/MYXWrongFunction.html', attributes: []},
 {name: 'mysql.metadata', kind: "module", path: './mysql/metadata.html', attributes: []},
 {name: 'mysql.metadata.ColumnInfo', kind: "structdeclaration", path: './mysql/metadata/ColumnInfo.html', attributes: []},
