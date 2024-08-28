@@ -38,8 +38,9 @@ jobs:
         with:
           compiler: ${{ matrix.compiler }}
 
-      - name: Upgrade dub dependencies
-        uses: WebFreak001/dub-upgrade@v0.1.1
+      # Broken, try without it for now.
+      # - name: Upgrade dub dependencies
+        # uses: WebFreak001/dub-upgrade@v0.1.1
 
       - name: Build Library
         run: dub build --build=release --config=library
