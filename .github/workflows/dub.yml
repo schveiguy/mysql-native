@@ -56,9 +56,9 @@ jobs:
         run: dub build --build=release --config=library
 
       # cache
-      - uses: WebFreak001/dub-upgrade@v0.1.1
-        if: startsWith(matrix.os, 'windows')
-        with: { store: true }
+      # - uses: WebFreak001/dub-upgrade@v0.1.1
+        # if: startsWith(matrix.os, 'windows')
+        # with: { store: true }
 
   # Older compiler versions
   build-older:
@@ -103,12 +103,12 @@ jobs:
         with:
           compiler: ${{ matrix.compiler }}
 
-      - name: Upgrade dub dependencies
-        uses: WebFreak001/dub-upgrade@v0.1.1
+      # - name: Upgrade dub dependencies
+        # uses: WebFreak001/dub-upgrade@v0.1.1
 
       - name: Build Library
         run: dub build --build=release --config=library
 
       # cache
-      - uses: WebFreak001/dub-upgrade@v0.1.1
-        with: { store: true }
+      # - uses: WebFreak001/dub-upgrade@v0.1.1
+        # with: { store: true }
